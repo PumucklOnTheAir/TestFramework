@@ -8,8 +8,6 @@ router = Router("192.168.1.10", "Lan1", 10)
 vn = VLAN_Network()
 vn.build_network()
 
-#....
-print("Test")
 #router.update_mac_default()
 print("MAC from Router: " + str(router.get_mac()))
 
