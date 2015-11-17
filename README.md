@@ -1,4 +1,4 @@
-Status:[![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg)](https://travis-ci.org/PumucklOnTheAir/TestFramework)
+Status: [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg)](https://travis-ci.org/PumucklOnTheAir/TestFramework)
 
 Tasks:
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=ready&title=Ready)](http://waffle.io/PumucklOnTheAir/TestFramework)
