@@ -1,13 +1,15 @@
 language: python
 python:
-  - 3.5
+  - "3.5"
 
 notifications:
   email: false
  
-sudo: false
+sudo: true
 
 install:
+  - pip install .
+  - pip install -r requirements.txt
   - pip install pep8 --use-mirrors
   - pip install pyflakes --use-mirrors
 before_script:
