@@ -3,12 +3,31 @@ import re
 from Router.wlan_mode import Mode
 
 class Router:
-    def __init__(self, ip, vlan_interface_name, vlan_id):
-        self.ip = ip
+    def __init__(self, vlan_interface_name, vlan_id, ip, ip_mask):
+        self.model = "TP-LINK-DEFAULT"
+        self.revision = "0.0"
         self.vlan_id = vlan_id
         self.vlan_interface_name = vlan_interface_name
+        self.ip = ip
+        self.ip_mask = ip_mask
         self.mac = "ff:ff:ff:ff:ff:ff"
         self.wlan_mode = Mode.managed
+
+    @staticmethod
+    def get_configured_Routers():
+        print("Configure Routers ...")
+        num_routers = int(input("Number of connected routers: "))
+        routers = []
+        for i in range(1,num_routers+1):
+            print("Router"+str(i)+"")
+            print("----------------")
+            vlan_interface_name = input("VLAN name: ")
+            vlan_id = int(input("VLAN id: "))
+            ip = input("IP: ")
+            ip_mask = int(input("IP mask: "))
+            router = Router(vlan_interface_name, vlan_id, ip, ip_mask)
+            routers.append(router)
+        return routers
 
     #TODO: Es muss noch überprüft werden ob die MAC auch tatsächlich zur IP des Routers gehört
     #Sendet einen Ping über das angegebene Interface
@@ -21,6 +40,15 @@ class Router:
 
     def update_mac_default(self):
         self.update_mac(self.ip, self.vlan_interface_name, self.vlan_id)
+
+    def print_infos(self):
+        print("############## Router - " + self.model + " ##############")
+        print("Revision: " + self.revision)
+        print("MAC: " + self.mac)
+        print("VLAN name: " + self.vlan_interface_name)
+        print("VLAN id: " + str(self.vlan_id))
+        print("IP: " + self.ip)
+        print("IP mask:" + str(self.ip_mask))
 
     def set_ip(self, ip):
         self.ip = ip
