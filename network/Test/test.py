@@ -2,6 +2,7 @@ import sys
 import time
 #sys.path.append('/root/TestFramework/network')
 sys.path.append('/home/simon/TestFramework/network/')
+#sys.path.append('/home/pi/TestFramework/network/')
 from vlan_network.vlan_network import VLAN_Network
 from Router.router import Router
 
