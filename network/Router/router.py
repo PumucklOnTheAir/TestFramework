@@ -34,6 +34,9 @@ class Router:
     def set_mode(self, mode):
         self.wlan_mode = mode
 
+    def set_vlan_interface_name(self, vlan_interface_name):
+        self.vlan_interface_name = vlan_interface_name
+
     def get_ip(self):
         return self.ip
 
@@ -45,3 +48,6 @@ class Router:
 
     def get_mode(self):
         return self.wlan_mode
+
+    def get_vlan_interface_name(self):
+        return self.vlan_interface_name
