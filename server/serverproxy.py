@@ -11,17 +11,14 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    @property
     def get_routers(self) -> []:
         pass
 
     @abstractmethod
-    @property
     def get_running_tests(self) -> []:
         pass
 
     @abstractmethod
-    @property
     def get_reports(self) -> []:
         pass
 
