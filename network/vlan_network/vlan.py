@@ -1,8 +1,8 @@
 from pyroute2 import IPDB
-
 class VLAN:
-    def __init__(self, vlan_iface_name):
-        self.ip = IPDB()
+    def __init__(self, ipdb, vlan_iface_name):
+        #self.ip = IPDB()
+        self.ipdb = ipdb
         self.vlan_iface_name = vlan_iface_name
 
     def create_interface(self, link_iface_name, vlan_id, vlan_iface_ip, vlan_iface_mask):
@@ -15,8 +15,8 @@ class VLAN:
         '''
         print("Create VLAN Interface ...")
         try:
-            link_iface = self.ip.interfaces[link_iface_name]
-            with self.ip.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface, vlan_id=vlan_id) as i:
+            link_iface = self.ipdb.interfaces[link_iface_name]
+            with self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface, vlan_id=vlan_id).commit() as i:
                 i.add_ip(vlan_iface_ip, vlan_iface_mask)
                 #Müsste die Größe der zu übertragenden Pake sein
                 i.mtu = 1400
@@ -27,17 +27,15 @@ class VLAN:
         except Exception as e:
             print("[-] " + self.vlan_iface_name + " couldn't be created")
             print("  " + str(e))
-            pass
 
     def delete_interface(self):
         '''
         : Desc : Löscht das virtuelle Interface
         '''
         try:
-            self.ip.interfaces[self.vlan_iface_name].remove().commit()
+            self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
             print("[+] " + self.vlan_iface_name + " successfully deleted")
         except Exception as e:
             print("[-] " + self.vlan_iface_name + " couldn't be deleted")
             print("  " + str(e))
-            pass
-        self.ip.release()
+        self.ipdb.release()

@@ -14,12 +14,12 @@ class Router:
         self.wlan_mode = Mode.managed
 
     @staticmethod
-    def get_configured_Routers():
+    def get_manual_configured_routers():
         '''
         :Desc : Der Nutzer kann beliebig viele Router konfigurieren
         :return: Eine List konfigurierter Router
         '''
-        print("Configure Routers ...")
+        print("Configure Routers manually...")
         num_routers = int(input("Number of connected routers: "))
         routers = []
         for i in range(1,num_routers+1):
@@ -34,6 +34,57 @@ class Router:
             routers.append(router)
         return routers
 
+    #TODO: Es muss noch überprüft werden ob der INput gültig ist
+    @staticmethod
+    def get_auto_configured_routers():
+        print("Configure Routers automatically...")
+        num_routers = int(input("Number of connected routers: "))
+        first_vlan_id = int(input("First VLAN id: "))
+        routers = []
+        for i in range(1,num_routers+1):
+            vlan_interface_name = "VLan"+str(i)
+            vlan_id = first_vlan_id+(i-1)
+            ip, ip_mask = Router.get_gateway_ip()
+            print("\nRouter"+str(i)+"")
+            print("------------------------")
+            print("VLAN name: " + vlan_interface_name)
+            print("VLAN id: " + str(vlan_id))
+            print("IP: " + ip)
+            print("IP mask: " + ip_mask)
+            print("------------------------")
+            #if not(query_yes_no("Input valid?")):
+            #    get_manual_configured_routers()
+            #else:
+            router = Router(vlan_interface_name, vlan_id, ip, ip_mask)
+            routers.append(router)
+        return routers
+
+    @staticmethod
+    def get_configured_routers(manually=False, args=[]):
+        print("Configure Routers ...")
+        if manually:
+            return Router.get_manual_configured_routers()
+        else:
+            #Es wurden keine Argumente übergeben
+            if args:
+                print("[!!!] TODO:")
+                return None
+            else:
+                return Router.get_auto_configured_routers()
+
+    @staticmethod
+    def get_gateway_ip():
+        try:
+            ip_route = Popen(["ip", "route"], stdout=PIPE)
+            s = ip_route.communicate()[0]
+            gateway_ip = re.search(b"((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))", s).groups()[0].decode("utf-8")
+            gateway_mask = re.search(b"(\/([1-2]\d|3[0-2]))", s).groups()[0].decode("utf-8")[1:]
+            return [gateway_ip, gateway_mask]
+        except Exception as e:
+            print("[-] " + str(e))
+            pass
+
+
     #TODO: Es muss noch überprüft werden ob die MAC auch tatsächlich zur IP des Routers gehört
     def update_mac(self, ip, vlan_interface_name, vlan_id):
         '''
@@ -47,7 +98,7 @@ class Router:
             Popen(["ping", "-c", "1", "-I", vlan_interface_name, ip], stdout=PIPE)
             pid = Popen(["arp", "-n", ip], stdout=PIPE, stderr=None)
             s = pid.communicate()[0]
-            self.mac = re.search(b"(([a-f\d]{1,2}\:){5}[a-f\d]{1,2})", s).groups()[0]
+            self.mac = re.search(b"(([a-f\d]{1,2}\:){5}[a-f\d]{1,2})", s).groups()[0].decode("utf-8")
         except Exception as e:
             print("[-] " + str(e))
             pass
