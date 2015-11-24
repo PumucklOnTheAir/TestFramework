@@ -2,8 +2,9 @@ from subprocess import PIPE
 from pyroute2.netns.nslink import NetNS
 from pyroute2.netns.process.proxy import NSPopen
 from pyroute2.ipdb import IPDB
-import sys
+import sys, time
 import re
+import socket, struct, fcntl
 
 class VLAN_Network:
     def __init__(self):
@@ -23,17 +24,20 @@ class VLAN_Network:
             print("------------------------")
             self.add_vlan()
             print("------------------------")
-            self.encapsulate_interface_in_namespace(self.vlan_names[-1])
+            #self.encapsulate_interface_in_namespace(self.vlan_names[-1])
 
-    def close_network(self):
+    def close_network(self, namespaces=True):
         '''
         :Desc : Schließt alle virtuellen Interfaces bzw deren Namespaces
         '''
         print("\nClose VLAN Network ...")
         for i in range(0,self.num_vlans):
             vlan_iface_name = self.vlan_names.pop()
-            ipdb_netns = self.ipdb_netns_dictionary[vlan_iface_name]
-            self.delete_interface(ipdb_netns,vlan_iface_name,namespace=True)
+            if namespaces:
+                ipdb = self.ipdb_netns_dictionary[vlan_iface_name]
+            else:
+                ipdb = self.ipdb
+            self.delete_interface(ipdb,vlan_iface_name,namespace=namespaces)
 
 
     def add_vlan(self):
@@ -44,7 +48,7 @@ class VLAN_Network:
                 vlan_iface_name = input("VLAN name: ")
                 vlan_id = int(input("VLAN id: "))
                 vlan_iface_ip = input("VLAN ip: ")
-                vlan_iface_mask = int(input("VLAN ip mask: "))
+                vlan_iface_mask = input("VLAN ip mask: ")
                 input_accepted = self.query_yes_no("Input valid?")
             except Exception as e:
                 print("[-] " + str(e))
@@ -98,7 +102,7 @@ class VLAN_Network:
         return vnsp_name
 
 
-    def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_id=10, vlan_iface_ip='127.0.0.1', vlan_iface_mask=24):
+    def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_id=10, vlan_iface_ip=None, vlan_iface_mask=24):
         '''
         :Desc : Erstellt ein neues virtuelles Interface auf einem bestehenden
         :param link_iface_name: Das eigentliche Interface (eth0, wlan0, ...)
@@ -110,13 +114,17 @@ class VLAN_Network:
         try:
             link_iface = self.ipdb.interfaces[link_iface_name]
             with self.ipdb.create(kind="vlan", ifname=vlan_iface_name, link=link_iface, vlan_id=vlan_id).commit() as i:
-                i.add_ip(vlan_iface_ip, vlan_iface_mask)
+                if vlan_iface_ip:
+                    i.add_ip(vlan_iface_ip, vlan_iface_mask)
                 #Müsste die Größe der zu übertragenden Pake sein
                 i.mtu = 1400
-                print("[+] " + vlan_iface_name + " created with:")
-                print("  Link: " + link_iface_name)
-                print("  VLAN_ID: " + str(vlan_id))
-                print("  IP: " + vlan_iface_ip + "/" + str(vlan_iface_mask))
+            if not vlan_iface_ip:
+                self.wait_for_ip_assignment(vlan_iface_name)
+                vlan_iface_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name].ipaddr)
+            print("[+] " + vlan_iface_name + " created with:")
+            print("  Link: " + link_iface_name)
+            print("  VLAN_ID: " + str(vlan_id))
+            print("  IP: " + vlan_iface_ip)
         except Exception as e:
             print("[-] " + vlan_iface_name + " couldn't be created")
             print("  " + str(e))
@@ -135,6 +143,23 @@ class VLAN_Network:
             print("[-] " + vlan_iface_name + " couldn't be deleted")
             print("  " + str(e))
         ipdb.release()
+
+    def wait_for_ip_assignment(self, iface_name):
+        print("Wait for ip assignment ...")
+        while self.get_ip(iface_name) is None:
+            time.sleep(0.5)
+
+    def get_ip(self, iface = 'eth0'):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sockfd = sock.fileno()
+        ifreq = struct.pack('16sH14s', iface.encode('utf-8'), socket.AF_INET, b'\x00'*14)
+        try:
+            res = fcntl.ioctl(sockfd, 0x8915, ifreq)
+        except:
+            return None
+        ip = struct.unpack('16sH2x4s8x', res)[2]
+        print("assigned ip: " + str(socket.inet_ntoa(ip)))
+        return socket.inet_ntoa(ip)
 
     def get_ipv4_from_dictionary(self, ipaddr_dictionary):
         for i in range(len(ipaddr_dictionary)):

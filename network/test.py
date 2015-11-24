@@ -95,16 +95,17 @@ ipdb_netns.release()
 print("end ...")
 --------------------------------------------------------------------------------------------------'''
 
-routers = Router.get_configured_routers(manually=True)
+#routers = Router.get_configured_routers(manually=False)
 
 vn = VLAN_Network()
 vn.build_network()
+routers = Router.get_configured_routers(manually=False)
 for i in range(0,len(routers)):
     router = routers[i]
-    vn.execute_program(["ping","-c 1",router.get_ip()], router.get_vlan_interface_name())
-    #router.update_mac_default()
-    #time.sleep(2)
+    #vn.execute_program(["ping","-c 1",router.get_ip()], router.get_vlan_interface_name())
+    router.update_mac_default()
+    time.sleep(2)
     router.print_infos()
 
 
-vn.close_network()
+vn.close_network(namespaces=False)
