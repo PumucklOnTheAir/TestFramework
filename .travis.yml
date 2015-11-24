@@ -9,9 +9,11 @@ sudo: true
 
 install:
   - pip install .
-  - pip install -r requirements.txt
   - pip install pep8 --use-mirrors
   - pip install pyflakes --use-mirrors
 before_script:
   - "pep8 --exclude=migrations --ignore=E501,E225 src"
   - pyflakes -x W src
+  
+  #run tests
+  script: python3 -m unittest discover -s tests
