@@ -1,19 +1,16 @@
-from vlan_network.vlan import VLAN
 from subprocess import PIPE
-from pyroute2 import netns
 from pyroute2.netns.nslink import NetNS
 from pyroute2.netns.process.proxy import NSPopen
 from pyroute2.ipdb import IPDB
 import sys
-import os
+import re
 
 class VLAN_Network:
     def __init__(self):
         self.num_vlans = 0
         self.vlan_names = []
-        self.vnsps = []
         self.ipdb = IPDB()
-        #self.ipdb_netns = IPDB(nl = NetNS("vnsp0"))
+        self.ipdb_netns_dictionary = {}
 
     def build_network(self):
         '''
@@ -30,15 +27,14 @@ class VLAN_Network:
 
     def close_network(self):
         '''
-        :Desc : Schließt alle virtuellen Interfaces
+        :Desc : Schließt alle virtuellen Interfaces bzw deren Namespaces
         '''
         print("\nClose VLAN Network ...")
-        #self.close_vnsps()
         for i in range(0,self.num_vlans):
-            vlan_name = self.vlan_names.pop()
-            self.delete_interface(vlan_name)
-        self.close_vnsps()
-        print("\n")
+            vlan_iface_name = self.vlan_names.pop()
+            ipdb_netns = self.ipdb_netns_dictionary[vlan_iface_name]
+            self.delete_interface(ipdb_netns,vlan_iface_name,namespace=True)
+
 
     def add_vlan(self):
         input_accepted = False
@@ -52,8 +48,8 @@ class VLAN_Network:
                 input_accepted = self.query_yes_no("Input valid?")
             except Exception as e:
                 print("[-] " + str(e))
-        self.vlan_names.append(vlan_iface_name)
         self.create_interface(link_iface_name,vlan_iface_name,vlan_id, vlan_iface_ip, vlan_iface_mask)
+        self.vlan_names.append(vlan_iface_name)
 
     def execute_program(self, program_command, vlan_iface_name):
         '''
@@ -63,14 +59,15 @@ class VLAN_Network:
         '''
         print("Execute ...")
         try:
-            vnsp_name = self.ipdb.interfaces[vlan_iface_name].net_ns_fd
-            print("args: " + str(program_command) + " :: " + str(vnsp_name) + " bzw. sollte eigl vnsp0")
-            nsp = NSPopen("vnsp0", program_command, stdout=PIPE)
+            vnsp_name = self.ipdb_netns_dictionary[vlan_iface_name].nl.netns
+            nsp = NSPopen(vnsp_name, program_command, stdout=PIPE)
             print("output: " + str(nsp.communicate()))
             nsp.wait()
             nsp.release()
+            print("[+] " + str(program_command) + " successfully executed")
         except Exception as e:
-            print("[-] " + str(e))
+            print("[-] " + str(program_command) + "couldn't be executed")
+            print("e: " + str(e))
 
     def encapsulate_interface_in_namespace(self, vlan_iface_name):
         '''
@@ -78,40 +75,30 @@ class VLAN_Network:
         :param vlan_iface_name: Der Name des zu kapselnden Interfaces
         '''
         print("encapsulate ...")
-        #vnsp_name = self.add_vnsp()
-        vnsp_name="vnsp0"
-        vlan_name = self.vlan_names[-1]
-        #vlan.ip.link("set",index=i,net_ns_fd=vnsp_name)
-        #vlan.ip.net_ns_fd = vnsp_name
-        self.ipdb.interfaces[vlan_iface_name].net_ns_fd = vnsp_name
-        print("netns: " + str(self.ipdb.interfaces[vlan_iface_name]))
-        #vlan.ip.add_ip('192.168.1.11/24')
-        #vlan.ip.up
+        vnsp_name = self.add_vnsp(vlan_iface_name)
+        vlan_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name].ipaddr)
+        print("vlan_name: " + vlan_iface_name + " vlan_ip: " + str(vlan_ip))
+        with self.ipdb.interfaces[vlan_iface_name] as vlan:
+            vlan.net_ns_fd = vnsp_name
+        #Das Interface hat automatisch die Datenbank gewechselt und befindet sich jetzt in ipdb_netns_dictionary[vlan_iface_name]
+        with self.ipdb_netns_dictionary[vlan_iface_name].interfaces[vlan_iface_name] as vlan:
+            vlan.add_ip(vlan_ip) #'192.168.1.11/24'
+            vlan.up()
 
-    def add_vnsp(self):
+    def add_vnsp(self, vlan_iface_name):
         '''
-        :Desc : Erstellt einen neuen Namespace und fügt diesen der Namespace-Liste hinzu
+        :Desc : Erstellt einen neuen Namespace und fügt diesen dem Namespace-Dictionary hinzu
+        :return Gibt den Namen des namespaces zurück
         '''
         print("add_vnsp ...")
-        index = len(self.vnsps)
+        index = len(self.ipdb_netns_dictionary)
         vnsp_name = "vnsp"+str(index)
-        #self.ip_netns = IPDB(nl = NetNS(vnsp_name))
-        #vnsp = NetNS(vnsp_name, flags=os.O_CREAT)
-        #netns.remove(vnsp_name)
-        vnsp = netns.create(vnsp_name)
-        print("netns.listnetns() : " + str(netns.listnetns()))
-        self.vnsps.append(vnsp)
+        ipdb_netns = IPDB(nl = NetNS(vnsp_name))
+        self.ipdb_netns_dictionary[vlan_iface_name] = ipdb_netns
         return vnsp_name
 
-    def close_vnsps(self):
-        print("Close vnsps ...")
-        for i in range(0,len(self.vnsps)):
-            vnsp = self.vnsps[i]
-            vnsp.close()
-            vnsp.remove()
 
-
-    def create_interface(self, link_iface_name, vlan_iface_name, vlan_id, vlan_iface_ip, vlan_iface_mask):
+    def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_id=10, vlan_iface_ip='127.0.0.1', vlan_iface_mask=24):
         '''
         :Desc : Erstellt ein neues virtuelles Interface auf einem bestehenden
         :param link_iface_name: Das eigentliche Interface (eth0, wlan0, ...)
@@ -134,17 +121,28 @@ class VLAN_Network:
             print("[-] " + vlan_iface_name + " couldn't be created")
             print("  " + str(e))
 
-    def delete_interface(self, vlan_iface_name):
+    def delete_interface(self, ipdb, vlan_iface_name, namespace=True):
         '''
         : Desc : Löscht das virtuelle Interface
         '''
         try:
-            self.ipdb.interfaces[vlan_iface_name].remove().commit()
+            if namespace:
+                ipdb.interfaces[vlan_iface_name].nl.remove()
+            else:
+                ipdb.interfaces[vlan_iface_name].remove().commit()
             print("[+] " + vlan_iface_name + " successfully deleted")
         except Exception as e:
             print("[-] " + vlan_iface_name + " couldn't be deleted")
             print("  " + str(e))
-        self.ipdb.release()
+        ipdb.release()
+
+    def get_ipv4_from_dictionary(self, ipaddr_dictionary):
+        for i in range(len(ipaddr_dictionary)):
+            ip = ipaddr_dictionary[i]['address']
+            mask = ipaddr_dictionary[i]['prefixlen']
+            if re.match("((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))", ip):
+                return (ip+"/"+str(mask))
+        return None
 
 #TODO: Diese Funktion muss ausgelagert werden
     def query_yes_no(self, question, default=None):
