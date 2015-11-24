@@ -1,0 +1,5 @@
+--- # default for the VLan's
+- {default_Name: VLan}
+- {default_start_Id: 0}
+- {default_IP: 192.168.1.215}
+- {default_Mask: 24}
