@@ -23,7 +23,3 @@ class IPC(BaseManager):
     def get_server_proxy(self) -> ServerProxy:
         """Returns a proxy model for the test server"""
         pass
-
-
-
-
