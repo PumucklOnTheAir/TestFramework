@@ -8,7 +8,7 @@ notifications:
 sudo: false
 
 install:
-  #- pip install .
+  - pip install .
   #- pip install pep8 --use-mirrors
   #- pip install pyflakes --use-mirrors
 before_script:
