@@ -2,16 +2,24 @@ language: python
 python:
   - "3.5"
 
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
+  
 notifications:
   email: false
- 
-sudo: true
+
+sudo: false
 
 install:
-  - pip install .
+  #- pip install .
   - pip install -r requirements.txt
-  - pip install pep8 --use-mirrors
-  - pip install pyflakes --use-mirrors
 before_script:
-  - "pep8 --exclude=migrations --ignore=E501,E225 src"
-  - pyflakes -x W src
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util"
+  - python -m  pyflakes server
+
+  #run tests
+script: python -m unittest discover -s tests

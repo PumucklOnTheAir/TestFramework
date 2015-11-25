@@ -1,6 +1,5 @@
 from multiprocessing.managers import BaseManager
 from server.serverproxy import ServerProxy
-from multiprocessing import Process
 
 
 class IPC(BaseManager):
@@ -14,7 +13,7 @@ class IPC(BaseManager):
 
     def start_ipc_server(self, server):
         """Start the ipc server to allow clients to connect
-        :param server: The running server to represent
+        :param server: The running test server to represent
         """
         assert issubclass(server, ServerProxy)
         self.register('get_server_proxy', server)
@@ -22,9 +21,5 @@ class IPC(BaseManager):
         self.start()
 
     def get_server_proxy(self) -> ServerProxy:
-        """Returns a proxy model for the test server """
+        """Returns a proxy model for the test server"""
         pass
-
-
-
-
