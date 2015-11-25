@@ -2,7 +2,13 @@ language: python
 python:
   - "3.5"
 
-cache: pip
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+before_cache:
+  - rm -f $HOME/.cache/pip/log/debug.log
+  
 notifications:
   email: false
 
