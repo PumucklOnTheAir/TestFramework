@@ -3,7 +3,7 @@ import time
 #sys.path.append('/root/TestFramework/network')
 #sys.path.append('/home/simon/TestFramework/network/')
 #sys.path.append('/home/pi/TestFramework/network/')
-from vlan_network.vlan_network import VLAN_Network
+from vlan_network import VLAN_Network
 from Router.router import Router
 
 from subprocess import PIPE
@@ -12,6 +12,15 @@ from pyroute2.netns.nslink import NetNS
 from pyroute2.netns.process.proxy import NSPopen
 from pyroute2.ipdb import IPDB
 import subprocess
+
+from network_ctrl import Network_Ctrl
+
+routers = Router.get_manual_configured_routers()
+network_ctrl = Network_Ctrl(routers[0])
+routers[0].print_infos()
+network_ctrl.connect_with_router()
+network_ctrl.send_router_command('ls -l')
+network_ctrl.exit()
 
 '''--------------------------------------------------------------------------------------------------
 print("begin ...")
@@ -96,16 +105,20 @@ print("end ...")
 --------------------------------------------------------------------------------------------------'''
 
 #routers = Router.get_configured_routers(manually=False)
-
+'''--------------------------------------------------------------------------------------------------
 vn = VLAN_Network()
-vn.build_network()
-routers = Router.get_configured_routers(manually=False)
+vn.build_network(namespaces=True)
+routers = Router.get_configured_routers(manually=True)
 for i in range(0,len(routers)):
     router = routers[i]
+    commands = ['ssh '+ router.usr_name +'@'+router.ip+' ls -l']
+    vn.execute_program(commands, router.vlan_interface_name)
     #vn.execute_program(["ping","-c 1",router.get_ip()], router.get_vlan_interface_name())
-    router.update_mac_default()
+    #router.update_mac_default()
     time.sleep(2)
     router.print_infos()
 
 
-vn.close_network(namespaces=False)
+vn.close_network(namespaces=True)
+--------------------------------------------------------------------------------------------------'''
+

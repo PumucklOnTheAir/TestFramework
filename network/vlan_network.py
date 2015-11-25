@@ -1,7 +1,8 @@
-from subprocess import PIPE
+from subprocess import Popen, PIPE, STDOUT
 from pyroute2.netns.nslink import NetNS
 from pyroute2.netns.process.proxy import NSPopen
 from pyroute2.ipdb import IPDB
+from pyroute2 import netns
 import sys, time
 import re
 import socket, struct, fcntl
@@ -11,11 +12,11 @@ class VLAN_Network:
         self.num_vlans = 0
         self.vlan_names = []
         self.ipdb = IPDB()
-        self.ipdb_netns_dictionary = {}
+        self.ipdb_netns_dictionary = {} #{vlan_ifcae_name : ipdb_netns}
 
-    def build_network(self):
+    def build_network(self, namespaces=True):
         '''
-        :Desc : Baut beliebig viele virtuelle Interfaces auf
+        :Desc : builds on any number of virtual interfaces
         '''
         print("\nBuild VLAN Network ...")
         self.num_vlans = int(input("Number of desired VLANs: "))
@@ -23,12 +24,13 @@ class VLAN_Network:
             print("\nVirtual Interface"+str(i))
             print("------------------------")
             self.add_vlan()
+            if namespaces:
+                self.encapsulate_interface_in_namespace(self.vlan_names[-1])
             print("------------------------")
-            #self.encapsulate_interface_in_namespace(self.vlan_names[-1])
 
     def close_network(self, namespaces=True):
         '''
-        :Desc : Schließt alle virtuellen Interfaces bzw deren Namespaces
+        :Desc : close all virtual interfaces resp. close all namespaces
         '''
         print("\nClose VLAN Network ...")
         for i in range(0,self.num_vlans):
@@ -57,14 +59,14 @@ class VLAN_Network:
 
     def execute_program(self, program_command, vlan_iface_name):
         '''
-        :Desc : Führt ein beliebiges Programm innerhalb eines Namespaces aus
-        :param program_command: Programmausfruf mit Parametern
-        :param vlan_iface_name: Welches virtuelle Interface soll verwendet werden
+        :Desc : execute any program-command inside a namespace. or in other words, the program is forced to use a specific interface
+        :param program_command: program-command with arguments
+        :param vlan_iface_name: the name of the specific interface
         '''
         print("Execute ...")
         try:
             vnsp_name = self.ipdb_netns_dictionary[vlan_iface_name].nl.netns
-            nsp = NSPopen(vnsp_name, program_command, stdout=PIPE)
+            nsp = NSPopen(vnsp_name, program_command, stdin=PIPE, stdout=PIPE, shell=True)
             print("output: " + str(nsp.communicate()))
             nsp.wait()
             nsp.release()
@@ -75,40 +77,41 @@ class VLAN_Network:
 
     def encapsulate_interface_in_namespace(self, vlan_iface_name):
         '''
-        :Desc : Das übergebene virtuelle Interface wird in einen Namespace gekapselt
-        :param vlan_iface_name: Der Name des zu kapselnden Interfaces
+        :Desc : capture the assigned interface in a namespace
+        :param vlan_iface_name: name of the interface
         '''
-        print("encapsulate ...")
+        print("encapsulate interface " + vlan_iface_name + " in namespace ...")
         vnsp_name = self.add_vnsp(vlan_iface_name)
-        vlan_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name].ipaddr)
-        print("vlan_name: " + vlan_iface_name + " vlan_ip: " + str(vlan_ip))
+        vlan_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name])
         with self.ipdb.interfaces[vlan_iface_name] as vlan:
             vlan.net_ns_fd = vnsp_name
-        #Das Interface hat automatisch die Datenbank gewechselt und befindet sich jetzt in ipdb_netns_dictionary[vlan_iface_name]
+        #the interface automatically switched the database and is now inside ipdb_netns_dictionary[vlan_iface_name]
         with self.ipdb_netns_dictionary[vlan_iface_name].interfaces[vlan_iface_name] as vlan:
             vlan.add_ip(vlan_ip) #'192.168.1.11/24'
             vlan.up()
+        print("netns: " + str(netns.listnetns()))
 
     def add_vnsp(self, vlan_iface_name):
         '''
-        :Desc : Erstellt einen neuen Namespace und fügt diesen dem Namespace-Dictionary hinzu
-        :return Gibt den Namen des namespaces zurück
+        :Desc : creates a new namespace an adds it to the namespace-dictionary
+        :return the name of the namespace
         '''
-        print("add_vnsp ...")
         index = len(self.ipdb_netns_dictionary)
         vnsp_name = "vnsp"+str(index)
         ipdb_netns = IPDB(nl = NetNS(vnsp_name))
+        #set netns for the current process
+        netns.setns(vnsp_name)
         self.ipdb_netns_dictionary[vlan_iface_name] = ipdb_netns
         return vnsp_name
 
 
     def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_id=10, vlan_iface_ip=None, vlan_iface_mask=24):
         '''
-        :Desc : Erstellt ein neues virtuelles Interface auf einem bestehenden
-        :param link_iface_name: Das eigentliche Interface (eth0, wlan0, ...)
-        :param vlan_id: ID des VLANs
-        :param vlan_iface_ip: IP des neuen Interfaces
-        :param vlan_iface_mask: Netzmaske des neuen Interfaces
+        :Desc : Creats a virtual interface on a existing interface (like eth0)
+        :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
+        :param vlan_id: the id of the vlan
+        :param vlan_iface_ip: ip of the virtual interface
+        :param vlan_iface_mask: network-mask of the virtual interface
         '''
         print("Create VLAN Interface ...")
         try:
@@ -116,11 +119,10 @@ class VLAN_Network:
             with self.ipdb.create(kind="vlan", ifname=vlan_iface_name, link=link_iface, vlan_id=vlan_id).commit() as i:
                 if vlan_iface_ip:
                     i.add_ip(vlan_iface_ip, vlan_iface_mask)
-                #Müsste die Größe der zu übertragenden Pake sein
                 i.mtu = 1400
             if not vlan_iface_ip:
                 self.wait_for_ip_assignment(vlan_iface_name)
-                vlan_iface_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name].ipaddr)
+                vlan_iface_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name])
             print("[+] " + vlan_iface_name + " created with:")
             print("  Link: " + link_iface_name)
             print("  VLAN_ID: " + str(vlan_id))
@@ -131,7 +133,7 @@ class VLAN_Network:
 
     def delete_interface(self, ipdb, vlan_iface_name, namespace=True):
         '''
-        : Desc : Löscht das virtuelle Interface
+        : Desc : removes the virtual interface
         '''
         try:
             if namespace:
@@ -145,14 +147,24 @@ class VLAN_Network:
         ipdb.release()
 
     def wait_for_ip_assignment(self, iface_name):
-        print("Wait for ip assignment ...")
+        '''
+        :Desc : Waits until the dhcp-client got an ip
+        :param iface_name:
+        '''
+        print("Wait for ip assignment via dhcp...")
         while self.get_ip(iface_name) is None:
+            Popen(["dhclient", iface_name], stdout=PIPE)
             time.sleep(0.5)
 
-    def get_ip(self, iface = 'eth0'):
+    def get_ip(self, iface_name = 'eth0'):
+        '''
+        :Desc : gets the ip of a specific interface
+        :param iface_name:
+        :return: the ip of an interface without network-mask
+        '''
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockfd = sock.fileno()
-        ifreq = struct.pack('16sH14s', iface.encode('utf-8'), socket.AF_INET, b'\x00'*14)
+        ifreq = struct.pack('16sH14s', iface_name.encode('utf-8'), socket.AF_INET, b'\x00'*14)
         try:
             res = fcntl.ioctl(sockfd, 0x8915, ifreq)
         except:
@@ -161,7 +173,13 @@ class VLAN_Network:
         print("assigned ip: " + str(socket.inet_ntoa(ip)))
         return socket.inet_ntoa(ip)
 
-    def get_ipv4_from_dictionary(self, ipaddr_dictionary):
+    def get_ipv4_from_dictionary(self, iface):
+        '''
+        : Desc : gets the ip and network-mask from the ipdb
+        :param iface: the interface from ipdb
+        :return: ip with network-mask
+        '''
+        ipaddr_dictionary = iface.ipaddr
         for i in range(len(ipaddr_dictionary)):
             ip = ipaddr_dictionary[i]['address']
             mask = ipaddr_dictionary[i]['prefixlen']

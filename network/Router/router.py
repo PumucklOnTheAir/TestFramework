@@ -3,9 +3,11 @@ import re
 from Router.wlan_mode import Mode
 
 class Router:
-    def __init__(self, vlan_interface_name, vlan_id, ip, ip_mask):
+    def __init__(self, usr_name, usr_password, vlan_interface_name, vlan_id, ip, ip_mask):
         self.model = "TP-LINK-DEFAULT"
         self.revision = "0.0"
+        self.usr_name = usr_name
+        self.usr_password = usr_password
         self.vlan_id = vlan_id
         self.vlan_interface_name = vlan_interface_name
         self.ip = ip
@@ -25,12 +27,14 @@ class Router:
         for i in range(1,num_routers+1):
             print("\nRouter"+str(i)+"")
             print("------------------------")
+            usr_name = input("Usr name: ")
+            usr_password = input("Usr password: ")
             vlan_interface_name = input("VLAN name: ")
             vlan_id = int(input("VLAN id: "))
             ip = input("IP: ")
             ip_mask = int(input("IP mask: "))
             print("------------------------")
-            router = Router(vlan_interface_name, vlan_id, ip, ip_mask)
+            router = Router(usr_name, usr_password, vlan_interface_name, vlan_id, ip, ip_mask)
             routers.append(router)
         return routers
 
@@ -42,11 +46,15 @@ class Router:
         first_vlan_id = int(input("First VLAN id: "))
         routers = []
         for i in range(1,num_routers+1):
+            usr_name = "root"
+            usr_password = "admin"
             vlan_interface_name = "VLan"+str(i)
             vlan_id = first_vlan_id+(i-1)
             ip, ip_mask = Router.get_gateway_ip()
             print("\nRouter"+str(i)+"")
             print("------------------------")
+            print("Usr name: " + usr_name)
+            print("Usr password: " + usr_password)
             print("VLAN name: " + vlan_interface_name)
             print("VLAN id: " + str(vlan_id))
             print("IP: " + ip)
@@ -55,9 +63,14 @@ class Router:
             #if not(query_yes_no("Input valid?")):
             #    get_manual_configured_routers()
             #else:
-            router = Router(vlan_interface_name, vlan_id, ip, ip_mask)
+            router = Router(usr_name, usr_password, vlan_interface_name, vlan_id, ip, ip_mask)
             routers.append(router)
         return routers
+
+    @staticmethod
+    def get_conf_configured_routers(args=[]):
+        if not args:
+            return None
 
     @staticmethod
     def get_configured_routers(manually=False, args=[]):
@@ -67,8 +80,7 @@ class Router:
         else:
             #Es wurden keine Argumente übergeben
             if args:
-                print("[!!!] TODO:")
-                return None
+                return Router.get_conf_configured_routers(args)
             else:
                 return Router.get_auto_configured_routers()
 
@@ -114,38 +126,9 @@ class Router:
         print("\n############## Router - " + self.model + " ##############")
         print("Revision : " + self.revision)
         print("MAC      : " + str(self.mac))
+        print("Usr name : " + self.usr_name)
         print("VLAN name: " + self.vlan_interface_name)
         print("VLAN id  : " + str(self.vlan_id))
         print("IP       : " + self.ip)
         print("IP mask  : " + str(self.ip_mask))
         print("######################################################")
-
-    def set_ip(self, ip):
-        self.ip = ip
-
-    def set_vlanIP(self, vlan_id):
-        self.vlan_id = vlan_id
-
-    def set_mac(self, mac):
-        self.mac = mac
-
-    def set_mode(self, mode):
-        self.wlan_mode = mode
-
-    def set_vlan_interface_name(self, vlan_interface_name):
-        self.vlan_interface_name = vlan_interface_name
-
-    def get_ip(self):
-        return self.ip
-
-    def get_vlanID(self):
-        return self.vlan_id
-
-    def get_mac(self):
-        return self.mac
-
-    def get_mode(self):
-        return self.wlan_mode
-
-    def get_vlan_interface_name(self):
-        return self.vlan_interface_name
