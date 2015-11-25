@@ -16,4 +16,4 @@ before_script:
   #- pyflakes -x W src
 
   #run tests
-  script: python -m unittest discover -s tests
+script: python -m unittest discover -s tests
