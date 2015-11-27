@@ -17,9 +17,9 @@ from network_ctrl import Network_Ctrl
 
 routers = Router.get_manual_configured_routers()
 network_ctrl = Network_Ctrl(routers[0],0)
-routers[0].print_infos()
 network_ctrl.connect_with_router()
-network_ctrl.send_router_command('ls -l')
+network_ctrl.configure_router()
+routers[0].print_infos()
 network_ctrl.exit()
 '''--------------------------------------------------------------------------------------------------
 print("begin ...")

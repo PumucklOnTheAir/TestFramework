@@ -5,7 +5,6 @@ from Router.wlan_mode import Mode
 class Router:
     def __init__(self, usr_name, usr_password, vlan_interface_name, vlan_id, ip, ip_mask):
         self.model = "TP-LINK-DEFAULT"
-        self.revision = "0.0"
         self.usr_name = usr_name
         self.usr_password = usr_password
         self.vlan_id = vlan_id
@@ -13,6 +12,7 @@ class Router:
         self.ip = ip
         self.ip_mask = ip_mask
         self.mac = "ff:ff:ff:ff:ff:ff"
+        self.ssid = "SSID-Default"
         self.wlan_mode = Mode.managed
 
     @staticmethod
@@ -124,11 +124,11 @@ class Router:
 
     def print_infos(self):
         print("\n############## Router - " + self.model + " ##############")
-        print("Revision : " + self.revision)
         print("MAC      : " + str(self.mac))
         print("Usr name : " + self.usr_name)
         print("VLAN name: " + self.vlan_interface_name)
         print("VLAN id  : " + str(self.vlan_id))
         print("IP       : " + self.ip)
         print("IP mask  : " + str(self.ip_mask))
+        print("SSID     : " + self.ssid)
         print("######################################################")

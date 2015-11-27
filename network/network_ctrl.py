@@ -3,7 +3,7 @@ from vlan_network import VLAN_Network
 from Router.router import Router
 from vlan import Vlan
 from namespace import Namespace
-import time
+import time, re
 
 class Network_Ctrl:
     def __init__(self, router, id):
@@ -23,10 +23,22 @@ class Network_Ctrl:
         self.ssh.connect(self.router.ip, port=22, username=self.router.usr_name, password=self.router.usr_password)
 
     def send_router_command(self, command):
-        print("Send command " + command + " ...")
-        stdin, stdout, stderr = self.ssh.exec_command(command)
-        output = stdout.readlines()
-        print("stdout: " + str(output))
+        try:
+            stdin, stdout, stderr = self.ssh.exec_command(command)
+            print("[+] Sent the command (" + command + ") to the router(" + self.router.ip + ")")
+            output = stdout.readlines()
+            return str(output)
+        except Exception as e:
+            print("[-] Couldn't send the command : " + command + ") to the router(" + self.router.ip + ")");
+            print(str(e))
+
+    def configure_router(self):
+        #Model
+        self.router.model = self.send_router_command('cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
+        #MAC
+        self.router.mac = self.send_router_command('uci show network.client.macaddr').split('=')[1][:-4]
+        #SSID
+        self.router.ssid = self.send_router_command('uci show wireless.client_radio0.ssid').split('=')[1][:-4]
 
     def exit(self):
         print("Exit ...")
