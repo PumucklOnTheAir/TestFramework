@@ -5,8 +5,8 @@ from namespace import Namespace
 class Network_Ctrl:
     def __init__(self, router):
         print("Create Network Controller ...")
-        self.vlan = Vlan()
-        self.namespace = Namespace("nsp"+str(router.vlan_id), self.vlan.vlan_iface_name, self.vlan.ipdb)
+        self.vlan = Vlan('eth0',router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None, vlan_iface_ip_mask=None)
+        self.namespace = Namespace("nsp"+str(router.vlan_iface_id), self.vlan.vlan_iface_name, self.vlan.ipdb)
         self.ssh = paramiko.SSHClient()
         self.router = router
 

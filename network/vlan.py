@@ -1,51 +1,37 @@
-from subprocess import Popen, PIPE, STDOUT
-from pyroute2.netns.nslink import NetNS
-from pyroute2.netns.process.proxy import NSPopen
+from subprocess import Popen, PIPE
 from pyroute2.ipdb import IPDB
-from pyroute2 import netns
 import sys, time
 import re
 import socket, struct, fcntl
 
 class Vlan:
-    def __init__(self):
-        input_accepted = False
-        while (not input_accepted):
-            try:
-                link_iface_name = input("Link interface: ")
-                vlan_iface_name = input("VLAN name: ")
-                vlan_id = int(input("VLAN id: "))
-                vlan_iface_ip = input("VLAN ip: ")
-                vlan_iface_mask = input("VLAN ip mask: ")
-                input_accepted = self.query_yes_no("Input valid?")
-            except Exception as e:
-                print("[-] " + str(e))
+    def __init__(self, link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask):
         self.vlan_iface_name = vlan_iface_name
-        self.vlan_id = vlan_id
+        self.vlan_iface_id = vlan_iface_id
         self.ipdb = IPDB()
-        self.create_interface(link_iface_name,vlan_iface_name,vlan_id, vlan_iface_ip, vlan_iface_mask)
+        self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
 
-    def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_id=10, vlan_iface_ip=None, vlan_iface_mask=24):
+    def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_iface_id=10, vlan_iface_ip=None, vlan_iface_ip_mask=24):
         '''
         :Desc : Creats a virtual interface on a existing interface (like eth0)
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
-        :param vlan_id: the id of the vlan
+        :param vlan_iface_id: the id of the vlan
         :param vlan_iface_ip: ip of the virtual interface
-        :param vlan_iface_mask: network-mask of the virtual interface
+        :param vlan_iface_ip_mask: network-mask of the virtual interface
         '''
         print("Create VLAN Interface ...")
         try:
             link_iface = self.ipdb.interfaces[link_iface_name]
-            with self.ipdb.create(kind="vlan", ifname=vlan_iface_name, link=link_iface, vlan_id=vlan_id).commit() as i:
+            with self.ipdb.create(kind="vlan", ifname=vlan_iface_name, link=link_iface, vlan_id=vlan_iface_id).commit() as i:
                 if vlan_iface_ip:
-                    i.add_ip(vlan_iface_ip, vlan_iface_mask)
+                    i.add_ip(vlan_iface_ip, vlan_iface_ip_mask)
                 i.mtu = 1400
             if not vlan_iface_ip:
                 self.wait_for_ip_assignment(vlan_iface_name)
                 vlan_iface_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name])
             print("[+] " + vlan_iface_name + " created with:")
             print("  Link: " + link_iface_name)
-            print("  VLAN_ID: " + str(vlan_id))
+            print("  VLAN_ID: " + str(vlan_iface_id))
             print("  IP: " + vlan_iface_ip)
         except Exception as e:
             print("[-] " + vlan_iface_name + " couldn't be created")
@@ -63,25 +49,25 @@ class Vlan:
             print("  " + str(e))
         self.ipdb.release()
 
-    def wait_for_ip_assignment(self, iface_name):
+    def wait_for_ip_assignment(self, vlan_iface_name):
         '''
         :Desc : Waits until the dhcp-client got an ip
-        :param iface_name:
+        :param vlan_iface_name:
         '''
         print("Wait for ip assignment via dhcp...")
-        while self.get_ip(iface_name) is None:
-            Popen(["dhclient", iface_name], stdout=PIPE)
+        while self.get_ip(vlan_iface_name) is None:
+            Popen(["dhclient", vlan_iface_name], stdout=PIPE)
             time.sleep(0.5)
 
-    def get_ip(self, iface_name = 'eth0'):
+    def get_ip(self, vlan_iface_name ='eth0'):
         '''
         :Desc : gets the ip of a specific interface
-        :param iface_name:
+        :param vlan_iface_name:
         :return: the ip of an interface without network-mask
         '''
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockfd = sock.fileno()
-        ifreq = struct.pack('16sH14s', iface_name.encode('utf-8'), socket.AF_INET, b'\x00'*14)
+        ifreq = struct.pack('16sH14s', vlan_iface_name.encode('utf-8'), socket.AF_INET, b'\x00' * 14)
         try:
             res = fcntl.ioctl(sockfd, 0x8915, ifreq)
         except:
@@ -101,7 +87,7 @@ class Vlan:
             ip = ipaddr_dictionary[i]['address']
             mask = ipaddr_dictionary[i]['prefixlen']
             if re.match("((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))", ip):
-                return (ip+"/"+str(mask))
+                return (ip + "/" + str(mask))
         return None
 
     #TODO: Diese Funktion muss ausgelagert werden

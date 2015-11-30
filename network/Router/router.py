@@ -3,12 +3,12 @@ import re
 from Router.wlan_mode import Mode
 
 class Router:
-    def __init__(self, usr_name, usr_password, vlan_interface_name, vlan_id, ip, ip_mask):
+    def __init__(self, usr_name, usr_password, vlan_iface_name, vlan_iface_id, ip, ip_mask):
         self.model = "TP-LINK-DEFAULT"
         self.usr_name = usr_name
         self.usr_password = usr_password
-        self.vlan_id = vlan_id
-        self.vlan_interface_name = vlan_interface_name
+        self.vlan_iface_id = vlan_iface_id
+        self.vlan_iface_name = vlan_iface_name
         self.ip = ip
         self.ip_mask = ip_mask
         self.mac = "ff:ff:ff:ff:ff:ff"
@@ -120,14 +120,14 @@ class Router:
         '''
         :Desc : Sendet einen Ping über das angegebene Interface. Danach wird die MAC-Adresse aus der ARP-Tabelle extrahier
         '''
-        self.update_mac(self.ip, self.vlan_interface_name, self.vlan_id)
+        self.update_mac(self.ip, self.vlan_iface_name, self.vlan_iface_id)
 
     def print_infos(self):
         print("\n############## Router - " + self.model + " ##############")
         print("MAC      : " + str(self.mac))
         print("Usr name : " + self.usr_name)
-        print("VLAN name: " + self.vlan_interface_name)
-        print("VLAN id  : " + str(self.vlan_id))
+        print("VLAN name: " + self.vlan_iface_name)
+        print("VLAN id  : " + str(self.vlan_iface_id))
         print("IP       : " + self.ip)
         print("IP mask  : " + str(self.ip_mask))
         print("SSID     : " + self.ssid)
