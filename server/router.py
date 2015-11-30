@@ -1,6 +1,7 @@
 from server.proxyobject import ProxyObject
 from enum import Enum
 
+
 class Mode(Enum):
     master = 1
     managed = 2
@@ -32,6 +33,7 @@ class Router(ProxyObject):
         self._mac = None
         self._wlan_mode = Mode.unknown
         self._usr_name = None
+        self._ssid = ""
 
     @property
     def ip(self) -> str:
@@ -133,7 +135,7 @@ class Router(ProxyObject):
         :type value: str
         """
         assert isinstance(value, str)
-        self._usr_password = value
+        self._ssid = value
 
     @property
     def wlan_mode(self) -> Mode:
@@ -150,6 +152,3 @@ class Router(ProxyObject):
         """
         assert isinstance(value, Mode)
         self._wlan_mode = value
-
-
-
