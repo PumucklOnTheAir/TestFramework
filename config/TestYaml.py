@@ -17,6 +17,11 @@ class TestingYaml(unittest.TestCase):
         print(data)
         self.assertTrue(1, 1)
 
+    def test_config2(self):
+        data = ConfigManager.get_vlan_list()
+        print(data)
+        self.assertTrue(1, 1)
+
     def test_server(self):
         data = ConfigManager.get_server_property_list()
         print(data)

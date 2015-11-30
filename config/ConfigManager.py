@@ -42,25 +42,36 @@ class ConfigManager:
         return ConfigManager.read_file(ConfigManager.VLAN_CONFIG_PATH)
 
     @staticmethod
-    def get_vlan_list(vlan_count) -> []:
+    def get_vlan_list(vlan_count=0) -> []:
         output = ConfigManager.get_vlan_config()
 
-        if not len(output) == 4:
-            logging.error("List must be length of 4 but has a length of {0}".format(len(output)))
+        if not len(output) == 7:
+            logging.error("List must be length of 7 but has a length of {0}".format(len(output)))
             return
 
-        v_name = output[0]
-        v_id = output[1]
-        v_ip = output[2]
-        v_mask = output[3]
+        router_count = output[0]
+        v_name = output[1]
+        v_id = output[2]
+        v_ip = output[3]
+        v_mask = output[4]
+        username = output[5]
+        password = output[6]
 
         try:
-            i = v_id['default_start_Id']
+            i = v_id['default_Start_Id']
             vlan_list = []
-            for x in range(0, vlan_count):
-                v = Router(v_name['default_Name'] + "{0}".format(i), i, v_ip['default_IP'], v_mask['default_Mask'])
+
+            if vlan_count <= 0:
+                count = router_count['Router_Count']
+            else:
+                count = vlan_count
+
+            for x in range(0, count):
+                v = Router(v_name['default_Name'] + "{0}".format(i), i, v_ip['default_IP'], v_mask['default_Mask'],
+                           username['default_Username'], password['default_Password'])
                 vlan_list.append(v)
                 i += 1
+
             return vlan_list
         except Exception as ex:
             logging.error("Error at building the list of VLan's\nError: {0}".format(ex))
