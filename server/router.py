@@ -54,7 +54,7 @@ class Router(ProxyObject):
     @property
     def vlan_name(self) -> str:
         """
-        Wozu ist ein VLAN Name gut?
+        Used VLAN name from server for this router
         :return:
         """
         return self._vlan_id
