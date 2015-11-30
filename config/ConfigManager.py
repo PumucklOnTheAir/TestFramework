@@ -9,7 +9,9 @@ class ConfigManager:
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
-    V_LAN_CONFIG_PATH = os.path.join(CONFIG_PATH, 'v_lan_config.yaml')
+    VLAN_CONFIG_PATH = os.path.join(CONFIG_PATH, 'vlan_config.yaml')
+    SERVER_CONFIG_PATH = os.path.join(CONFIG_PATH, 'server_config.yaml')
+    TEST_CONFIG_PATH = os.path.join(CONFIG_PATH, 'test_config.yaml')
 
     @staticmethod
     def read_file(path) -> []:
@@ -36,12 +38,12 @@ class ConfigManager:
             logging.error("Error at safe dump the Yaml-File\nError: {0}".format(ex))
 
     @staticmethod
-    def get_v_lan_config() -> []:
-        return ConfigManager.read_file(ConfigManager.V_LAN_CONFIG_PATH)
+    def get_vlan_config() -> []:
+        return ConfigManager.read_file(ConfigManager.VLAN_CONFIG_PATH)
 
     @staticmethod
-    def get_v_lan(count) -> []:
-        output = ConfigManager.get_v_lan_config()
+    def get_vlan_list(v_lan_count) -> []:
+        output = ConfigManager.get_vlan_config()
 
         if not len(output) == 4:
             logging.error("List must be length of 4 but has a length of {0}".format(len(output)))
@@ -55,7 +57,7 @@ class ConfigManager:
         try:
             i = v_id['default_start_Id']
             v_lan_list = []
-            for x in range(0, count):
+            for x in range(0, v_lan_count):
                 v = VLan(v_name['default_Name'] + "{0}".format(i),
                          i,
                          v_ip['default_IP'],
@@ -65,3 +67,21 @@ class ConfigManager:
             return v_lan_list
         except Exception as ex:
             logging.error("Error at building the list of VLan's\nError: {0}".format(ex))
+
+    @staticmethod
+    def get_server_config() -> []:
+        return ConfigManager.read_file(ConfigManager.SERVER_CONFIG_PATH)
+
+    @staticmethod
+    def get_server_property_list() -> []:
+        output = ConfigManager.get_server_config()
+        return output
+
+    @staticmethod
+    def get_test_config() -> []:
+        return ConfigManager.read_file(ConfigManager.TEST_CONFIG_PATH)
+
+    @staticmethod
+    def get_test_list() -> []:
+        output = ConfigManager.get_test_config()
+        return output
