@@ -1,6 +1,7 @@
 from server.serverproxy import ServerProxy
 from server.ipc import IPC
 from server.router import Router
+from config.ConfigManager import ConfigManager
 
 
 class Server(ServerProxy):
@@ -14,30 +15,33 @@ class Server(ServerProxy):
     _reports = []
     #config = Configuration("")
 
-    def start(self, debug_mode=False, config_path=CONFIG_PATH):
+    def start(self, debug_mode: bool = False, config_path: str = CONFIG_PATH):
         assert isinstance(debug_mode, bool)
+
         self.DEBUG = debug_mode
 
-        assert isinstance(config_path, "") # TODO funktioniert das?
+        assert isinstance(config_path, str) # TODO funktioniert das?
         self.CONFIG_PATH = config_path
 
-        self._ipc_server.start_ipc_server(self)
+        #self._ipc_server.start_ipc_server(self)
 
         self.__load_configuration()
 
-        #self.__init_vlans(config) # TODO woher config nehmen, wie sieht sie aus?
+        # TODO load more Router information
+        # -> (Router[])
 
     def __load_configuration(self):
-        # (re)load the configuration only then no tests running
+        # (re)load the configuration only then no tests are running
         assert len(self._runningTests) == 0
         # TODO how to load the configuration, #16
+        self._routers = ConfigManager.get_vlan_list()
         assert len(self._routers) != 0
         assert len(self._reports) == 0
 
         pass
 
     def stop(self):
-        self._ipc_server.shutdown()
+        # TODO self._ipc_server.shutdown()
         pass
 
     def start_test(self, router_name, test_name) -> bool:
@@ -46,6 +50,8 @@ class Server(ServerProxy):
         :param test_name: The name of the test to execute
         :return: True if start was successful
         """
+
+        #_runningTests.add(Thread.start(test, router))
         pass
 
     def get_routers(self) -> []:
