@@ -4,7 +4,8 @@ class CLIUtil:
     Contains utilities and formatting for the command line interface
     """
 
-    def print_dynamic_table(self, content, headers):
+    @staticmethod
+    def print_dynamic_table(content, headers):
         """prints a dynamically formatted table
         :param content: list of lists of data
         :param headers: list of headers
@@ -28,35 +29,44 @@ class CLIUtil:
                 print("|" + "+".join("-{}-".format("".ljust(width_list[i], "-")) for i, x in enumerate(content[c])) + "|")
 
     def print_status(self, routers):
-        """Gibt Status der Router aus"""
+        """Gibt Status der Router aus
+        :param routers list of routers
+        """
 
         # Liste der Router nach Name sortieren
-        routers.sort(key = lambda x : x[0])
+        routers.sort(key=lambda x: x[0])
         headers = ("Name", "IP", "MAC", "VLAN", "Mode")
         self.print_action("routers in network: " + str(len(routers)))
         self.print_dynamic_table(routers, headers)
 
-    def print_action(self, message):
+    @staticmethod
+    def print_action(message):
         print("[+]" + message)
 
-    def print_warning(self, message):
-        print("\nWarning: " +  message)
+    @staticmethod
+    def print_warning(message):
+        print("\nWarning: " + message)
 
-    def print_error(self, message):
+    @staticmethod
+    def print_error(message):
         print("\nERROR: " + message)
 
-    def print_bullet(self, message):
+    @staticmethod
+    def print_bullet(message):
         print("(*) " + message)
 
-    def print_header(self):
+    @staticmethod
+    def print_header():
         print("\v\tFreifunk Testframework\v")
 
+    @staticmethod
     def print_progress(self, router, tid, percentage):
         progress = int(percentage / 2)
         print("\t" + str(router) + ":  Test ID: " + str(tid) + "\t[" + "".join("{}".format("#") for i in range(progress)) +
               "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
-    def return_progressbar(self, router,  tid, percentage):
+    @staticmethod
+    def return_progressbar(router,  tid, percentage):
         progress = int(percentage / 2)
         return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" + "".join("{}".format("#") for i in range(progress)) +
-               "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
+                "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")

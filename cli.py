@@ -30,7 +30,7 @@ def connect_to_server():
     util.print_action("...done.")
 
     global server_proxy
-    """Global Variable for the proxy server"""
+    """global variable for the proxy server"""
     server_proxy = ipc_client.get_server_proxy()
 
 
@@ -41,7 +41,7 @@ def get_running_tests():
     else:
         print("\tCurrently running Tests:")
         for i in range(len(tests)):
-            util.print_progress(tests[i][0], tests[i][1])
+            util.print_progress(tests[i][0], tests[i][1], tests[i][2])
 
 
 def update_running_test(test):
@@ -181,7 +181,7 @@ def main():
     util.print_action("...done")
     util.print_action("Exiting")
 
-
+"""
 class DummyServer(ServerProxy):
     def start_test(self, router_id, test_id):
         pass
@@ -207,6 +207,7 @@ class DummyServer(ServerProxy):
 
     def get_firmwares(self) -> []:
         pass
+"""
 
 if __name__ == "__main__":
     main()
