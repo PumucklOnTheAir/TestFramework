@@ -2,7 +2,7 @@ import yaml
 import io
 import logging
 import os.path
-from config.VLan import *
+from server.router import *
 
 
 class ConfigManager:
@@ -42,7 +42,7 @@ class ConfigManager:
         return ConfigManager.read_file(ConfigManager.VLAN_CONFIG_PATH)
 
     @staticmethod
-    def get_vlan_list(v_lan_count) -> []:
+    def get_vlan_list(vlan_count) -> []:
         output = ConfigManager.get_vlan_config()
 
         if not len(output) == 4:
@@ -56,15 +56,12 @@ class ConfigManager:
 
         try:
             i = v_id['default_start_Id']
-            v_lan_list = []
-            for x in range(0, v_lan_count):
-                v = VLan(v_name['default_Name'] + "{0}".format(i),
-                         i,
-                         v_ip['default_IP'],
-                         v_mask['default_Mask'])
-                v_lan_list.append(v)
+            vlan_list = []
+            for x in range(0, vlan_count):
+                v = Router(v_name['default_Name'] + "{0}".format(i), i, v_ip['default_IP'], v_mask['default_Mask'])
+                vlan_list.append(v)
                 i += 1
-            return v_lan_list
+            return vlan_list
         except Exception as ex:
             logging.error("Error at building the list of VLan's\nError: {0}".format(ex))
 
