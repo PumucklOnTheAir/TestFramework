@@ -1,5 +1,4 @@
-._.DS_Store
+.DS_Store
 .idea/
-
 .cache/
 *.pyc
