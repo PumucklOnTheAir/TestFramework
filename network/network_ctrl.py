@@ -1,18 +1,12 @@
 import paramiko
-from vlan_network import VLAN_Network
-from Router.router import Router
 from vlan import Vlan
 from namespace import Namespace
-import time, re
 
 class Network_Ctrl:
-    def __init__(self, router, id):
+    def __init__(self, router):
         print("Create Network Controller ...")
-        #self.vn = VLAN_Network()
-        #self.vn.build_network(namespaces=True)
-        self.id = id
         self.vlan = Vlan()
-        self.namespace = Namespace("nsp"+str(id), self.vlan.vlan_iface_name, self.vlan.ipdb)
+        self.namespace = Namespace("nsp"+str(router.vlan_id), self.vlan.vlan_iface_name, self.vlan.ipdb)
         self.ssh = paramiko.SSHClient()
         self.router = router
 
@@ -32,13 +26,18 @@ class Network_Ctrl:
             print("[-] Couldn't send the command : " + command + ") to the router(" + self.router.ip + ")");
             print(str(e))
 
-    def configure_router(self):
-        #Model
-        self.router.model = self.send_router_command('cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
-        #MAC
-        self.router.mac = self.send_router_command('uci show network.client.macaddr').split('=')[1][:-4]
-        #SSID
-        self.router.ssid = self.send_router_command('uci show wireless.client_radio0.ssid').split('=')[1][:-4]
+
+    #def configure_router(self):
+    #    '''
+    #    : out stored -> router_info
+    #    :return:
+    #    '''
+    #    #Model
+    #    self.router.model = self.send_router_command('cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
+    #    #MAC
+    #    self.router.mac = self.send_router_command('uci show network.client.macaddr').split('=')[1][:-4]
+    #    #SSID
+    #    self.router.ssid = self.send_router_command('uci show wireless.client_radio0.ssid').split('=')[1][:-4]
 
     def exit(self):
         print("Exit ...")

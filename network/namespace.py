@@ -1,11 +1,7 @@
-from subprocess import Popen, PIPE, STDOUT
 from pyroute2.netns.nslink import NetNS
-from pyroute2.netns.process.proxy import NSPopen
 from pyroute2.ipdb import IPDB
 from pyroute2 import netns
-import sys, time
 import re
-import socket, struct, fcntl
 
 class Namespace:
     def __init__(self, nsp_name, vlan_iface_name, ipdb):
