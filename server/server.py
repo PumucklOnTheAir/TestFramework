@@ -49,8 +49,7 @@ class Server(ServerProxy):
         :param test_name: The name of the test to execute
         :return: True if start was successful
         """
-
-        #_runningTests.add(Thread.start(test, router))
+        # runningTests.add(Thread.start(test, router))
         pass
 
     @classmethod
@@ -78,19 +77,22 @@ class Server(ServerProxy):
         :return: List of reports
         """
         return cls._reports
+
     @classmethod
     def get_tests(cls) -> []:
         """
         :return: List of available tests on the server
         """
-        pass # TODO get available test from config
+        # TODO get available test from config
+        pass
 
     @classmethod
     def get_firmwares(cls) -> []:
         """
         :return: List of known firmwares
         """
-        pass # TODO vllt vom config?
+        # TODO vllt vom config?
+        pass
 
 if __name__ == "__main__":
     # execute only if run as a script
