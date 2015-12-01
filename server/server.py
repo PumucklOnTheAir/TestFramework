@@ -2,6 +2,7 @@ from server.serverproxy import ServerProxy
 from server.ipc import IPC
 from server.router import Router
 from config.ConfigManager import ConfigManager
+from typing import List
 
 
 class Server(ServerProxy):
@@ -67,7 +68,7 @@ class Server(ServerProxy):
         pass
 
     @classmethod
-    def get_routers(cls) -> []:
+    def get_routers(cls) -> List[Router]:
         """
         :return: List of known routers. List is a copy of the original list.
         """
