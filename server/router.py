@@ -59,7 +59,7 @@ class Router(ProxyObject):
         Used VLAN name from server for this router
         :return:
         """
-        return self._vlan_iface_id
+        return self._vlan_iface_name
 
     @property
     def ip_mask(self) -> int:

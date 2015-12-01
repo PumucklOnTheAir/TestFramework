@@ -116,11 +116,7 @@ def setup_network():
     if x.lower() == "y":
         print("Building network...")
     if x.lower() == "n":
-        n = input("Edit network configuration? (y/n): ")
-        if n.lower() == "y":
-            print("//open text editor to edit config")
-        else:
-            print("return....")
+        print("Abort.")
 
 
 def check_status():
@@ -142,8 +138,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-s", "--status", help="return status of Routers",
                         action="store_true")
-    parser.add_argument("-r", "--runtest", nargs='?', const=[None, None], default=[0, 0], action="store",
-                        help="run selected test, -r [RouterID] [TestID]")
+    # parser.add_argument("-r", "--runtest", nargs=2, default=[0, 0], action="store",
+                        # help="run selected test, -r [RouterID] [TestID]")
     parser.add_argument("-t", "--tests", help="return currently running tests",
                         action="store_true")
     parser.add_argument("--setup", help="setup the network",
@@ -155,18 +151,19 @@ def main():
     if args.status:
         """return status of routers"""
         routers = server_proxy.get_routers()
-        headers = ["Name", "VLAN Name", "VLAN ID", "IP", "WLan Modus", "MAC"]
+        headers = ["VLAN Name", "VLAN ID", "IP", "WLan Modus", "MAC"]
         string_list = []
         for i in range(len(routers)):
-            string_list.append(["Router " + str(i + 1), routers[i].vlan_name, routers[i].vlan_id,
+            string_list.append([routers[i].vlan_name, routers[i].vlan_id,
                                 routers[i].ip + "/" + str(routers[i].ip_mask), routers[i].wlan_mode,
                                 routers[i].mac])
         util.print_status(string_list, headers)
 
-    if args.runtest != [None, None]:
+    '''if args.runtest:
         """runs test selection menu"""
-        #open_test_selection()
+        open_test_selection()
         print(args.runtest)
+        server_proxy.start_test(args.runtest[0], args.runtest[1])'''
 
     if args.tests:
         """return running tests"""
@@ -188,7 +185,7 @@ def main():
 
 class DummyServer(ServerProxy):
     def start_test(self, router_id, test_id):
-        print("Test %(t) auf Router %(r) gestartet" % {"t": str(test_id), "r": str(test_id)})
+        print("Test {1} auf Router {0} gestartet".format(router_id, test_id))
         pass
 
     def get_running_tests(self):
@@ -197,10 +194,10 @@ class DummyServer(ServerProxy):
         pass
 
     def get_routers(self):
-        router1 = Router("VLAN1", 1, "0.0.0.0", 24, "usr", "pw")
-        router2 = Router("VLAN2", 1, "0.0.0.0", 24, "usr", "pw")
+        router1 = Router("VLAN5", 1, "0.0.0.0", 24, "usr", "pw")
+        router2 = Router("VLAN11", 1, "0.0.0.0", 24, "usr", "pw")
         router3 = Router("VLAN3", 1, "0.0.0.0", 24, "usr", "pw")
-        router4 = Router("VLAN4", 1, "0.0.0.0", 24, "usr", "pw")
+        router4 = Router("VLAN22", 1, "0.0.0.0", 24, "usr", "pw")
         routers = [router1, router2, router3, router4]
         return routers
         pass
