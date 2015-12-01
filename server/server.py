@@ -5,6 +5,12 @@ from config.ConfigManager import ConfigManager
 
 
 class Server(ServerProxy):
+    """" The great runtime server for all tests and more.
+    This static class with class methods will be usually run as deamon on the main server.
+    It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
+    The webserver and cli instances are connecting with this class
+    and using his inherit public methods of ServerProxy.
+    """""
     DEBUG = False
     CONFIG_PATH = "../config"
     _ipc_server = IPC()
@@ -15,7 +21,12 @@ class Server(ServerProxy):
     _reports = []
 
     @classmethod
-    def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH):
+    def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH) -> None:
+        """
+        Starts the runtime server with all components
+        :param debug_mode: Sets the log and print level
+        :param config_path: Path to an alternative config directory
+        """
         assert isinstance(debug_mode, bool)
         cls.DEBUG = debug_mode
 
@@ -38,7 +49,10 @@ class Server(ServerProxy):
         assert len(cls._reports) == 0
 
     @classmethod
-    def stop(cls):
+    def stop(cls) -> None:
+        """
+        Stops the server, all running tests and closes all connections.
+        """
         cls._ipc_server.shutdown()
         pass
 
