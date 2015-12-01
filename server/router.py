@@ -12,12 +12,9 @@ class Mode(Enum):
 
 class Router(ProxyObject):
 
-<<<<<<< HEAD
-    def __init__(self, vlan_name: str, vlan_id: int, ip: str, ip_mask: int, usr_name: str, usr_password: str):
-=======
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
                  usr_password: str):
->>>>>>> master
+
         ProxyObject.__init__(self)
 
         self._ip = None

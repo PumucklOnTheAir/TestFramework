@@ -7,14 +7,14 @@ import socket, struct, fcntl
 
 class Vlan:
 
-    def __init__(self, link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask):
+    def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str, vlan_iface_ip_mask: int):
         self.vlan_iface_name = vlan_iface_name
         self.vlan_iface_id = vlan_iface_id
         self.ipdb = IPDB()
         self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
 
-    def create_interface(self, link_iface_name='eth0', vlan_iface_name='Lan1', vlan_iface_id=10, vlan_iface_ip=None,
-                         vlan_iface_ip_mask=None):
+    def create_interface(self, link_iface_name: str='eth0', vlan_iface_name: str='Lan1', vlan_iface_id: int=10, vlan_iface_ip: str=None,
+                         vlan_iface_ip_mask: int=None):
         """
         :Desc : Creats a virtual interface on a existing interface (like eth0)
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)

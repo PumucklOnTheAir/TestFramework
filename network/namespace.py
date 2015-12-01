@@ -3,6 +3,7 @@ from pyroute2.ipdb import IPDB
 from pyroute2 import netns
 import re
 
+
 class Namespace:
     def __init__(self, nsp_name: str, vlan_iface_name: str, ipdb: IPDB):
         self.nsp_name = nsp_name

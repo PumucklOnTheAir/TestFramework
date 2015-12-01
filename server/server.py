@@ -3,6 +3,7 @@ from server.ipc import IPC
 from server.router import Router
 from config.ConfigManager import ConfigManager
 from typing import List
+from util.router_info import RouterInfo
 
 
 class Server(ServerProxy):
@@ -38,8 +39,7 @@ class Server(ServerProxy):
 
         cls.__load_configuration()
 
-        # TODO load more Router information
-        # -> (Router[])
+        RouterInfo.update(cls.get_routers())
 
     @classmethod
     def __load_configuration(cls):
