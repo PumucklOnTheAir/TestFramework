@@ -57,7 +57,7 @@ class Router(ProxyObject):
         Wozu ist ein VLAN Name gut?
         :return:
         """
-        return self._vlan_id
+        return self._vlan_name
 
     @property
     def ip_mask(self) -> int:
@@ -152,3 +152,4 @@ class Router(ProxyObject):
         """
         assert isinstance(value, Mode)
         self._wlan_mode = value
+

@@ -11,8 +11,16 @@ class CLIUtil:
         :param headers: list of headers
         """
 
-        # Generate list of column widths
-        width_list = [[len(str(x)) for x in row] for row in content]
+        # check for correct list lengths
+        for i in range(len(content)):
+            assert(len(content[i]) == len(headers))
+
+        # generate list of column widths, compare with strings in header
+        table = []
+        table.append(headers)
+        for i in range(len(content)):
+            table.append(content[i])
+        width_list = [[len(str(x)) for x in row] for row in table]
         width_list = list(map(max, zip(*width_list)))
 
         # print headers
@@ -28,14 +36,14 @@ class CLIUtil:
             else:
                 print("|" + "+".join("-{}-".format("".ljust(width_list[i], "-")) for i, x in enumerate(content[c])) + "|")
 
-    def print_status(self, routers):
+    def print_status(self, routers, headers):
         """Gibt Status der Router aus
         :param routers list of routers
+        :param headers list of headers
         """
 
         # Liste der Router nach Name sortieren
         routers.sort(key=lambda x: x[0])
-        headers = ("Name", "IP", "MAC", "VLAN", "Mode")
         self.print_action("routers in network: " + str(len(routers)))
         self.print_dynamic_table(routers, headers)
 
@@ -45,11 +53,11 @@ class CLIUtil:
 
     @staticmethod
     def print_warning(message):
-        print("\nWarning: " + message)
+        print(OutputColors.yellow + "Warning: " + message + OutputColors.clear)
 
     @staticmethod
     def print_error(message):
-        print("\nERROR: " + message)
+        print(OutputColors.red + "\nERROR: " + message + OutputColors.clear)
 
     @staticmethod
     def print_bullet(message):
@@ -57,10 +65,10 @@ class CLIUtil:
 
     @staticmethod
     def print_header():
-        print("\v\tFreifunk Testframework\v")
+        print("\v\t" + OutputColors.bold + "Freifunk Testframework\v" + OutputColors.clear)
 
     @staticmethod
-    def print_progress(self, router, tid, percentage):
+    def print_progress(router, tid, percentage):
         progress = int(percentage / 2)
         print("\t" + str(router) + ":  Test ID: " + str(tid) + "\t[" + "".join("{}".format("#") for i in range(progress)) +
               "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
@@ -70,3 +78,11 @@ class CLIUtil:
         progress = int(percentage / 2)
         return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" + "".join("{}".format("#") for i in range(progress)) +
                 "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
+
+
+class OutputColors:
+    green = '\033[92m'
+    yellow = '\033[93m'
+    red = '\033[91m'
+    clear = '\033[0m'
+    bold = '\033[1m'

@@ -1,5 +1,6 @@
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
+from server.router import Router
 from cli.cli_util import CLIUtil
 import argparse
 import time
@@ -34,7 +35,7 @@ def connect_to_server():
     server_proxy = ipc_client.get_server_proxy()
 
 
-def get_running_tests():
+"""def get_running_tests():
     tests = server_proxy.get_running_tests()
     if tests == ():
         util.print_action("No tests running")
@@ -42,6 +43,7 @@ def get_running_tests():
         print("\tCurrently running Tests:")
         for i in range(len(tests)):
             util.print_progress(tests[i][0], tests[i][1], tests[i][2])
+"""
 
 
 def update_running_test(test):
@@ -70,37 +72,42 @@ def get_test_progress():
         util.print_warning("Interrupted")
 
 
-def tests_progress():
+def get_tests_progress():
     tests = server_proxy.get_running_tests()
     working = True
+    lines = 0
     if tests == ():
         util.print_action("No running tests")
     else:
-        while working:
-            time.sleep(0.75)
-            working = False
-            print("\tCurrently running tests: ")
-            for i in range(len(tests)):
-                test = tests[i]
-                test = update_running_test(test)
-                print(util.return_progressbar(test[0], test[1], test[2]))
-                if test[2] < 100:
-                    working = True
-            lines = i + 3
-            # go back to first line
-            if working:
-                print("\033[" + str(lines) + "A")
-            else:
-                util.print_action("All tests completed")
+        try:
+            while working:
+                time.sleep(0.75)
+                working = False
+                print("\tCurrently running tests: ")
+                for i in range(len(tests)):
+                    test = tests[i]
+                    test = update_running_test(test)
+                    print(util.return_progressbar(test[0], test[1], test[2]))
+                    if test[2] < 100:
+                        working = True
+                lines = i + 3
+                # go back to first line
+                if working:
+                    print("\033[" + str(lines) + "A")
+                else:
+                    util.print_action("All tests completed")
+
+        except KeyboardInterrupt:
+            print("\n" * lines)
+            util.print_warning("Interrupted by user")
 
 
 def open_test_selection():
-    server_proxy.get_running_tests()
-    tests = [1, 2, 3, 4, 5, 6, 7, 8]
+    tests = server_proxy.get_tests()
     print("\tPlease select a test case or a set of tests to run.")
+    tests.sort(key=lambda x: x[0])
     for i in range(len(tests)):
-        util.print_bullet("Test #" + "%(n)03d" % {"n": tests[i]})
-    util.print_action("TODO")
+        util.print_bullet("Test #" + "%(n)03d\t" % {"n": tests[i][0]} + tests[i][1])
 
 
 def setup_network():
@@ -117,12 +124,8 @@ def setup_network():
 
 
 def check_status():
-    return_status = 1
-    if return_status == 1:
-        util.print_action("Status: connected")
-    else:
-        util.print_action("Status: not connected")
-        exit()
+    util.print_warning("This is your last warning!!")
+    util.print_error("Something terrible has happened D:")
 
 
 def main():
@@ -137,65 +140,68 @@ def main():
 
     # Argument Parsing
     parser = argparse.ArgumentParser()
-    parser.add_argument("-s", "--status", help="returns status of Routers",
+    parser.add_argument("-s", "--status", help="return status of Routers",
                         action="store_true")
-    parser.add_argument("-r", "--runtest", help="runs selected test",
-                        action="store_true")
-    parser.add_argument("-t", "--tests", help="returns currently running tests",
+    parser.add_argument("-r", "--runtest", nargs='?', const=[None, None], default=[0, 0], action="store",
+                        help="run selected test, -r [RouterID] [TestID]")
+    parser.add_argument("-t", "--tests", help="return currently running tests",
                         action="store_true")
     parser.add_argument("--setup", help="setup the network",
                         action="store_true")
-    parser.add_argument("-st", "--singletest", help="view progress of single test",
-                        action="store_true")
-    parser.add_argument("-l", "--testlist", help="view progress of all tests",
+    parser.add_argument("-l", "--testlist", help="list all available tests",
                         action="store_true")
     args = parser.parse_args()
 
     if args.status:
         """return status of routers"""
         routers = server_proxy.get_routers()
-        util.print_status(routers)
+        headers = ["Name", "VLAN Name", "VLAN ID", "IP", "WLan Modus", "MAC"]
+        string_list = []
+        for i in range(len(routers)):
+            string_list.append(["Router " + str(i + 1), routers[i].vlan_name, routers[i].vlan_id,
+                                routers[i].ip + "/" + str(routers[i].ip_mask), routers[i].wlan_mode,
+                                routers[i].mac])
+        util.print_status(string_list, headers)
 
-    if args.runtest:
+    if args.runtest != [None, None]:
         """runs test selection menu"""
-        open_test_selection()
+        #open_test_selection()
+        print(args.runtest)
 
     if args.tests:
         """return running tests"""
-        get_running_tests()
+        get_tests_progress()
 
     if args.setup:
         """sets up the network"""
         setup_network()
 
-    if args.singletest:
-        """view single test progress"""
-        get_test_progress()
-
     if args.testlist:
-        """view progress of all tests"""
-        tests_progress()
+        """list all tests"""
+        print("TODO: Testlist")
 
     util.print_action("Shutting down server...")
     ipc_server.shutdown()
     util.print_action("...done")
     util.print_action("Exiting")
 
-"""
+
 class DummyServer(ServerProxy):
     def start_test(self, router_id, test_id):
+        print("Test %(t) auf Router %(r) gestartet" % {"t": str(test_id), "r": str(test_id)})
         pass
 
     def get_running_tests(self):
-        tests = [["Router 1", 1, 98], ["Router 2", 2, 5], ["Router 3", 5, 50], ["Router 4", 10, 100]]
+        tests = [["Router 1", 1, 20], ["Router 2", 2, 5], ["Router 3", 5, 50], ["Router 4", 10, 100]]
         return tests
         pass
 
     def get_routers(self):
-        routers = [["Router 4", "0.0.0.0", "ff:ff:ff:ff:ff:ff", "VLAN1", 5],
-              ["Router 2", "0.0.0.0", "ff:ff:ff:ff:ff:ff", "VLAN2", "mode"],
-              ["Router 1", "0.0.0.0", "ff:ff:ff:ff:ff:ff", "VLAN3", "mode"],
-              ["Router 3", "0.0.0.0", "ff:ff:ff:ff:ff:ff", "VLAN4", "mode"]]
+        router1 = Router("VLAN1", 1, "0.0.0.0", 24, "usr", "pw")
+        router2 = Router("VLAN2", 1, "0.0.0.0", 24, "usr", "pw")
+        router3 = Router("VLAN3", 1, "0.0.0.0", 24, "usr", "pw")
+        router4 = Router("VLAN4", 1, "0.0.0.0", 24, "usr", "pw")
+        routers = [router1, router2, router3, router4]
         return routers
         pass
 
@@ -203,11 +209,14 @@ class DummyServer(ServerProxy):
         pass
 
     def get_tests(self) -> []:
+        tests = [[1, "Configuration Test"], [2, "Firmware Test"], [5, "Random Test"],
+                 [17, "Mesh Test"], [136, "Gateway Test"], [3, "Some Other Test"]]
+        return tests
         pass
 
     def get_firmwares(self) -> []:
         pass
-"""
+
 
 if __name__ == "__main__":
     main()
