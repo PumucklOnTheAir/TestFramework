@@ -13,7 +13,7 @@ class Mode(Enum):
 class Router(ProxyObject):
 
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
-                 usr_password:  str):
+                 usr_password: str):
         ProxyObject.__init__(self)
 
         self._ip = None
@@ -78,7 +78,7 @@ class Router(ProxyObject):
         :return:
         """
         return self._usr_name
-    
+
     @usr_name.setter
     def usr_name(self, value: str):
         """
