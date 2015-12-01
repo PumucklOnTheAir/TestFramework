@@ -1,12 +1,13 @@
 from threading import Thread
-from network.network_ctrl import Network_Ctrl
+from network.network_ctrl import NetworkCtrl
 from typing import List
+from server.router import Router
 
 
 class RouterInfo:
 
     @staticmethod
-    def load(routers: List[Router]):
+    def update(routers: List[Router]):
         """
         : Desc : starts a thread for each router and stores new information
         :param routers: list of router objects
@@ -31,7 +32,7 @@ class Worker(Thread):
         :return:
         """
         print("run new thread ...")
-        network_ctrl = Network_Ctrl(self.router)
+        network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_router()
         # Model
         self.router.model = network_ctrl.send_router_command(

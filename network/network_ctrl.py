@@ -1,6 +1,7 @@
 import paramiko
-from vlan import Vlan
-from namespace import Namespace
+from network.vlan import Vlan
+from network.namespace import Namespace
+from server.server import Router
 
 
 class NetworkCtrl:

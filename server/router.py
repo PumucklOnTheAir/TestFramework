@@ -14,6 +14,7 @@ class Router(ProxyObject):
 
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
                  usr_password: str):
+
         ProxyObject.__init__(self)
 
         self._ip = None
@@ -55,7 +56,7 @@ class Router(ProxyObject):
     @property
     def vlan_iface_name(self) -> str:
         """
-        Wozu ist ein VLAN Name gut?
+        Used VLAN name from server for this router
         :return:
         """
         return self._vlan_iface_id
