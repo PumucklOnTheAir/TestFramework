@@ -12,17 +12,22 @@ class Mode(Enum):
 
 class Router(ProxyObject):
 
+<<<<<<< HEAD
     def __init__(self, vlan_name: str, vlan_id: int, ip: str, ip_mask: int, usr_name: str, usr_password: str):
+=======
+    def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
+                 usr_password: str):
+>>>>>>> master
         ProxyObject.__init__(self)
 
         self._ip = None
         self._ip = ip
 
-        self._vlan_id = None
-        self._vlan_id = vlan_id
+        self._vlan_iface_id = None
+        self._vlan_iface_id = vlan_iface_id
 
-        self._vlan_name = None
-        self._vlan_name = vlan_name
+        self._vlan_iface_name = None
+        self._vlan_iface_name = vlan_iface_name
 
         self._ip_mask = None
         self._ip_mask = ip_mask
@@ -44,20 +49,20 @@ class Router(ProxyObject):
         return self._ip
 
     @property
-    def vlan_id(self) -> int:
+    def vlan_iface_id(self) -> int:
         """
         The VLAN ID from router
         :return:
         """
-        return self._vlan_id
+        return self._vlan_iface_id
 
     @property
-    def vlan_name(self) -> str:
+    def vlan_iface_name(self) -> str:
         """
         Used VLAN name from server for this router
         :return:
         """
-        return self._vlan_id
+        return self._vlan_iface_id
 
     @property
     def ip_mask(self) -> int:
