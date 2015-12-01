@@ -2,16 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8580d988-b832-46c6-8b53-81d93fdc4d77" name="Default" comment="">
-      <change type="DELETED" beforePath="$PROJECT_DIR$/cli/cli_util.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/network/Router/__init__.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/network/Router/router.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/network/Router/wlan_mode.py" afterPath="" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/network/test.py" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/network/namespace.py" afterPath="$PROJECT_DIR$/network/namespace.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/network/network_ctrl.py" afterPath="$PROJECT_DIR$/network/network_ctrl.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/network/vlan.py" afterPath="$PROJECT_DIR$/network/vlan.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/util/router_info.py" afterPath="$PROJECT_DIR$/util/router_info.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/server/router.py" afterPath="$PROJECT_DIR$/server/router.py" />
     </list>
     <ignored path="TestFramework.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -73,10 +64,22 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="vlan.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="router.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/server/router.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state vertical-scroll-proportion="0.59210527">
+              <caret line="18" column="23" selection-start-line="18" selection-start-column="23" selection-end-line="18" selection-end-column="23" />
+              <folding>
+                <element signature="e#0#42#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="vlan.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/network/vlan.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="2.1381578">
+            <state vertical-scroll-proportion="0.0">
               <caret line="65" column="10" selection-start-line="65" selection-start-column="10" selection-end-line="65" selection-end-column="10" />
               <folding>
                 <element signature="e#0#34#0" expanded="true" />
@@ -108,11 +111,11 @@
         <option value="$PROJECT_DIR$/network/test.py" />
         <option value="$PROJECT_DIR$/requirements.txt" />
         <option value="$PROJECT_DIR$/network/Router/router.py" />
-        <option value="$PROJECT_DIR$/server/router.py" />
         <option value="$PROJECT_DIR$/network/network_ctrl.py" />
         <option value="$PROJECT_DIR$/network/namespace.py" />
         <option value="$PROJECT_DIR$/network/vlan.py" />
         <option value="$PROJECT_DIR$/util/router_info.py" />
+        <option value="$PROJECT_DIR$/server/router.py" />
       </list>
     </option>
   </component>
@@ -193,7 +196,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="network" />
+              <option name="myItemId" value="server" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -207,7 +210,7 @@
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
             <PATH_ELEMENT>
-              <option name="myItemId" value="cli" />
+              <option name="myItemId" value="network" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -484,7 +487,7 @@
     <servers />
   </component>
   <component name="ToolWindowManager">
-    <frame x="0" y="29" width="1024" height="571" extended-state="7" />
+    <frame x="0" y="29" width="1024" height="571" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -558,7 +561,7 @@
         <state vertical-scroll-proportion="0.0">
           <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
-            <element signature="e#0#42#0" expanded="false" />
+            <element signature="e#0#42#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -727,21 +730,21 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/server/router.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.46052632">
-          <caret line="14" column="36" selection-start-line="14" selection-start-column="36" selection-end-line="14" selection-end-column="36" />
-          <folding>
-            <element signature="e#0#42#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/requirements.txt">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="0.13157895">
           <caret line="4" column="8" selection-start-line="4" selection-start-column="8" selection-end-line="4" selection-end-column="8" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/network/vlan.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.0">
+          <caret line="65" column="10" selection-start-line="65" selection-start-column="10" selection-end-line="65" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#34#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
@@ -775,12 +778,20 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/network/vlan.py">
+    <entry file="file://$PROJECT_DIR$/server/proxyobject.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="2.1381578">
-          <caret line="65" column="10" selection-start-line="65" selection-start-column="10" selection-end-line="65" selection-end-column="10" />
+        <state vertical-scroll-proportion="0.0">
+          <caret line="0" column="0" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/server/router.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.59210527">
+          <caret line="18" column="23" selection-start-line="18" selection-start-column="23" selection-end-line="18" selection-end-column="23" />
           <folding>
-            <element signature="e#0#34#0" expanded="true" />
+            <element signature="e#0#42#0" expanded="true" />
           </folding>
         </state>
       </provider>
