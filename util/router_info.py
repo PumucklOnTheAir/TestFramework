@@ -1,11 +1,12 @@
 from threading import Thread
 from network.network_ctrl import Network_Ctrl
+from typing import List
 
 
 class RouterInfo:
 
     @staticmethod
-    def load(routers):
+    def load(routers: List[Router]):
         """
         : Desc : starts a thread for each router and stores new information
         :param routers: list of router objects
@@ -19,7 +20,7 @@ class RouterInfo:
 
 class Worker(Thread):
 
-    def __init__(self, router):
+    def __init__(self, router: Router):
         Thread.__init__(self)
         self.router = router
         self.daemon = True
