@@ -2,16 +2,19 @@ import paramiko
 from vlan import Vlan
 from namespace import Namespace
 
-class Network_Ctrl:
+
+class NetworkCtrl:
+
     def __init__(self, router):
         print("Create Network Controller ...")
-        self.vlan = Vlan('eth0',router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None, vlan_iface_ip_mask=None)
+        self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None,
+                         vlan_iface_ip_mask=None)
         self.namespace = Namespace("nsp"+str(router.vlan_iface_id), self.vlan.vlan_iface_name, self.vlan.ipdb)
         self.ssh = paramiko.SSHClient()
         self.router = router
 
     def connect_with_router(self):
-        print("Connect with router - " +self.router.model + " ...")
+        print("Connect with router - " + self.router.model + " ...")
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         print("ip of router: " + str(self.router.ip))
         self.ssh.connect(self.router.ip, port=22, username=self.router.usr_name, password=self.router.usr_password)
@@ -23,25 +26,9 @@ class Network_Ctrl:
             output = stdout.readlines()
             return str(output)
         except Exception as e:
-            print("[-] Couldn't send the command : " + command + ") to the router(" + self.router.ip + ")");
+            print("[-] Couldn't send the command : " + command + ") to the router(" + self.router.ip + ")")
             print(str(e))
-
-
-    #def configure_router(self):
-    #    '''
-    #    : out stored -> router_info
-    #    :return:
-    #    '''
-    #    #Model
-    #    self.router.model = self.send_router_command('cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
-    #    #MAC
-    #    self.router.mac = self.send_router_command('uci show network.client.macaddr').split('=')[1][:-4]
-    #    #SSID
-    #    self.router.ssid = self.send_router_command('uci show wireless.client_radio0.ssid').split('=')[1][:-4]
 
     def exit(self):
         print("Exit ...")
         self.namespace.delete_interface()
-        #self.vn.close_network(namespaces=True)
-
-
