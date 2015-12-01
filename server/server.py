@@ -3,7 +3,7 @@ from server.ipc import IPC
 from server.router import Router
 from config.ConfigManager import ConfigManager
 from typing import List
-import time
+
 
 class Server(ServerProxy):
     """" The great runtime server for all tests and more.
@@ -13,6 +13,7 @@ class Server(ServerProxy):
     and using his inherit public methods of ServerProxy.
     """""
     DEBUG = False
+    VLAN = True
     CONFIG_PATH = "../config"
     _ipc_server = IPC()
 
@@ -22,11 +23,12 @@ class Server(ServerProxy):
     _reports = []
 
     @classmethod
-    def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH) -> None:
+    def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH, vlan_activate: bool=True) -> None:
         """
         Starts the runtime server with all components
         :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
+        :param vlan_activate: Activates/Deactivates VLANs
         """
         assert isinstance(debug_mode, bool)
         cls.DEBUG = debug_mode
@@ -34,10 +36,13 @@ class Server(ServerProxy):
         assert isinstance(config_path, str)
         cls.CONFIG_PATH = config_path
 
+        cls.VLAN = vlan_activate
+
         cls.__load_configuration()
 
-        # TODO load more Router information
-        # -> (Router[])
+        if cls.VLAN:
+            from util.router_info import RouterInfo
+            RouterInfo.update(cls.get_routers())
 
         print("Runtime Server started")
 
