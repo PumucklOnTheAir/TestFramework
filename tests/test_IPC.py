@@ -2,6 +2,7 @@ from unittest import TestCase
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
 from server.proxyobject import ProxyObject
+from multiprocessing.managers import BaseProxy
 import time
 
 
@@ -19,7 +20,8 @@ class TestIPC(TestCase):
         ipc_client.connect()
         server_proxy = ipc_client.get_server_proxy()
 
-        #assert issubclass(server_proxy, ServerProxy) it's not - it is a proxy model
+        assert not issubclass(server_proxy, ServerProxy)
+        assert isinstance(server_proxy, BaseProxy)
 
         routers = server_proxy.get_routers()
         assert routers[0] == "lol"
@@ -49,23 +51,29 @@ class TestIPC(TestCase):
 
 
 class DummyServer(ServerProxy):
-    def start_test(self, router_id, test_id):
+    @classmethod
+    def start_test(cls, router_id, test_id):
         pass
 
-    def get_running_tests(self) -> []:
+    @classmethod
+    def get_running_tests(cls) -> []:
         pass
 
-    def get_routers(self) -> []:
+    @classmethod
+    def get_routers(cls) -> []:
         return ["lol"]
 
-    def get_reports(self) -> []:
+    @classmethod
+    def get_reports(cls) -> []:
         d = DummyObject("test")
         return [id(d), d, d.get_id()]
 
-    def get_tests(self) -> []:
+    @classmethod
+    def get_tests(cls) -> []:
         pass
 
-    def get_firmwares(self) -> []:
+    @classmethod
+    def get_firmwares(cls) -> []:
         pass
 
 

@@ -1,3 +1,6 @@
 pyflakes
 pep8
 pyyaml
+typing
+paramiko
+pyroute2
