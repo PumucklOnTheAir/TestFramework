@@ -3,13 +3,13 @@ from server.ipc import IPC
 from server.router import Router
 from config.ConfigManager import ConfigManager
 from typing import List
-
+import time
 
 class Server(ServerProxy):
     """" The great runtime server for all tests and more.
-    This static class with class methods will be usually run as deamon on the main server.
+    This static class with class methods will be usually run as daemon on the main server.
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
-    The webserver and cli instances are connecting with this class
+    The web server and cli instances are connecting with this class
     and using his inherit public methods of ServerProxy.
     """""
     DEBUG = False
@@ -34,12 +34,14 @@ class Server(ServerProxy):
         assert isinstance(config_path, str)
         cls.CONFIG_PATH = config_path
 
-        cls._ipc_server.start_ipc_server(cls)
-
         cls.__load_configuration()
 
         # TODO load more Router information
         # -> (Router[])
+
+        print("Runtime Server started")
+
+        #cls._ipc_server.start_ipc_server(cls, True)
 
     @classmethod
     def __load_configuration(cls):

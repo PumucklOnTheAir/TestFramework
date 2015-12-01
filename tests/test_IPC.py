@@ -45,6 +45,10 @@ class TestIPC(TestCase):
         ipc_server.shutdown()
         pass
 
+class DummyObject(ProxyObject):
+    def __init__(self, input_text):
+        ProxyObject.__init__(self)
+        self.text = input_text
 
 class DummyServer(ServerProxy):
     @classmethod
@@ -73,7 +77,4 @@ class DummyServer(ServerProxy):
         pass
 
 
-class DummyObject(ProxyObject):
-    def __init__(self, input_text):
-        ProxyObject.__init__(self)
-        self.text = input_text
+
