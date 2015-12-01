@@ -1,9 +1,6 @@
 pyflakes
 pep8
 pyyaml
-<<<<<<< HEAD
 typing
-=======
 paramiko
 pyroute2
->>>>>>> master
