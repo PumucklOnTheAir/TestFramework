@@ -5,7 +5,7 @@ from namespace import Namespace
 
 class NetworkCtrl:
 
-    def __init__(self, router):
+    def __init__(self, router: Router):
         print("Create Network Controller ...")
         self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None,
                          vlan_iface_ip_mask=None)
