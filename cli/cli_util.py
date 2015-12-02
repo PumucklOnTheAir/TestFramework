@@ -16,8 +16,7 @@ class CLIUtil:
             assert(len(content[i]) == len(headers))
 
         # generate list of column widths, compare with strings in header
-        table = []
-        table.append(headers)
+        table = [headers]
         for i in range(len(content)):
             table.append(content[i])
         width_list = [[len(str(x)) for x in row] for row in table]
@@ -30,11 +29,14 @@ class CLIUtil:
 
         # print content
         for c in range(len(content)):
-            print("|" + "|".join(" {} ".format(str(x).ljust(width_list[i])) for i, x in enumerate(content[c])) + "|")
+            print("|" + "|".join(" {} ".format(str(x).ljust(width_list[i]))
+                                 for i, x in enumerate(content[c])) + "|")
             if c == len(content) - 1:
-                print("+" + "-".join("-{}-".format("".ljust(width_list[i], "-")) for i, x in enumerate(content[c])) + "+")
+                print("+" + "-".join("-{}-".format("".ljust(width_list[i], "-"))
+                                     for i, x in enumerate(content[c])) + "+")
             else:
-                print("|" + "+".join("-{}-".format("".ljust(width_list[i], "-")) for i, x in enumerate(content[c])) + "|")
+                print("|" + "+".join("-{}-".format("".ljust(width_list[i], "-"))
+                                     for i, x in enumerate(content[c])) + "|")
 
     def print_status(self, routers, headers):
         """Gibt Status der Router aus
@@ -70,14 +72,34 @@ class CLIUtil:
     @staticmethod
     def print_progress(router, tid, percentage):
         progress = int(percentage / 2)
-        print("\t" + str(router) + ":  Test ID: " + str(tid) + "\t[" + "".join("{}".format("#") for i in range(progress)) +
+        print("\t" + str(router) + ":  Test ID: " + str(tid) + "\t[" +
+              "".join("{}".format("#") for i in range(progress)) +
               "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
     @staticmethod
     def return_progressbar(router,  tid, percentage):
         progress = int(percentage / 2)
-        return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" + "".join("{}".format("#") for i in range(progress)) +
+        return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" +
+                "".join("{}".format("#") for i in range(progress)) +
                 "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
+
+    @staticmethod
+    def print_list(content):
+        # generate list of row widths
+        width_list = [[len(str(x)) for x in row] for row in content]
+        width_list = list(map(max, zip(*width_list)))
+
+        # sort content by the first row
+        content.sort(key=lambda x: x[0])
+
+        # print list
+        line = "+" + "-".join("-{}-".format("-".ljust(width_list[i], "-"))
+                              for i, x in enumerate(content[0])) + "+"
+        print(line)
+        for c in range(len(content)):
+            print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
+                                 for i, x in enumerate(content[c])))
+        print(line)
 
 
 class OutputColors:
