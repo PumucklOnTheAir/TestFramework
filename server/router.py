@@ -34,7 +34,6 @@ class Router(ProxyObject):
         self._usr_password = usr_password
         self._mac = None
         self._wlan_mode = Mode.unknown
-        self._usr_name = None
         self._ssid = ""
 
     @property
