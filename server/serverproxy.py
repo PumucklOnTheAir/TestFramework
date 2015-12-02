@@ -1,4 +1,6 @@
 from abc import ABCMeta, abstractclassmethod
+from typing import List
+from server.router import Router
 
 
 class ServerProxy(metaclass=ABCMeta):
@@ -16,7 +18,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_routers(self) -> []:
+    def get_routers(self) -> List[Router]:
         """
         :return: List of known routers
         """
