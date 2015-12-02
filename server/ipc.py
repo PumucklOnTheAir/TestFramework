@@ -20,7 +20,7 @@ class IPC(BaseManager):
         assert issubclass(server, ServerProxy)
         self.register('get_server_proxy', server)
 
-        if serve_forever:
+        if not serve_forever:
             self.start()
         else:
             ser = self.get_server()
