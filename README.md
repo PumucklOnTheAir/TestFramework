@@ -1,4 +1,4 @@
-Build status auf dem Master: [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg)](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=masterork)
+Build status auf dem Master: [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg)](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)
 
 Tasks:
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=ready&title=Ready)](http://waffle.io/PumucklOnTheAir/TestFramework)
