@@ -30,11 +30,11 @@ class Router(ProxyObject):
         self._ip_mask = ip_mask
 
         # Optional values
+        self._model = None
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = None
         self._wlan_mode = Mode.unknown
-        self._usr_name = None
         self._ssid = ""
 
     @property
@@ -154,3 +154,19 @@ class Router(ProxyObject):
         """
         assert isinstance(value, Mode)
         self._wlan_mode = value
+
+    @property
+    def model(self) -> str:
+        """
+        The model and version of the router. Value could be outdated.
+        :return:
+        """
+        return self._model
+
+    @model.setter
+    def model(self, value: str):
+        """
+        :type value: str
+        """
+        assert isinstance(value, str)
+        self._model = value

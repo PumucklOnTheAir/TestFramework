@@ -16,7 +16,7 @@ class RouterInfo:
         for router in routers:
             worker = Worker(router)
             worker.start()
-            router = worker.join()
+            worker.join()
 
 
 class Worker(Thread):
@@ -47,4 +47,3 @@ class Worker(Thread):
 
     def join(self):
         Thread.join(self)
-        return self.router

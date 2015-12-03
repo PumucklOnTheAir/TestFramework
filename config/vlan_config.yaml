@@ -1,8 +1,0 @@
---- # default for the VLan's
-- {Router_Count: 1}
-- {default_Name: vlan}
-- {default_Start_Id: 1}
-- {default_IP: 192.168.1.215}
-- {default_Mask: 24}
-- {default_Username: admin}
-- {default_Password: admin}

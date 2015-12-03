@@ -11,7 +11,7 @@ def connect_to_server():
     """ Initiates connection to the IPC server by creating a client
     """
 
-    Server.start(True, "", False)
+    Server.start(True, "", True)
     if verbose:
         util.print_action("Setting up client...")
     time.sleep(1)
@@ -184,10 +184,10 @@ def main():
             if not routers:
                 util.print_bullet("No routers in network")
             else:
-                headers = ["Router ID", "VLAN Name", "VLAN ID", "IP", "WLan Modus", "MAC", "SSID", "User"]
+                headers = ["Router Model/Vers","VLAN Name", "VLAN ID", "IP", "WLan Modus", "MAC", "SSID", "User"]
                 string_list = []
                 for i in range(len(routers)):
-                    string_list.append([str(routers[i].get_id()),
+                    string_list.append([routers[i].model,
                                        routers[i].vlan_iface_name,
                                        routers[i].vlan_iface_id,
                                        routers[i].ip + "/" + str(routers[i].ip_mask),
