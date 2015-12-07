@@ -1,7 +1,8 @@
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
 from pyroute2 import netns
-import re
+import re, sys
+import traceback
 
 
 class Namespace:
@@ -10,28 +11,41 @@ class Namespace:
         self.id = id
         self.vlan_iface_name = vlan_iface_name
         self.ipdb = ipdb
-        self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
-        netns.setns(nsp_name)
-        self.encapsulate_interface()
+        self.ipdb_netns = None
+        try:
+            self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
+            netns.setns(nsp_name)
+            self.encapsulate_interface()
+        except Exception as e:
+            print("[-] Couldn't create namespace or encapsulate interface")
+            print(" "+str(e))
+            print("traceback: ")
+            for tb in traceback.format_tb(sys.exc_info()[2]):
+                print(tb)
+            self.remove()
 
-    def delete_interface(self):
+    def remove(self):
         """
-        : Desc : removes the virtual interface
+        : Desc : removes the virtual namespace and interface
         :return:
         """
         try:
-            self.ipdb_netns.interfaces[self.vlan_iface_name].nl.remove()
-            print("[+] " + self.vlan_iface_name + " successfully deleted")
+            if self.ipdb_netns is None:
+                netns.remove(self.nsp_name)
+            else:
+                self.ipdb_netns.interfaces[self.vlan_iface_name].nl.remove()
+                self.ipdb_netns.release()
+            print("[+] namespace " + self.nsp_name + " successfully deleted")
         except Exception as e:
-            print("[-] " + self.vlan_iface_name + " couldn't be deleted")
-            print("  " + str(e))
-        self.ipdb_netns.release()
-
+            if re.match("\[Errno 2\]*",str(e)):
+                print("[+] namespace " + self.nsp_name + " is already deleted")
+                return
+            print("[-] namespace " + self.nsp_name + " couldn't be deleted. Try 'ip netns delete <namespace_name>'")
     def encapsulate_interface(self):
         """
         :Desc : capture the assigned interface in a namespace
         """
-        print("encapsulate interface " + self.vlan_iface_name + " in namespace ...")
+        print("encapsulate interface(" + self.vlan_iface_name + ") in namespace ...")
         vlan_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])
         with self.ipdb.interfaces[self.vlan_iface_name] as vlan:
             vlan.net_ns_fd = self.nsp_name
@@ -39,7 +53,6 @@ class Namespace:
         with self.ipdb_netns.interfaces[self.vlan_iface_name] as vlan:
             vlan.add_ip(vlan_ip)  # '192.168.1.11/24'
             vlan.up()
-        print("netns: " + str(netns.listnetns()))
 
     def get_ipv4_from_dictionary(self, iface):
         """

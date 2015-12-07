@@ -9,8 +9,10 @@ import time
 class TestIPC(TestCase):
     def test_start_ipc_server(self):
 
+        dummy_runtime_server = DummyServer
+
         ipc_server = IPC()
-        ipc_server.start_ipc_server(DummyServer)
+        ipc_server.start_ipc_server(dummy_runtime_server)
 
         time.sleep(5)
 
@@ -27,8 +29,10 @@ class TestIPC(TestCase):
         ipc_server.shutdown()
 
     def test_proxy_object(self):
+        dummy_runtime_server = DummyServer
+
         ipc_server = IPC()
-        ipc_server.start_ipc_server(DummyServer)
+        ipc_server.start_ipc_server(dummy_runtime_server)
 
         time.sleep(5)
 

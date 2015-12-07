@@ -47,18 +47,21 @@ class Vlan:
         """
         try:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
+            self.ipdb.release()
             print("[+] " + self.vlan_iface_name + " successfully deleted")
+        except KeyError as ke:
+            print("[+] " + self.vlan_iface_name + " is already deleted")
+            return
         except Exception as e:
-            print("[-] " + self.vlan_iface_name + " couldn't be deleted")
-            print("  " + str(e))
-        self.ipdb.release()
+            print("[-] " + self.vlan_iface_name + " couldn't be deleted. Try 'ip link delete <vlan_name>'")
 
     def wait_for_ip_assignment(self, vlan_iface_name):
         """
         :Desc : Waits until the dhcp-client got an ip
         :param vlan_iface_name:
         """
-        print("Wait for ip assignment via dhcp...")
+        print("Wait for ip assignment via dhcp for iface " + vlan_iface_name + " ...")
+        time.sleep(2)
         while self.get_ip(vlan_iface_name) is None:
             Popen(["dhclient", vlan_iface_name], stdout=PIPE)
             time.sleep(0.5)

@@ -9,7 +9,7 @@ class ConfigManager:
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
-    VLAN_CONFIG_PATH = os.path.join(CONFIG_PATH, 'vlan_config.yaml')
+    VLAN_CONFIG_PATH = os.path.join(CONFIG_PATH, 'router_config.yaml')
     SERVER_CONFIG_PATH = os.path.join(CONFIG_PATH, 'server_config.yaml')
     TEST_CONFIG_PATH = os.path.join(CONFIG_PATH, 'test_config.yaml')
 

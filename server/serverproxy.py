@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractclassmethod
+from abc import ABCMeta, abstractmethod
 
 
 class ServerProxy(metaclass=ABCMeta):
@@ -6,7 +6,7 @@ class ServerProxy(metaclass=ABCMeta):
     Read the method description carefully! The behaviour may be different as expected.
     Normally the method will be execute remote on the server and the return value is given by copy and not reference!
     """""
-    @abstractclassmethod
+    @abstractmethod
     def start_test(self, router_name, test_name) -> bool:
         """Start an specific test on an router
         :param router_name: The name of the router on which the test will run
@@ -15,35 +15,35 @@ class ServerProxy(metaclass=ABCMeta):
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def get_routers(self) -> []:
         """
         :return: List of known routers
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def get_running_tests(self) -> []:
         """
         :return: List of running test on the test server
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def get_reports(self) -> []:
         """
         :return: List of reports
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def get_tests(self) -> []:
         """
         :return: List of available tests on the server
         """
         pass
 
-    @abstractclassmethod
+    @abstractmethod
     def get_firmwares(self) -> []:
         """
         :return: List of known firmwares

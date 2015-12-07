@@ -82,6 +82,7 @@ class Server(ServerProxy):
         for router in cls._routers:
             assert isinstance(router, Router)
 
+        # print("--------> " + str(len(cls._routers)))
         return cls._routers.copy()
 
     @classmethod
