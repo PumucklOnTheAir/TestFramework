@@ -50,7 +50,7 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         # (re)load the configuration only then no tests are running
         assert len(cls._runningTests) == 0
-        cls._routers = ConfigManager.get_vlan_list()
+        cls._routers = ConfigManager.get_router_auto_list()
         assert len(cls._routers) != 0
         assert len(cls._reports) == 0
 

@@ -13,12 +13,17 @@ class TestingYaml(unittest.TestCase):
     #     self.assertTrue(1, 1)
 
     def test_config(self):
-        data = ConfigManager.get_vlan_list(4)
+        data = ConfigManager.get_router_auto_list(4)
         print(data)
         self.assertTrue(1, 1)
 
     def test_config2(self):
-        data = ConfigManager.get_vlan_list()
+        data = ConfigManager.get_router_auto_list()
+        print(data)
+        self.assertTrue(1, 1)
+
+    def test_config3(self):
+        data = ConfigManager.get_router_manual_list()
         print(data)
         self.assertTrue(1, 1)
 
