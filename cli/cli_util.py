@@ -101,6 +101,12 @@ class CLIUtil:
                                  for i, x in enumerate(content[c])))
         print(line)
 
+    @staticmethod
+    def print_router(router_list):
+        print("------Detailed Router Info------")
+        for elem in router_list:
+            print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
+
 
 class OutputColors:
     green = '\033[92m'

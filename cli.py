@@ -11,7 +11,7 @@ def connect_to_server():
     """ Initiates connection to the IPC server by creating a client
     """
 
-    Server.start(True, "", True)
+    Server.start(True, "", False)
     if verbose:
         util.print_action("Setting up client...")
     time.sleep(1)
@@ -31,15 +31,36 @@ def connect_to_server():
     server_proxy = ipc_client.get_server_proxy()
 
 
-"""def get_running_tests():
-    tests = server_proxy.get_running_tests()
-    if tests == ():
-        util.print_action("No tests running")
+def print_routers(routers):
+    headers = ["Router Model/Vers", "VLAN ID", "VLAN Name", "Router Name", "IP", "MAC"]
+    string_list = []
+    for i in range(len(routers)):
+        string_list.append([routers[i].model,
+                            routers[i].vlan_iface_id,
+                            routers[i].vlan_iface_name,
+                            routers[i].wlan_mode,
+                            routers[i].ip + "/" + str(routers[i].ip_mask),
+                            routers[i].mac])
+    util.print_status(string_list, headers)
+
+
+def print_router_info(router_list, rid):
+    router = [elem for elem in router_list if str(elem.vlan_iface_id) == str(rid)]
+    if not router:
+        util.print_action("No such router found, check the list again")
     else:
-        print("\tCurrently running Tests:")
-        for i in range(len(tests)):
-            util.print_progress(tests[i][0], tests[i][1], tests[i][2])
-"""
+        router = router[0]
+        info = [["VLan ID", router.vlan_iface_id],
+                ["VLan Name", router.vlan_iface_name],
+                ["Model", router.model],
+                ["IP", router.ip + "/" + str(router.ip_mask)],
+                ["MAC", router.mac],
+                ["username", router.usr_name],
+                ["password", router.usr_password],
+                ["WLAN Modus", router.wlan_mode],
+                ["SSID", router.ssid]]
+
+        util.print_router(info)
 
 
 def update_running_test(test):
@@ -115,20 +136,6 @@ def list_all_tests():
     util.print_list(dummy_tests)
 
 
-def setup_network():
-    print("Current network settings:")
-    x = input("Setup network? (y/n): ")
-    if x.lower() == "y":
-        print("Building network...")
-    if x.lower() == "n":
-        print("Abort.")
-
-
-def check_status():
-    util.print_warning("This is your last warning!!")
-    util.print_error("Something terrible has happened D:")
-
-
 def main():
     """Freifunk TestFramework Command Line Interface
     """
@@ -184,22 +191,11 @@ def main():
             if not routers:
                 util.print_bullet("No routers in network")
             else:
-                headers = ["Router Model/Vers","VLAN Name", "VLAN ID", "IP", "WLan Modus", "MAC", "SSID", "User"]
-                string_list = []
-                for i in range(len(routers)):
-                    string_list.append([routers[i].model,
-                                       routers[i].vlan_iface_name,
-                                       routers[i].vlan_iface_id,
-                                       routers[i].ip + "/" + str(routers[i].ip_mask),
-                                       routers[i].wlan_mode,
-                                       routers[i].mac,
-                                       routers[i].ssid,
-                                       routers[i].usr_name])
-                util.print_status(string_list, headers)
+                print_routers(routers)
+
         elif args.router:
-            # routers = Server.get_routers()
-            # router = routers.sort()
-            print("Detailed Info on Router here....")
+            routers = Server.get_routers()
+            print_router_info(routers, args.router[0])
         elif args.test:
             get_tests_progress()
         elif args.list:
