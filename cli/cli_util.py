@@ -77,7 +77,7 @@ class CLIUtil:
               "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
     @staticmethod
-    def return_progressbar(router,  tid, percentage):
+    def return_progressbar(router, tid, percentage):
         progress = int(percentage / 2)
         return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" +
                 "".join("{}".format("#") for i in range(progress)) +
