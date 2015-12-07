@@ -50,14 +50,14 @@ def print_router_info(router_list, rid):
         util.print_action("No such router found, check the list again")
     else:
         router = router[0]
-        info = [["VLan ID", router.vlan_iface_id],
-                ["VLan Name", router.vlan_iface_name],
-                ["Model", router.model],
-                ["IP", router.ip + "/" + str(router.ip_mask)],
+        info = [["Model", router.model],
                 ["MAC", router.mac],
+                ["IP", router.ip + "/" + str(router.ip_mask)],
+                ["VLan Name", router.vlan_iface_name],
+                ["VLan ID", router.vlan_iface_id],
+                ["WLAN Modus", router.wlan_mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
-                ["WLAN Modus", router.wlan_mode],
                 ["SSID", router.ssid]]
 
         util.print_router(info)
