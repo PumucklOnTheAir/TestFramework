@@ -11,6 +11,8 @@ Tasks:
 ### Starten
 Server manuel starten mit 'python3 start_server.py' oder './start_server.py'
 
+Wen das FreifunkTestFramework schon als Service installiert ist, dann kann man über systemd es starten:
+'systemctl start fftserver'
 
 Tickets und Aufgabenplanung auf
 https://waffle.io/PumucklOnTheAir/TestFramework/join
