@@ -6,7 +6,6 @@ import time
 from threading import Timer
 
 
-
 class TestIPC(TestCase):
 
     ipc_server = None
@@ -52,6 +51,7 @@ class DummyObject(ProxyObject):
 
 class DummyServer(ServerProxy):
     testList = []
+    
     @classmethod
     def start_test(cls, router_id, test_id):
         DummyServer.testList.append("test2")

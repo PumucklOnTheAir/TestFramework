@@ -15,9 +15,8 @@ class NetworkCtrl:
         self.router = router
 
     def connect_with_router(self):
-        print("Connect with router - " + self.router.model + " ...")
+        print("Connect with router ...")
         self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        print("ip of router: " + str(self.router.ip))
         self.ssh.connect(self.router.ip, port=22, username=self.router.usr_name, password=self.router.usr_password)
 
     def send_router_command(self, command):
@@ -31,5 +30,6 @@ class NetworkCtrl:
             print(str(e))
 
     def exit(self):
-        print("Exit ...")
-        self.namespace.delete_interface()
+        print("Disconnect ...")
+        self.vlan.delete_interface()
+        self.namespace.remove()

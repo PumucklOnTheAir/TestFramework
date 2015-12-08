@@ -85,6 +85,7 @@ class Server(ServerProxy):
         # check if list is still valid
         for router in cls._routers:
             assert isinstance(router, Router)
+
         return cls._routers.copy()
 
     @classmethod
