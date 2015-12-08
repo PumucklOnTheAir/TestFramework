@@ -51,3 +51,10 @@ class ServerProxy(metaclass=ABCMeta):
         :return: List of known firmwares
         """
         pass
+
+    @abstractclassmethod
+    def stop(self) -> []:
+        """
+        :return: Shutdown the server
+        """
+        pass

@@ -2,33 +2,24 @@ from unittest import TestCase
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
 from server.proxyobject import ProxyObject
-from multiprocessing.managers import BaseProxy
 import time
+from threading import Timer
+
 
 
 class TestIPC(TestCase):
-    def test_start_ipc_server(self):
 
-        ipc_server = IPC()
-        ipc_server.start_ipc_server(DummyServer)
+    ipc_server = None
 
-        time.sleep(5)
-
-        ipc_client = IPC()
-        ipc_client.connect()
-        server_proxy = ipc_client.get_server_proxy()
-
-        assert not issubclass(server_proxy, ServerProxy)
-        assert isinstance(server_proxy, BaseProxy)
-
-        routers = server_proxy.get_routers()
-        assert routers[0] == "lol"
-
-        ipc_server.shutdown()
+    @staticmethod
+    def start_ipc_server():
+        TestIPC.ipc_server = IPC()
+        TestIPC.ipc_server.start_ipc_server(DummyServer, True)
 
     def test_proxy_object(self):
-        ipc_server = IPC()
-        ipc_server.start_ipc_server(DummyServer)
+        #  starts the IPC server in the same process
+        t = Timer(0.0, TestIPC.start_ipc_server)
+        t.start()  # but in other thread
 
         time.sleep(5)
 
@@ -42,8 +33,17 @@ class TestIPC(TestCase):
         assert rep[2] == rep[1].get_id()
         assert rep[1].text == "test"
 
-        ipc_server.shutdown()
-        pass
+        DummyServer.testList.append("test1")
+        server_proxy.start_test("", "")
+        #  print(DummyServer.testList)
+        testss = server_proxy.get_tests()
+        #  print(testss)
+        assert len(testss) == 3
+        assert testss[0] == "test1" # wäre der Server in einem anderen Prozess gestartet, wäre 'test1' nicht vorhanden
+        assert testss[1] == "test2"
+        assert testss[2] == "test3"
+
+        TestIPC.ipc_server.shutdown()
 
 class DummyObject(ProxyObject):
     def __init__(self, input_text):
@@ -51,8 +51,11 @@ class DummyObject(ProxyObject):
         self.text = input_text
 
 class DummyServer(ServerProxy):
+    testList = []
     @classmethod
     def start_test(cls, router_id, test_id):
+        DummyServer.testList.append("test2")
+        cls.testList.append("test3")
         pass
 
     @classmethod
@@ -70,10 +73,14 @@ class DummyServer(ServerProxy):
 
     @classmethod
     def get_tests(cls) -> []:
-        pass
+        return cls.testList
 
     @classmethod
     def get_firmwares(cls) -> []:
+        pass
+
+    @classmethod
+    def stop(cls) -> []:
         pass
 
 

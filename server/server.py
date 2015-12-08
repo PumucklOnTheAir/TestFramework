@@ -46,7 +46,9 @@ class Server(ServerProxy):
 
         print("Runtime Server started")
 
-        #cls._ipc_server.start_ipc_server(cls, True)
+        cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
+
+        # at this point all code will be ignored
 
     @classmethod
     def __load_configuration(cls):
@@ -83,7 +85,6 @@ class Server(ServerProxy):
         # check if list is still valid
         for router in cls._routers:
             assert isinstance(router, Router)
-
         return cls._routers.copy()
 
     @classmethod
