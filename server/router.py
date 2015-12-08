@@ -1,4 +1,4 @@
-from server.proxyobject import ProxyObject
+from .proxyobject import ProxyObject
 from enum import Enum
 
 

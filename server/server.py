@@ -1,15 +1,15 @@
-from server.serverproxy import ServerProxy
-from server.ipc import IPC
-from server.router import Router
+from .serverproxy import ServerProxy
+from .ipc import IPC
+from .router import Router
 from config.configmanager import ConfigManager
 from typing import List
 
 
 class Server(ServerProxy):
     """" The great runtime server for all tests and more.
-    This static class with class methods will be usually run as deamon on the main server.
+    This static class with class methods will be usually run as daemon on the main server.
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
-    The webserver and cli instances are connecting with this class
+    The web server and cli instances are connecting with this class
     and using his inherit public methods of ServerProxy.
     """""
     DEBUG = False
@@ -30,21 +30,23 @@ class Server(ServerProxy):
         :param config_path: Path to an alternative config directory
         :param vlan_activate: Activates/Deactivates VLANs
         """
-        assert isinstance(debug_mode, bool)
         cls.DEBUG = debug_mode
 
-        assert isinstance(config_path, str)
         cls.CONFIG_PATH = config_path
 
         cls.VLAN = vlan_activate
-
-        cls._ipc_server.start_ipc_server(cls)
 
         cls.__load_configuration()
 
         if cls.VLAN:
             from util.router_info import RouterInfo
             RouterInfo.update(cls.get_routers())
+
+        print("Runtime Server started")
+
+        cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
+
+        # at this point all code will be ignored
 
     @classmethod
     def __load_configuration(cls):
@@ -82,7 +84,6 @@ class Server(ServerProxy):
         for router in cls._routers:
             assert isinstance(router, Router)
 
-        # print("--------> " + str(len(cls._routers)))
         return cls._routers.copy()
 
     @classmethod
@@ -114,7 +115,3 @@ class Server(ServerProxy):
         """
         # TODO vllt vom config?
         pass
-
-if __name__ == "__main__":
-    # execute only if run as a script
-    Server.start()
