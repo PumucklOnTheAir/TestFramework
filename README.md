@@ -20,6 +20,10 @@ https://waffle.io/PumucklOnTheAir/TestFramework/join
 Organisatorisches auf 
 https://waffle.io/PumucklOnTheAir/Organisatorisches/join
 
+### Installieren
+./install.sh
+unter unix mit systemd
+
 
 
 _Konventionen, Vorgehensweise und Dokumentation im Wiki_
