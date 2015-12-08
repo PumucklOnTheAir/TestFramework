@@ -11,7 +11,7 @@ def connect_to_server():
     """ Initiates connection to the IPC server by creating a client
     """
 
-    Server.start(True, "", False)
+    Server.start(True, "", True)
     if verbose:
         util.print_action("Setting up client...")
     time.sleep(1)
