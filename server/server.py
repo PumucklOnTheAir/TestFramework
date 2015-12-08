@@ -1,7 +1,7 @@
-from server.serverproxy import ServerProxy
-from server.ipc import IPC
-from server.router import Router
-from config.configmanager import ConfigManager
+from .serverproxy import ServerProxy
+from .ipc import IPC
+from .router import Router
+from configmanager import ConfigManager
 from typing import List
 
 
