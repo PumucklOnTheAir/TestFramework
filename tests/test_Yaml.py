@@ -1,4 +1,4 @@
-from config.ConfigManager import *
+from config.configmanager import *
 import unittest
 
 
