@@ -1,5 +1,5 @@
 from multiprocessing.managers import BaseManager
-from server.serverproxy import ServerProxy
+from .serverproxy import ServerProxy
 
 
 class IPC(BaseManager):
