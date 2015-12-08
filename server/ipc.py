@@ -47,4 +47,3 @@ class IPC(BaseManager):
         else:
             self._server_object.stop_event.set()
             # purpose to include this function into the main python lib...
-
