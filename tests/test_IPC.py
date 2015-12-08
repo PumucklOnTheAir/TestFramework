@@ -36,7 +36,7 @@ class TestIPC(TestCase):
     def test_proxy_object(self):
 
         ipc_client = IPC()
-        ipc_client.connect()
+        ipc_client.connect(False)
         server_proxy = ipc_client.get_server_proxy()
 
         rep = server_proxy.get_reports()

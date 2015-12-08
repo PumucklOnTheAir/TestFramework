@@ -1,5 +1,6 @@
-from multiprocessing.managers import BaseManager
+from multiprocessing.managers import BaseManager, Server
 from server.serverproxy import ServerProxy
+
 
 class IPC(BaseManager):
     """Inter-process communication server and client.
@@ -26,6 +27,16 @@ class IPC(BaseManager):
             self._server_object.serve_forever()
         else:
             self.start()
+
+    def __prepare_client(self):
+        self.register('get_server_proxy')
+        pass
+
+    def connect(self, prepare_client=True):
+        if prepare_client:
+            self.__prepare_client()
+
+        super(IPC, self).connect()
 
     def get_server_proxy(self) -> ServerProxy:
         """Returns a proxy model for the test server"""

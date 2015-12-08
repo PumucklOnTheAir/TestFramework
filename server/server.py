@@ -30,10 +30,8 @@ class Server(ServerProxy):
         :param config_path: Path to an alternative config directory
         :param vlan_activate: Activates/Deactivates VLANs
         """
-        assert isinstance(debug_mode, bool)
         cls.DEBUG = debug_mode
 
-        assert isinstance(config_path, str)
         cls.CONFIG_PATH = config_path
 
         cls.VLAN = vlan_activate
