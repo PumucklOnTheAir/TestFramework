@@ -18,7 +18,7 @@ install:
   #- pip install .
   - pip install -r requirements.txt
 before_script:
-  - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util"
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util config"
   - python -m  pyflakes server
 
   #run tests
