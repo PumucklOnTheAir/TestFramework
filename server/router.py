@@ -13,7 +13,7 @@ class Mode(Enum):
 class Router(ProxyObject):
 
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
-                 usr_password: str):
+                 usr_password: str, power_socket: int):
 
         ProxyObject.__init__(self)
 
@@ -28,6 +28,9 @@ class Router(ProxyObject):
 
         self._ip_mask = None
         self._ip_mask = ip_mask
+
+        self._power_socket = None
+        self._power_socket = power_socket
 
         # Optional values
         self._model = None
@@ -170,3 +173,20 @@ class Router(ProxyObject):
         """
         assert isinstance(value, str)
         self._model = value
+
+    @property
+    def power_socket(self) -> int:
+        """
+        The power socket of the routers
+        :rtype: int
+        :return:
+        """
+        return self._power_socket
+
+    @power_socket.setter
+    def power_socket(self, value: int):
+        """
+        :type value: int
+        """
+        assert isinstance(value, int)
+        self._power_socket = value

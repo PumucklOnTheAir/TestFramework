@@ -41,7 +41,7 @@ class TestIPC(TestCase):
         server_proxy = ipc_client.get_server_proxy()
 
         rep = server_proxy.get_reports()
-        #print(rep)
+        #  print(rep)
         assert rep[0] == rep[1].get_id()
         assert rep[2] == rep[1].get_id()
         assert rep[1].text == "test"
