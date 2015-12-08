@@ -2,8 +2,6 @@ pyflakes
 pep8
 pyyaml
 typing
-daemon
-DaemonLite
 paramiko
 pyroute2
 
