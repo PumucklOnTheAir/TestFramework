@@ -1,4 +1,4 @@
-from multiprocessing.managers import BaseManager, Server
+from multiprocessing.managers import BaseManager
 from server.serverproxy import ServerProxy
 
 
