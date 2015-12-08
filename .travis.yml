@@ -27,5 +27,5 @@ script:
   - python -m unittest tests/test_IPC.py
   - python -m unittest tests/test_Router.py
   - python -m unittest tests/test_Server.py
-  - python -m unittest tests/test_Server_2.py
+ # - python -m unittest tests/test_Server_2.py
   - python -m unittest tests/test_Yaml.py
