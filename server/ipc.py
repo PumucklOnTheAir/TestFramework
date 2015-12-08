@@ -30,7 +30,6 @@ class IPC(BaseManager):
 
     def __prepare_client(self):
         self.register('get_server_proxy')
-        pass
 
     def connect(self, prepare_client=True):
         if prepare_client:

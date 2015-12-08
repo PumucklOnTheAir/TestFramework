@@ -12,7 +12,7 @@ class ServerTestCase2(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        #  starts the IPC server in other(!) process
+        #  starts the IPC server in another(!) process
         cls.proc = Process(target=ServerTestCase2.serverStartWithParams, args=()).start()
         time.sleep(2)
 
@@ -33,11 +33,6 @@ class ServerTestCase2(unittest.TestCase):
         self.server_proxy = self.ipc_client.get_server_proxy()
 
     def test_get_routers(self):
-        print(self.server_proxy)
-        print(repr(self.server_proxy))
-        print(self.ipc_client.get_server_proxy())
-
-
         routers = self.server_proxy.get_routers()
         assert len(routers) != 0
         assert isinstance(routers[0], Router)
