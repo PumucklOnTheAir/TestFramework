@@ -5,7 +5,7 @@ from server.router import Router
 
 class MyTestCase(unittest.TestCase):
     def setUp(self):
-        Server.start(True, "../tests/config", False)
+        Server.start(debug_mode=True, config_path="../tests/config", vlan_activate=False)
         pass
 
     def tearDown(self):

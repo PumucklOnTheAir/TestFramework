@@ -3,12 +3,30 @@ from server.ipc import IPC
 from server.serverproxy import ServerProxy
 from server.proxyobject import ProxyObject
 import time
-from threading import Timer
+from threading import Timer, Event
 
 
 class TestIPC(TestCase):
 
     ipc_server = None
+
+    @classmethod
+    def setUpClass(cls):
+        #  starts the IPC server in the same process
+        t = Timer(0.0, TestIPC.start_ipc_server)
+        t.start()  # but in other thread
+        time.sleep(2)
+
+    @classmethod
+    def tearDownClass(cls):
+        TestIPC.ipc_server.shutdown()
+
+    def test_exist_stop_event(self):
+        """ tests if the stop event still exist in the BaseManager
+        if not the stop methods has to be improved
+        """
+        print(TestIPC.ipc_server._server_object.stop_event)
+        assert isinstance(TestIPC.ipc_server._server_object.stop_event, Event)
 
     @staticmethod
     def start_ipc_server():
@@ -16,11 +34,6 @@ class TestIPC(TestCase):
         TestIPC.ipc_server.start_ipc_server(DummyServer, True)
 
     def test_proxy_object(self):
-        #  starts the IPC server in the same process
-        t = Timer(0.0, TestIPC.start_ipc_server)
-        t.start()  # but in other thread
-
-        time.sleep(5)
 
         ipc_client = IPC()
         ipc_client.connect()
@@ -42,12 +55,12 @@ class TestIPC(TestCase):
         assert testss[1] == "test2"
         assert testss[2] == "test3"
 
-        TestIPC.ipc_server.shutdown()
 
 class DummyObject(ProxyObject):
     def __init__(self, input_text):
         ProxyObject.__init__(self)
         self.text = input_text
+
 
 class DummyServer(ServerProxy):
     testList = []
