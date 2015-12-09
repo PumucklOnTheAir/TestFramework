@@ -141,7 +141,7 @@ def main():
     """
 
     # Argument Parsing
-    parser = argparse.ArgumentParser(description="\tA program to test the firmware on Freifunk routers")
+    parser = argparse.ArgumentParser(description="\tA program to test the firmwares on Freifunk routers")
     subparsers = parser.add_subparsers(help="help for subcommands", dest="mode")
 
     # Verbose mode

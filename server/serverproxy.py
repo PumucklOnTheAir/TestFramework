@@ -48,7 +48,7 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def get_firmwares(self) -> []:
         """
-        :return: List of known firmwares
+        :return: List of known firmware
         """
         pass
 
