@@ -9,10 +9,10 @@ Tasks:
 ## Bedienung
 
 ### Starten
-Server manuel starten mit 'python3 start_server.py' oder './start_server.py'
+Server manuel starten mit `python3 start_server.py` oder `./start_server.py`
 
 Wen das FreifunkTestFramework schon als Service installiert ist, dann kann man über systemd es starten:
-'systemctl start fftserver'
+`systemctl start fftserver`
 
 Tickets und Aufgabenplanung auf
 https://waffle.io/PumucklOnTheAir/TestFramework/join
@@ -21,7 +21,7 @@ Organisatorisches auf
 https://waffle.io/PumucklOnTheAir/Organisatorisches/join
 
 ### Installieren
-./install.sh
+`./install.sh`
 unter unix mit systemd
 
 
