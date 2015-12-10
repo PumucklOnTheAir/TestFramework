@@ -15,10 +15,10 @@ Wen das FreifunkTestFramework schon als Service installiert ist, dann kann man Ã
 `systemctl start fftserver`
 
 Tickets und Aufgabenplanung auf
-https://waffle.io/PumucklOnTheAir/TestFramework/join
+https://waffle.io/PumucklOnTheAir/TestFramework/
 
 Organisatorisches auf 
-https://waffle.io/PumucklOnTheAir/Organisatorisches/join
+https://waffle.io/PumucklOnTheAir/Organisatorisches/
 
 ### Installieren
 `./install.sh`
@@ -28,5 +28,5 @@ unter unix mit systemd
 
 _Konventionen, Vorgehensweise und Dokumentation im Wiki_
 
-![Class Diagram](http://plantuml.com/plantuml/svg/3SSx3i8m303Ggy05ufsD4xG3UsLSAx68dSeVSNrusxkBqQoJo-TjP5xn073yjYuvwbt1JikIBHijXRsqw3CtUmr-YiFc7Kq2Sxa43GvGZ6G7cXXnbCxZ5EoEsgv_VW00?lol11)
+![Class Diagram](http://plantuml.com/plantuml/svg/3SSx3i8m303Ggy05ufsD4xG3UsLSAx68dSeVSNrusxkBqQoJo-TjP5xn073yjYuvwbt1JikIBHijXRsqw3CtUmr-YiFc7Kq2Sxa43GvGZ6G7cXXnbCxZ5EoEsgv_VW00?lol12)
 
