@@ -1,5 +1,6 @@
 from .proxyobject import ProxyObject
 from enum import Enum
+from firmware.firmware import Firmware
 
 
 class Mode(Enum):
@@ -39,6 +40,8 @@ class Router(ProxyObject):
         self._mac = None
         self._wlan_mode = Mode.unknown
         self._ssid = ""
+        self._firmware = None
+        self._firmware_tmp = None
 
     @property
     def ip(self) -> str:
@@ -190,3 +193,44 @@ class Router(ProxyObject):
         """
         assert isinstance(value, int)
         self._power_socket = value
+
+    @property
+    def firmware(self) -> Firmware:
+        """
+        The firmware of the routers
+        :rtype: Firmware
+        :return:
+        """
+        return self._firmware
+
+    @firmware.setter
+    def firmware(self, value: Firmware):
+        """
+        :type value: Firmware
+        """
+        assert isinstance(value, Firmware)
+        self._firmware = value
+
+    @property
+    def firmware_tmp(self) -> Firmware:
+        """
+        The firmware int the directory /tmp/ of the routers
+        :rtype: int
+        :return:
+        """
+        return self._firmware_tmp
+
+    @firmware_tmp.setter
+    def firmware_tmp(self, value: Firmware):
+        """
+        :type value: Firmware
+        """
+        assert isinstance(value, Firmware)
+        self._firmware_tmp = value
+
+    def sysupgrade(self):
+        """
+        The Router has been flashed
+        :return:
+        """
+        self.firmware = self.firmware_tmp

@@ -1,5 +1,5 @@
 from enum import Enum
-
+import hashlib
 
 class ReleaseModel(Enum):
     stable = 1
@@ -32,3 +32,12 @@ class Firmware:
         self.update_type = update_type
         self.file = file
         self.url = url
+
+    def check_hash(self, hash: str) -> bool:
+        hasher = hashlib.sha512()
+        with open(self.file, 'rb') as afile:
+            buf = afile.read()
+            hasher.update(buf)
+        if hasher.hexdigest == hash:
+            return True
+        return False

@@ -3,6 +3,7 @@ import re
 import os
 import errno
 from firmware.firmware import Firmware, ReleaseModel, UpdateType
+from typing import List
 
 
 class FirmwareHandler:
@@ -40,7 +41,10 @@ class FirmwareHandler:
             if val == 1:
                 firmware = self._get_firmware_info_auto(update_type, router_model, freifunk_verein, firmware_version)
             elif val == 2:
-                firmware = self._get_firmware_info_manifest(update_type)
+                firmware, hash = self._get_firmware_info_manifest(update_type)
+                if not firmware.check_hash(hash):
+                    valid_download = False
+                    continue
             elif val == 3:
                 firmware = self._get_firmware_info_manually()
                 if not self._verify_release_model(firmware.release_model):
@@ -49,13 +53,14 @@ class FirmwareHandler:
             else:
                 valid_download = False
                 continue
-            valid_download = self._download_firmware(firmware.url, firmware.file)
+            valid_download = self._download_firmware(firmware.url, firmware.file, firmware.update_type)
         return firmware
 
 
     def _get_firmware_info_auto(self, update_type: UpdateType, router_model: str, freifunk_verein: str, firmware_version: str) -> Firmware:
         """
         Creates a firmware, with the url and the save-file.
+        The firmware url is automatically determined.
         :param update_type: factory, sysupgrade
         :param router_model: alike "TP-LINK TL-WR841N/ND v9"
         :param freifunk_verein: alike "ffda"
@@ -70,22 +75,24 @@ class FirmwareHandler:
         url = self.url + '/' + self.release_model.name + '/' + update_type.name + '/' + firmware_name
         return Firmware(firmware_name, firmware_version, freifunk_verein, self.release_model, update_type, file, url)
 
-    def _get_firmware_info_manifest(self, update_type: UpdateType) -> Firmware:
+    def _get_firmware_info_manifest(self, update_type: UpdateType):
         """
-        Creates a firmware, with the url and the save-file
+        Creates a firmware, with the url and the save-file.
+        The User can chose a firmware from the manifest.
         :param update_type: factory, sysupgrade
-        :return: Firmware
+        :return: Firmware, hash
         """
-        firmware_name = self._chose_firmware_from_manifest(update_type)
+        firmware_name, hash = self._chose_firmware_from_manifest(update_type)
         freifunk_verein = firmware_name.split('-')[1]
         firmware_version = firmware_name.split('-')[2]
         file = self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + update_type.name + '/' + firmware_name
         url = self.url + '/' + self.release_model.name + '/' + update_type.name + '/' + firmware_name
-        return Firmware(firmware_name, firmware_version, freifunk_verein, self.release_model, update_type, file, url)
+        return [Firmware(firmware_name, firmware_version, freifunk_verein, self.release_model, update_type, file, url), hash]
 
     def _get_firmware_info_manually(self) -> Firmware:
         """
         Creates a firmware, with the url and the save-file.
+        The User can input a url, where the firmware should downloaded from.
         :return: Firmware
         """
         url = input("URL of the firmware: ")
@@ -113,14 +120,15 @@ class FirmwareHandler:
             return False
         return True
 
-    def _download_firmware(self, url: str, file: str):
+    def _download_firmware(self, url: str, file: str, update_type: UpdateType):
         """
         Downloads the firmware from the url and saves it into the given file
         :param url:
         :param file:
+        :param update_type:
         :return:
         """
-        self._create_path(self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + UpdateType.factory.name)
+        self._create_path(self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + update_type.name)
         try:
             print("Download " + url + " ...")
             # Download the file from `url` and save it locally under `file_name`:
@@ -151,11 +159,11 @@ class FirmwareHandler:
             print(" "+str(e))
             return ""
 
-    def _chose_firmware_from_manifest(self, update_type: UpdateType) -> str:
+    def _chose_firmware_from_manifest(self, update_type: UpdateType):
         """
         Gives the possibility to select a firmware from a list of firmwares.
         :param update_type: factory, sysupgrade
-        :return: firmware_name
+        :return: firmware_name, hash of the firmware
         """
         firmwares = self._get_firmwares_from_manifest()
         print("Manifest ------------------------------------")
@@ -169,7 +177,9 @@ class FirmwareHandler:
             val = 24 # TODO int(input("Select a number: "))
             valid_input = True if (val >= 0) and (val < len(firmwares)) else False
         tmp = "-sysupgrade.bin" if (update_type.name == "sysupgrade") else ".bin"
-        return "gluon" + firmwares[val].split("gluon")[1].split("-sysupgrade")[0]+tmp
+        firmware_name = "gluon" + firmwares[val].split("gluon")[1].split("-sysupgrade")[0]+tmp
+        hash = firmwares[val].split(' ')[3]
+        return [firmware_name, hash]
 
     def _get_firmwares_from_manifest(self) -> str:
         """
@@ -200,7 +210,7 @@ class FirmwareHandler:
                     return True
         return False
 
-    def _parse_router_model(self, router_model: str) -> str:
+    def _parse_router_model(self, router_model: str):
         """
         Transform a str like "TP-LINK TL-WR841N/ND v9" into "tp-link-tl-wr841n-nd-v9"
         :param router_model:

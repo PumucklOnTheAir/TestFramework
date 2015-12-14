@@ -16,8 +16,13 @@ class NetworkCtrl:
 
     def connect_with_router(self):
         print("Connect with router ...")
-        self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        self.ssh.connect(self.router.ip, port=22, username=self.router.usr_name, password=self.router.usr_password)
+        try:
+            self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh.connect(self.router.ip, port=22, username=self.router.usr_name, password=self.router.usr_password)
+            print("[+] Successfully connected with router(" + self.router.mac + ")")
+        except Exception as e:
+            print("[-] Couldn't connect to the router(" + self.router.mac + ")")
+            print(str(e))
 
     def send_router_command(self, command):
         try:
@@ -27,6 +32,16 @@ class NetworkCtrl:
             return str(output)
         except Exception as e:
             print("[-] Couldn't send the command : " + command + ") to the router(" + self.router.ip + ")")
+            print(str(e))
+
+    def send_data(self, local_file: str, remote_file: str):
+        try:
+            sftp = self.ssh.open_sftp()
+            sftp.put(local_file, remote_file)
+            sftp.close()
+            print("[+] Successfully send " + local_file + " to " + self.router.usr_name + "@" + self.router.ip + ":" + remote_file)
+        except Exception as e:
+            print("[-] Couldn't send " + local_file + " to " + self.router.usr_name + "@" + self.router.ip + ":" + remote_file)
             print(str(e))
 
     def exit(self):

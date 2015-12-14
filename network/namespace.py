@@ -41,6 +41,7 @@ class Namespace:
                 print("[+] namespace " + self.nsp_name + " is already deleted")
                 return
             print("[-] namespace " + self.nsp_name + " couldn't be deleted. Try 'ip netns delete <namespace_name>'")
+
     def encapsulate_interface(self):
         """
         :Desc : capture the assigned interface in a namespace

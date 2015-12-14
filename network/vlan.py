@@ -62,9 +62,10 @@ class Vlan:
         """
         print("Wait for ip assignment via dhcp for iface " + vlan_iface_name + " ...")
         time.sleep(2)
-        while self.get_ip(vlan_iface_name) is None:
+        if not self.get_ip(vlan_iface_name):
             Popen(["dhclient", vlan_iface_name], stdout=PIPE)
-            time.sleep(0.5)
+            while self.get_ip(vlan_iface_name) is None:
+                time.sleep(0.5)
 
     def get_ip(self, vlan_iface_name ='eth0'):
         """
