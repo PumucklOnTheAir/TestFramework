@@ -13,9 +13,9 @@ class MyTestCase(unittest.TestCase):
         l1.info("Hello from l1 {0}".format(Logger()))
 
         Logger().info("Hello from Logger() {0}".format(Logger()))
+        Logger().debug("Debug from Logger() {0}".format(Logger()))
 
-        # .info('Hello')
-        self.assertEqual(True, True)
+        self.assertEqual(True, l is l1 is Logger())
 
 
 if __name__ == '__main__':

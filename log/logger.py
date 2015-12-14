@@ -25,6 +25,8 @@ class Logger(metaclass=Singleton):
         Instance of a logging.Logger object
         :return:
         """
+        if self._logger is None:
+            self.setup()
         return self._logger
 
     @property
