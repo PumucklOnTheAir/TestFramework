@@ -23,10 +23,13 @@ class Ubnt(PowerStrip):
         pass
 
     def up(self, port_id):
-        command = ""
+        command = "echo 1 > /dev/output" + str(port_id)
         ssh = self.connect()
         stdin, stdout, stderr = ssh.exec_command(command)
-        pass
+        ssh.close()
 
     def down(self, port_id):
-        pass
+        command = "echo 0 > /dev/output" + str(port_id)
+        ssh = self.connect()
+        stdin, stdout, stderr = ssh.exec_command(command)
+        ssh.close()
