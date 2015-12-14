@@ -1,7 +1,7 @@
 from .proxyobject import ProxyObject
 from enum import Enum
 from firmware.firmware import Firmware
-
+from network.network_iface import NetworkIface
 
 class Mode(Enum):
     master = 1
@@ -11,7 +11,7 @@ class Mode(Enum):
     unknown = 5
 
 
-class Router(ProxyObject):
+class Router(ProxyObject, NetworkIface):
 
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
                  usr_password: str, power_socket: int):
