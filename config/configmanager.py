@@ -1,6 +1,6 @@
 import yaml
 import io
-import logging
+from log.logger import Logger
 import os.path
 from server.router import *
 
@@ -18,31 +18,31 @@ class ConfigManager:
     def read_file(path: str = "") -> []:
         try:
             if path == "":
-                logging.error("Path is an empty string")
+                Logger().error("Path is an empty string")
                 return
             file_stream = io.open(path, "r", encoding="utf-8")
             output = yaml.safe_load(file_stream)
             file_stream.close()
             return output
         except IOError as ex:
-            logging.error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
+            Logger().error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
         except yaml.YAMLError as ex:
-            logging.error("Error at safe load the YAML-File\nError: {0}".format(ex))
+            Logger().error("Error at safe load the YAML-File\nError: {0}".format(ex))
 
     @staticmethod
     def write_file(data: str = "", path: str = "") -> None:
         try:
             if path == "":
-                logging.error("Path is an empty string")
+                Logger().error("Path is an empty string")
                 return
             file_stream = io.open(path, "w", encoding="utf-8")
             yaml.safe_dump(data, file_stream)
             file_stream.flush()
             file_stream.close()
         except IOError as ex:
-            logging.error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
+            Logger().error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
         except yaml.YAMLError as ex:
-            logging.error("Error at safe dump the YAML-File\nError: {0}".format(ex))
+            Logger().error("Error at safe dump the YAML-File\nError: {0}".format(ex))
 
     @staticmethod
     def get_router_auto_config() -> []:
@@ -53,7 +53,7 @@ class ConfigManager:
         output = ConfigManager.get_router_auto_config()
 
         if not len(output) == 8:
-            logging.error("List must be length of 8 but has a length of {0}".format(len(output)))
+            Logger().error("List must be length of 8 but has a length of {0}".format(len(output)))
             return
 
         try:
@@ -85,7 +85,7 @@ class ConfigManager:
             return router_list
 
         except Exception as ex:
-            logging.error("Error at building the list of Router's\nError: {0}".format(ex))
+            Logger().error("Error at building the list of Router's\nError: {0}".format(ex))
 
     @staticmethod
     def get_router_manual_config() -> []:
@@ -101,7 +101,7 @@ class ConfigManager:
             router_info = output[i]
 
             if not len(router_info) == 7:
-                logging.error("List must be length of 7 but has a length of {0}".format(len(output)))
+                Logger().error("List must be length of 7 but has a length of {0}".format(len(output)))
                 return
 
             try:
@@ -110,7 +110,7 @@ class ConfigManager:
                 router_list.append(v)
 
             except Exception as ex:
-                logging.error("Error at building the list of Router's\nError: {0}".format(ex))
+                Logger().error("Error at building the list of Router's\nError: {0}".format(ex))
 
         return router_list
 
