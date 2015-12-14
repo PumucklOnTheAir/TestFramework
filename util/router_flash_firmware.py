@@ -6,10 +6,17 @@ from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware import Firmware, ReleaseModel, UpdateType
 from log.logger import Logger
 
+
 class RouterFlashFirmware:
 
     @staticmethod
     def configuration(routers: List[Router], firmware_config):
+        """
+        Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
+        :param routers:
+        :param firmware_config:
+        :return:
+        """
         for router in routers:
             worker = ConfigurationWorker(router, firmware_config)
             worker.start()
@@ -17,6 +24,14 @@ class RouterFlashFirmware:
 
     @staticmethod
     def sysupgrade(routers: List[Router], n: bool):
+        """
+        In a new thread.
+        Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
+        and does a Sysupgrade.
+        :param routers:
+        :param n:
+        :return:
+        """
         for router in routers:
             worker = SysupgradeWorker(router, n)
             worker.start()
@@ -27,6 +42,7 @@ class ConfigurationWorker(Thread):
 
     def __init__(self, router: Router, firmware_config):
         Thread.__init__(self)
+        Logger().info("Configure Firmware for Router(" + router.mac + ") ...")
         self.router = router
         self.firmware_handler = FirmwareHandler(firmware_config[1], firmware_config[0])
         self.firmware = self.firmware_handler.get_firmware(firmware_config[2], router.model, firmware_config[3],
@@ -35,10 +51,10 @@ class ConfigurationWorker(Thread):
 
     def run(self):
         """
-        : Desc : runs new thread and gets the information from the router via ssh
+        Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
         :return:
         """
-        Logger().info("Copy firmware to router ...")
+        Logger().info("Copy Firmware to Router(" + self.router.mac + ") ...")
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_router()
         network_ctrl.send_data(self.firmware.file, '/tmp/'+self.firmware.name)
@@ -53,13 +69,15 @@ class SysupgradeWorker(Thread):
 
     def __init__(self, router: Router, n: bool):
         Thread.__init__(self)
+        Logger().info("Sysupgrade of Firmware from Router(" + router.mac + ") ...")
         self.router = router
         self.n = n
         self.daemon = True
 
     def run(self):
         """
-        : Desc : runs new thread and gets the information from the router via ssh
+        Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
+        and does a Sysupgrade.
         :return:
         """
         network_ctrl = NetworkCtrl(self.router)

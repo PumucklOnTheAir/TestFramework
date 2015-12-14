@@ -14,7 +14,7 @@ class Namespace:
         :param ipdb:
         :return:
         """
-        Logger().debug("Create Namespace ...", 1)
+        Logger().debug("Create Namespace ...", 2)
         self.nsp_name = nsp_name
         self.id = id
         self.vlan_iface_name = vlan_iface_name
@@ -23,13 +23,13 @@ class Namespace:
         try:
             self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
             netns.setns(nsp_name)
-            Logger().debug("[+] Namespace(" + nsp_name + ") successfully created", 2)
+            Logger().debug("[+] Namespace(" + nsp_name + ") successfully created", 3)
             self.encapsulate_interface()
         except Exception as e:
-            Logger().debug("[-] Couldn't create Namespace(" + nsp_name + ") or encapsulate interface", 2)
+            Logger().debug("[-] Couldn't create Namespace(" + nsp_name + ") or encapsulate interface", 3)
             for tb in traceback.format_tb(sys.exc_info()[2]):
-                Logger().error(tb, 2)
-            Logger().error(str(e), 2)
+                Logger().error(tb, 3)
+            Logger().error(str(e), 3)
             self.remove()
 
     def remove(self):
@@ -37,20 +37,20 @@ class Namespace:
         : Desc : removes the virtual namespace and interface
         :return:
         """
-        Logger().debug("Delete Namespace ...", 1)
+        Logger().debug("Delete Namespace ...", 2)
         try:
             if self.ipdb_netns is None:
                 netns.remove(self.nsp_name)
             else:
                 self.ipdb_netns.interfaces[self.vlan_iface_name].nl.remove()
                 self.ipdb_netns.release()
-            Logger().debug("[+] namespace(" + self.nsp_name + ") successfully deleted", 2)
+            Logger().debug("[+] Namespace(" + self.nsp_name + ") successfully deleted", 3)
         except Exception as e:
             if re.match("\[Errno 2\]*",str(e)):
-                Logger().debug("[+] namespace(" + self.nsp_name + ") is already deleted", 2)
+                Logger().debug("[+] Namespace(" + self.nsp_name + ") is already deleted", 3)
                 return
-            Logger().debug("[-] namespace(" + self.nsp_name + ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", 2)
-            Logger().error("        "+str(e))
+            Logger().debug("[-] Namespace(" + self.nsp_name + ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", 3)
+            Logger().error(str(e), 3)
 
     def encapsulate_interface(self):
         """
@@ -63,7 +63,7 @@ class Namespace:
         with self.ipdb_netns.interfaces[self.vlan_iface_name] as vlan:
             vlan.add_ip(vlan_ip)  # '192.168.1.11/24'
             vlan.up()
-        Logger().debug("[+] Encapsulate Interface(" + self.vlan_iface_name + ")", 2)
+        Logger().debug("[+] Encapsulate Interface(" + self.vlan_iface_name + ")", 3)
 
     def get_ipv4_from_dictionary(self, iface):
         """

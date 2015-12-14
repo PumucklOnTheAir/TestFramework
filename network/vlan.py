@@ -22,7 +22,7 @@ class Vlan:
         :param vlan_iface_ip: ip of the virtual interface
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
-        Logger().debug("Create VLAN Interface ...", 1)
+        Logger().debug("Create VLAN Interface ...", 2)
         try:
             link_iface = self.ipdb.interfaces[link_iface_name]
             with self.ipdb.create(kind="vlan", ifname=vlan_iface_name, link=link_iface, vlan_id=vlan_iface_id).commit()\
@@ -33,33 +33,33 @@ class Vlan:
             if not vlan_iface_ip:
                 self._wait_for_ip_assignment(vlan_iface_name)
                 vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name])
-            Logger().debug("[+] " + vlan_iface_name + " created with: Link=" + link_iface_name + ", VLAN_ID=" + str(vlan_iface_id)+ ", IP=" + vlan_iface_ip, 2)
+            Logger().debug("[+] " + vlan_iface_name + " created with: Link=" + link_iface_name + ", VLAN_ID=" + str(vlan_iface_id)+ ", IP=" + vlan_iface_ip, 3)
         except Exception as e:
-            Logger().debug("[-] " + vlan_iface_name + " couldn't be created", 2)
-            Logger().error(str(e), 2)
+            Logger().debug("[-] " + vlan_iface_name + " couldn't be created", 3)
+            Logger().error(str(e), 3)
 
     def delete_interface(self):
         """
         : Desc : removes the virtual interface
         """
-        Logger().debug("Delete VLAN Interface ...", 1)
+        Logger().debug("Delete VLAN Interface ...", 2)
         try:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
             self.ipdb.release()
-            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 2)
+            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
         except KeyError as ke:
-            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 2)
+            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
             return
         except Exception as e:
-            Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 2)
-            Logger().error(str(e), 2)
+            Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
+            Logger().error(str(e), 3)
 
     def _wait_for_ip_assignment(self, vlan_iface_name):
         """
         :Desc : Waits until the dhcp-client got an ip
         :param vlan_iface_name:
         """
-        Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + vlan_iface_name + ") ...", 2)
+        Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + vlan_iface_name + ") ...", 3)
         time.sleep(2)
         if not self._get_ip(vlan_iface_name):
             Popen(["dhclient", vlan_iface_name], stdout=PIPE)
