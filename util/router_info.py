@@ -31,7 +31,6 @@ class Worker(Thread):
         : Desc : runs new thread and gets the information from the router via ssh
         :return:
         """
-        print("run new thread ...")
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_router()
         # Model

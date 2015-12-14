@@ -4,7 +4,7 @@ from typing import List
 from server.router import Router
 from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware import Firmware, ReleaseModel, UpdateType
-
+from log.logger import Logger
 
 class RouterFlashFirmware:
 
@@ -38,7 +38,7 @@ class ConfigurationWorker(Thread):
         : Desc : runs new thread and gets the information from the router via ssh
         :return:
         """
-        print("Copy firmware to router ...")
+        Logger().info("Copy firmware to router ...")
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_router()
         network_ctrl.send_data(self.firmware.file, '/tmp/'+self.firmware.name)

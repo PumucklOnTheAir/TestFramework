@@ -139,7 +139,7 @@ class Logger(metaclass=Singleton):
             self._max_detail_log_level = max_detail_log_level
 
             # add Filter to logger
-            if filter is not None:
+            if log_filter is not None:
                 if len(self._logger.filters) > 0:
                     self._logger.filters.clear()
                 self._logger.addFilter(log_filter)

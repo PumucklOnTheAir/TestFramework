@@ -14,4 +14,4 @@ freifunk_verein = "ffda"
 firmware_version = "0.7.3"
 
 RouterFlashFirmware.configuration([router],[url,release_model,update_type,freifunk_verein,firmware_version])
-RouterFlashFirmware.sysupgrade([router], n=True)
+#RouterFlashFirmware.sysupgrade([router], n=True)

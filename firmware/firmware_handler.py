@@ -4,6 +4,7 @@ import os
 import errno
 from firmware.firmware import Firmware, ReleaseModel, UpdateType
 from typing import List
+from log.logger import Logger
 
 
 class FirmwareHandler:
@@ -33,11 +34,12 @@ class FirmwareHandler:
         firmware = None
         valid_download = False
         while not valid_download:
-            print("Get firmware ")
-            print("[1] automatically")
-            print("[2] from the manifest")
-            print("[3] via URL")
+            Logger().info("Get firmware ")
+            Logger().info("[1] automatically")
+            Logger().info("[2] from the manifest")
+            Logger().info("[3] via URL")
             val = 1 # TODO int(input("Select number: "))
+            Logger().info("<== " + str(val))
             if val == 1:
                 firmware = self._get_firmware_info_auto(update_type, router_model, freifunk_verein, firmware_version)
             elif val == 2:
@@ -67,6 +69,7 @@ class FirmwareHandler:
         :param firmware_version: alike "0.7.3"
         :return: Firmware
         """
+        Logger().debug("The firmware url will be automatically determined ...", 1)
         router_model_name, router_model_version = self._parse_router_model(router_model)
         tmp = "-sysupgrade.bin" if (update_type.name == "sysupgrade") else ".bin"
         firmware_name = 'gluon-'+freifunk_verein+'-'+firmware_version+'-' + router_model_name + '-' \
@@ -82,6 +85,7 @@ class FirmwareHandler:
         :param update_type: factory, sysupgrade
         :return: Firmware, hash
         """
+        Logger().debug("The firmware will be choosen from the manifest ...", 1)
         firmware_name, hash = self._chose_firmware_from_manifest(update_type)
         freifunk_verein = firmware_name.split('-')[1]
         firmware_version = firmware_name.split('-')[2]
@@ -95,6 +99,7 @@ class FirmwareHandler:
         The User can input a url, where the firmware should downloaded from.
         :return: Firmware
         """
+        Logger().debug("The firmware will be choosen by the given url ...", 1)
         url = input("URL of the firmware: ")
         firmware_name = url.split('/')[:-1]
         update_type = url.split('/')[-2]
@@ -112,9 +117,11 @@ class FirmwareHandler:
         :return: bool
         """
         if self.release_model.name != release_model.name:
-            print("The release_model of the selected(" + self.release_model.name
-                 + ") and the given(" + release_model.name + ") are different")
-            if input("Keep going? [y/n]:") == "y":
+            Logger().warning("The release_model of the selected(" + self.release_model.name
+                 + ") and the given(" + release_model.name + ") are different", 1)
+            val = input("Keep going? [y/n]:")
+            Logger().info("<== " + val)
+            if val == "y":
                 self.release_model = release_model
                 return True
             return False
@@ -128,16 +135,16 @@ class FirmwareHandler:
         :param update_type:
         :return:
         """
+        Logger().info("Download " + url + " ...", 1)
         self._create_path(self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + update_type.name)
         try:
-            print("Download " + url + " ...")
             # Download the file from `url` and save it locally under `file_name`:
             urllib.request.urlretrieve(url, file)
-            print("[+] Successfully downloaded firmware")
+            Logger().debug("[+] Successfully downloaded firmware", 2)
             return True
         except Exception as e:
-            print("[-] Couldn't download firmware")
-            print(" "+str(e))
+            Logger().debug("[-] Couldn't download firmware", 2)
+            Logger().error(str(e), 2)
             return False
 
     def _download_manifest(self) -> str:
@@ -149,14 +156,14 @@ class FirmwareHandler:
         file = self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + self.release_model.name + '.manifest'
         self._create_path(self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name)
         try:
-            print("Download " + url + " ...")
+            Logger().info("Download " + url, 1)
             # Download the file from `url` and save it locally under `file_name`:
             urllib.request.urlretrieve(url, file)
-            print("[+] Successfully downloaded manifest")
+            Logger().debug("[+] Successfully downloaded manifest", 2)
             return file
         except Exception as e:
-            print("[-] Couldn't download manifest")
-            print(" "+str(e))
+            Logger().debug("[-] Couldn't download manifest", 2)
+            Logger().error(str(e), 1)
             return ""
 
     def _chose_firmware_from_manifest(self, update_type: UpdateType):
@@ -166,15 +173,16 @@ class FirmwareHandler:
         :return: firmware_name, hash of the firmware
         """
         firmwares = self._get_firmwares_from_manifest()
-        print("Manifest ------------------------------------")
+        Logger().info("Manifest ------------------------------------")
         for i in range(0, len(firmwares)):
-            print(firmwares[i])
-        print("---------------------------------------------")
+            Logger().info(firmwares[i])
+        Logger().info("---------------------------------------------")
         valid_input = False
         val = 0
         while not valid_input:
-            print("Which firmware should be downloaded?")
+            Logger().info("Which firmware should be downloaded?")
             val = 24 # TODO int(input("Select a number: "))
+            Logger().info("<== " + str(val))
             valid_input = True if (val >= 0) and (val < len(firmwares)) else False
         tmp = "-sysupgrade.bin" if (update_type.name == "sysupgrade") else ".bin"
         firmware_name = "gluon" + firmwares[val].split("gluon")[1].split("-sysupgrade")[0]+tmp
@@ -186,6 +194,7 @@ class FirmwareHandler:
         Creates a list of firmwares from the manifest.
         :return: list of firmwares
         """
+        Logger().debug("Create a list of firmwares from the manifest ...", 3)
         file = self._download_manifest()
         firmwares = []
         with open(file, 'r') as f:
@@ -216,13 +225,15 @@ class FirmwareHandler:
         :param router_model:
         :return: router_model_name and router_model_version
         """
+        Logger().debug("Parse RouterModel ...", 2)
         tmp = router_model.split(' v')
         router_model_name = tmp[0]
         router_model_version = 'v'+tmp[1]
-        print("router model: " + router_model_name + "  " + router_model_version)
         router_model_name = router_model_name.lower()
         # replace all symbols with a minus
-        return [re.sub(r'(?:[^\w])', '-', router_model_name), router_model_version]
+        router_model_name = re.sub(r'(?:[^\w])', '-', router_model_name)
+        Logger().debug("'" + router_model + "' into '" + router_model_name + " " + router_model_version + "'", 3)
+        return [router_model_name, router_model_version]
 
     def _create_path(self, path: str):
         """
@@ -231,8 +242,9 @@ class FirmwareHandler:
         :return:
         """
         try:
-            print("Create path " + path + " ...")
+            Logger().debug("Create path " + path + " ...", 2)
             os.makedirs(path)
+            Logger().debug("[+] Path successfully created", 3)
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise

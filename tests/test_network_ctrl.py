@@ -17,6 +17,7 @@ class TestNetworkCtrl(TestCase):
         network_ctrl.connect_with_router()
         network_ctrl.exit()
 
+    """
     def test_send_command(self):
         # Create router
         router = Router("vlan21", 21, "192.168.1.1", 24, "root", "root", 1)
@@ -30,3 +31,4 @@ class TestNetworkCtrl(TestCase):
         network_ctrl.connect_with_router()
         output = network_ctrl.send_router_command("uname")
         network_ctrl.exit()
+    """
