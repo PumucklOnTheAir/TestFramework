@@ -3,9 +3,17 @@ from log.logger import Logger
 
 
 class FileManager:
+    """
+    Manager who handles the read and write of files
+    """
 
     @staticmethod
     def read_file(path: str = "") -> []:
+        """
+        Read a file from the path
+        :param path: File path
+        :return: Array with the output from the file
+        """
         try:
             if path == "":
                 Logger().error("Path is an empty string")
@@ -19,6 +27,12 @@ class FileManager:
 
     @staticmethod
     def write_file(data: str = "", path: str = "") -> None:
+        """
+        Write a file on the path
+        :param data: String of data to write in the file
+        :param path: File path
+        :return: None
+        """
         try:
             if path == "":
                 Logger().error("Path is an empty string")

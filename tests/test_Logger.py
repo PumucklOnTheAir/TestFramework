@@ -1,6 +1,6 @@
 import unittest
 
-from log.logger import Logger
+from log.logger import *
 
 
 class MyTestCase(unittest.TestCase):
@@ -14,6 +14,10 @@ class MyTestCase(unittest.TestCase):
 
         Logger().info("Hello from Logger() {0}".format(Logger()))
         Logger().debug("Debug from Logger() {0}".format(Logger()))
+        Logger().error("Error from Logger() {0}".format(Logger()))
+        Logger().warning("Warning from Logger() {0}".format(Logger()))
+        Logger().critical("Critical from Logger() {0}".format(Logger()))
+        Logger().debug(1, "Debug from level 2")
 
         self.assertEqual(True, l is l1 is Logger())
 

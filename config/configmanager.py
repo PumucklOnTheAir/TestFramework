@@ -6,6 +6,9 @@ from server.router import *
 
 
 class ConfigManager:
+    """
+    Manager who handles the config files
+    """
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
@@ -16,6 +19,11 @@ class ConfigManager:
 
     @staticmethod
     def read_file(path: str = "") -> []:
+        """
+        Read a config file from the path
+        :param path: File path
+        :return: Array with the output from the file
+        """
         try:
             if path == "":
                 Logger().error("Path is an empty string")
@@ -31,6 +39,12 @@ class ConfigManager:
 
     @staticmethod
     def write_file(data: str = "", path: str = "") -> None:
+        """
+        Write a config file on the path
+        :param data: String of data to write in the file
+        :param path: File path
+        :return: None
+        """
         try:
             if path == "":
                 Logger().error("Path is an empty string")
@@ -46,10 +60,19 @@ class ConfigManager:
 
     @staticmethod
     def get_router_auto_config() -> []:
+        """
+        Read the Router Auto Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.ROUTER_AUTO_CONFIG_PATH)
 
     @staticmethod
     def get_router_auto_list(count: int = 0) -> []:
+        """
+        Read the Router Manual Config file
+        :param count: Count of the Router
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_router_auto_config()
 
         if not len(output) == 8:
@@ -89,10 +112,18 @@ class ConfigManager:
 
     @staticmethod
     def get_router_manual_config() -> []:
+        """
+        Read the Router Manual Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.ROUTER_MANUAL_CONFIG_PATH)
 
     @staticmethod
     def get_router_manual_list() -> []:
+        """
+        Read the Router Manual Config file
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_router_manual_config()
 
         router_list = []
@@ -116,18 +147,34 @@ class ConfigManager:
 
     @staticmethod
     def get_server_config() -> []:
+        """
+        Read the Server Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.SERVER_CONFIG_PATH)
 
     @staticmethod
     def get_server_property_list() -> []:
+        """
+        Read the Server Config file
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_server_config()
         return output
 
     @staticmethod
     def get_test_config() -> []:
+        """
+        Read the Test Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.TEST_CONFIG_PATH)
 
     @staticmethod
     def get_test_list() -> []:
+        """
+        Read the Test Config file
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_test_config()
         return output
