@@ -45,12 +45,16 @@ class Logger(metaclass=Singleton):
     Logger.warning('WARNING-MSG')
     Logger.error('ERROR-MSG')
     Logger.critical('CRITICAL-MSG')
+
+    logging.Level order
+    NOTSET < DEBUG < INFO < WARNING < ERROR < CRITICAL
     """
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     LOG_PATH = os.path.join(BASE_DIR, 'log')  # Join Project Root with log
 
     _logger = None
+    _max_detail_log_level = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -72,10 +76,19 @@ class Logger(metaclass=Singleton):
             return False
         return True
 
-    def setup(self, log_level: int = logging.INFO, file_log_level: int = logging.INFO,
-              stream_log_level: int = logging.INFO, log_file_path: str = "logger.log",
-              log_file_formatter: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-              log_stream_formatter: str = "%(asctime)s - %(levelname)s - %(message)s") -> None:
+    @property
+    def max_detail_log_level(self) -> int:
+        """
+        Return the max detail level
+        :return: int
+        """
+        return self._max_detail_log_level
+
+    def setup(self, log_level: int = logging.DEBUG, file_log_level: int = logging.DEBUG,
+              stream_log_level: int = logging.DEBUG, log_file_path: str = "logger.log",
+              log_file_formatter: str = "%(asctime)-23s - %(name)-10s - %(levelname)-8s : %(message)s",
+              log_stream_formatter: str = "%(asctime)-23s - %(levelname)-8s : %(message)s",
+              max_detail_log_level: int = 5, log_filter: logging.Filter = None) -> None:
         """
         Create and initialize a new logging.Logger and create a new file and stream handler with the params
         :param log_level: Logging level for the logging.Logger
@@ -84,6 +97,8 @@ class Logger(metaclass=Singleton):
         :param log_file_path: Path for the log file
         :param log_file_formatter: Formatter for the output in the log file
         :param log_stream_formatter: Formatter for the output in the stream
+        :param max_detail_log_level: Define the max level, how deep goes a detail of a log
+        :param log_filter: filter for filter the log output
         :return: None
         """
         try:
@@ -121,11 +136,26 @@ class Logger(metaclass=Singleton):
             self._logger.addHandler(file_handler)
             self._logger.addHandler(stream_handler)
 
+            self._max_detail_log_level = max_detail_log_level
+
+            # add Filter to logger
+            if filter is not None:
+                if len(self._logger.filters) > 0:
+                    self._logger.filters.clear()
+                self._logger.addFilter(log_filter)
+
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 
-    @staticmethod
-    def get_log_level(log_level: int = 0) -> str:
+    def get_log_level(self, log_level: int = 0) -> str:
+        """
+        Return an string with tabulators. Count of tabulators are depend on log_level.
+        log_level = 0 returns empty string
+        :param log_level: deep of the level mode
+        :return: String with tabulators
+        """
+        if log_level > self._max_detail_log_level:
+            log_level = self._max_detail_log_level
         temp_str = ""
         for x in range(0, log_level):
             temp_str += '\t'
@@ -220,3 +250,22 @@ class Logger(metaclass=Singleton):
         if not self.is_loaded:
             self.setup()
         self._logger.critical("{0}{1}".format(self.get_log_level(critical_level), msg), *args, **kwargs)
+
+    def log(self, level: int = logging.NOTSET, msg: str = "", log_level: int = 0, *args, **kwargs) -> None:
+        """
+        Log 'msg % args' with the integer severity 'level'.
+
+        To pass exception information, use the keyword argument exc_info with
+        a true value, e.g.
+
+        logger.log(level, "We have a %s", "mysterious problem", exc_info=1)
+        :param level: which logging.Level to log
+        :param msg: Message to log
+        :param log_level: explain the deep of the critical mode
+        :param args:
+        :param kwargs:
+        :return: None
+        """
+        if not self.is_loaded:
+            self.setup()
+        self._logger.log(level, "{0}{1}".format(self.get_log_level(log_level), msg), *args, **kwargs)
