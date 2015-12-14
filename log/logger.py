@@ -2,6 +2,16 @@ import logging
 import os
 
 
+class DebugLevel:
+    """
+    Contains the level for different debug modes
+    """
+
+    ONE = 1
+    TWO = 2
+    THREE = 3
+
+
 class Singleton(type):
     """
     Holds instances of an object
@@ -51,6 +61,7 @@ class Logger(metaclass=Singleton):
     LOG_PATH = os.path.join(BASE_DIR, 'log')  # Join Project Root with log
 
     _logger = None
+    _debug_level = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -72,10 +83,19 @@ class Logger(metaclass=Singleton):
             return False
         return True
 
+    @property
+    def debug_level(self) -> DebugLevel:
+        """
+        Return the level of debug
+        :return: DebugLevel
+        """
+        self._debug_level
+
     def setup(self, log_level: int = logging.INFO, file_log_level: int = logging.INFO,
               stream_log_level: int = logging.INFO, log_file_path: str = "logger.log",
               log_file_formatter: str = "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-              log_stream_formatter: str = "%(asctime)s - %(levelname)s - %(message)s") -> None:
+              log_stream_formatter: str = "%(asctime)s - %(levelname)s - %(message)s",
+              debug_level: int = 0) -> None:
         """
         Create and initialize a new logging.Logger and create a new file and stream handler with the params
         :param log_level: Logging level for the logging.Logger
@@ -84,6 +104,7 @@ class Logger(metaclass=Singleton):
         :param log_file_path: Path for the log file
         :param log_file_formatter: Formatter for the output in the log file
         :param log_stream_formatter: Formatter for the output in the stream
+        :param debug_level: explain the deep of the debug mode
         :return: None
         """
         try:
@@ -121,10 +142,12 @@ class Logger(metaclass=Singleton):
             self._logger.addHandler(file_handler)
             self._logger.addHandler(stream_handler)
 
+            self._debug_level = debug_level
+
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 
-    def info(self, msg: str, *args, **kwargs) -> None:
+    def info(self, msg: str = "", *args, **kwargs) -> None:
         """
         Log 'msg % args' with severity 'INFO'.
 
@@ -141,7 +164,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         self._logger.info(msg, *args, **kwargs)
 
-    def debug(self, msg: str, *args, **kwargs) -> None:
+    def debug(self, debug_level: int = 0, msg: str = "", *args, **kwargs) -> None:
         """
         Log 'msg % args' with severity 'DEBUG'.
 
@@ -149,6 +172,7 @@ class Logger(metaclass=Singleton):
         a true value, e.g.
 
         logger.debug("Houston, we have a %s", "interesting problem", exc_info=1)
+        :param debug_level: explain the deep of the debug mode
         :param msg: Message to log
         :param args:
         :param kwargs:
@@ -156,9 +180,14 @@ class Logger(metaclass=Singleton):
         """
         if not self.is_loaded:
             self.setup()
-        self._logger.debug(msg, *args, **kwargs)
 
-    def warning(self, msg: str, *args, **kwargs) -> None:
+        temp_str = ""
+        for x in range(0, debug_level):
+            temp_str += '\t'
+
+        self._logger.debug("{0}{1}".format(temp_str, msg), *args, **kwargs)
+
+    def warning(self, msg: str = "", *args, **kwargs) -> None:
         """
         Log 'msg % args' with severity 'WARNING'.
 
@@ -175,7 +204,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         self._logger.warning(msg, *args, **kwargs)
 
-    def error(self, msg: str, *args, **kwargs) -> None:
+    def error(self, msg: str = "", *args, **kwargs) -> None:
         """
         Log 'msg % args' with severity 'ERROR'.
 
@@ -192,7 +221,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         self._logger.error(msg, *args, **kwargs)
 
-    def critical(self, msg: str, *args, **kwargs) -> None:
+    def critical(self, msg: str = "", *args, **kwargs) -> None:
         """
         Log 'msg % args' with severity 'CRITICAL'.
 
