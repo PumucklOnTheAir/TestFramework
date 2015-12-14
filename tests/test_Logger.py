@@ -7,6 +7,9 @@ class MyTestCase(unittest.TestCase):
     def test_something(self):
 
         l = Logger()
+
+        l.logger.debug("Debug color blue")
+
         l.info("Hello from l {0}".format(Logger()))
 
         l1 = Logger()
