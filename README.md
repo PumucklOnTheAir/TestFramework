@@ -6,6 +6,8 @@ Tasks:
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=review&title=Review)](http://waffle.io/PumucklOnTheAir/TestFramework)
 # FreifunkTestFramework
 
+Git Cheat Sheet http://www.git-tower.com/blog/git-cheat-sheet/
+
 ## Bedienung
 
 ### Starten

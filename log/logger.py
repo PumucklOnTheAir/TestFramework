@@ -1,5 +1,6 @@
 import logging
 import os
+import sys
 
 
 class Singleton(type):
@@ -19,6 +20,79 @@ class Singleton(type):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
+
+
+class ColoredFormatter(logging.Formatter):
+    """
+    Formatter instances are used to convert a LogRecord to text with color highlighting.
+    """
+
+    _use_color = None
+
+    # These are the sequences need to get colored output
+    RESET_SEQ = "\033[0m"
+    COLOR_SEQ = "\033[0;%dm"
+
+    COLORS = {
+        'WARNING': 33,
+        'INFO': 30,
+        'DEBUG': 34,
+        'CRITICAL': 31,
+        'ERROR': 31,
+    }
+
+    def __init__(self, fmt: str = "", use_color: bool = True) -> None:
+        """
+        Initialize the formatter with specified format strings.
+
+        Initialize the formatter either with the specified format string, or a
+        default as described above. Allow for specialized date formatting with
+        the optional datefmt argument (if omitted, you get the ISO8601 format).
+
+        Use a style parameter of '%', '{' or '$' to specify that you want to
+        use one of %-formatting, :meth:`str.format` (``{}``) formatting or
+        :class:`string.Template` formatting in your format string.
+        """
+        logging.Formatter.__init__(self, fmt)
+        self._use_color = use_color
+
+    def format(self, record) -> object:
+        """
+        Format the specified record as text.
+
+        The record's attribute dictionary is used as the operand to a
+        string formatting operation which yields the returned string.
+        Before formatting the dictionary, a couple of preparatory steps
+        are carried out. The message attribute of the record is computed
+        using LogRecord.getMessage(). If the formatting string uses the
+        time (as determined by a call to usesTime(), formatTime() is
+        called to format the event time. If there is exception information,
+        it is formatted using formatException() and appended to the message.
+        :param record
+        :return: object
+        """
+        record.message = record.getMessage()
+        level = record.levelname
+        if self._use_color and level in self.COLORS:
+            msg_color = self.COLOR_SEQ % (self.COLORS[level]) + record.message + self.RESET_SEQ
+            record.message = msg_color
+        if self.usesTime():
+            record.asctime = self.formatTime(record, self.datefmt)
+        s = self.formatMessage(record)
+        if record.exc_info:
+            # Cache the traceback text to avoid converting it multiple times
+            # (it's constant anyway)
+            if not record.exc_text:
+                record.exc_text = self.formatException(record.exc_info)
+        if record.exc_text:
+            if s[-1:] != "\n":
+                s += "\n"
+            s = s + record.exc_text
+        if record.stack_info:
+            if s[-1:] != "\n":
+                s += "\n"
+            s = s + self.formatStack(record.stack_info)
+        return s
 
 
 class Logger(metaclass=Singleton):
@@ -85,18 +159,16 @@ class Logger(metaclass=Singleton):
         return self._max_detail_log_level
 
     def setup(self, log_level: int = logging.DEBUG, file_log_level: int = logging.DEBUG,
-              stream_log_level: int = logging.DEBUG, log_file_path: str = "logger.log",
-              log_file_formatter: str = "%(asctime)-23s - %(name)-10s - %(levelname)-8s : %(message)s",
-              log_stream_formatter: str = "%(asctime)-23s - %(levelname)-8s : %(message)s",
-              max_detail_log_level: int = 5, log_filter: logging.Filter = None) -> None:
+              stream_log_level: int = logging.DEBUG, log_file_path: str = "logger.log", log_file_format: str = "",
+              log_stream_format: str = "", max_detail_log_level: int = 5, log_filter: logging.Filter = None) -> None:
         """
         Create and initialize a new logging.Logger and create a new file and stream handler with the params
         :param log_level: Logging level for the logging.Logger
         :param file_log_level: Logging level for the file handler
         :param stream_log_level: Logging level for the stream handler
         :param log_file_path: Path for the log file
-        :param log_file_formatter: Formatter for the output in the log file
-        :param log_stream_formatter: Formatter for the output in the stream
+        :param log_file_format: Formatter for the output in the log file
+        :param log_stream_format: Formatter for the output in the stream
         :param max_detail_log_level: Define the max level, how deep goes a detail of a log
         :param log_filter: filter for filter the log output
         :return: None
@@ -120,15 +192,22 @@ class Logger(metaclass=Singleton):
             file_handler.setLevel(file_log_level)
 
             # create StreamHandler
-            stream_handler = logging.StreamHandler()
+            # default is without param, than the handler is sys.stderr
+            stream_handler = logging.StreamHandler(sys.stdout)
             stream_handler.setLevel(stream_log_level)
 
             # create a logging format
-            file_formatter = logging.Formatter(log_file_formatter)
+            if log_file_format == "":
+                log_file_format = "%(asctime)-23s - %(name)-10s - %(levelname)-8s : %(message)s"
+            file_formatter = logging.Formatter(log_file_format)
             file_handler.setFormatter(file_formatter)
 
-            stream_formatter = logging.Formatter(log_stream_formatter)
-            stream_handler.setFormatter(stream_formatter)
+            if log_stream_format == "":
+                log_stream_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
+                stream_handler.setFormatter(ColoredFormatter(log_stream_format))
+            else:
+                stream_formatter = logging.Formatter(log_stream_format)
+                stream_handler.setFormatter(stream_formatter)
 
             # add the handlers to the logger
             if self._logger.hasHandlers():
