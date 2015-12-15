@@ -9,9 +9,9 @@ class ServerProxy(metaclass=ABCMeta):
     Normally the method will be execute remote on the server and the return value is given by copy and not reference!
     """""
     @abstractclassmethod
-    def start_test(self, router_name, test_name) -> bool:
+    def start_test(self, router_id, test_name) -> bool:
         """Start an specific test on an router
-        :param router_name: The name of the router on which the test will run
+        :param router_id: The (vlan)ID of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
         """

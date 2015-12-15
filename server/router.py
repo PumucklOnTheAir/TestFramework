@@ -1,5 +1,6 @@
 from .proxyobject import ProxyObject
 from enum import Enum
+from queue import Queue
 
 
 class Mode(Enum):
@@ -40,6 +41,10 @@ class Router(ProxyObject):
         self._wlan_mode = Mode.unknown
         self._ssid = ""
 
+        # test handling
+        self.running_tests = None
+        self.waiting_tests = Queue()
+
     @property
     def ip(self) -> str:
         """
@@ -47,6 +52,14 @@ class Router(ProxyObject):
         :return: IP number as string
         """
         return self._ip
+
+    @property
+    def id(self) -> int:
+        """
+        The ID from router. Is the same as the VLAN ID.
+        :return:
+        """
+        return self._vlan_iface_id
 
     @property
     def vlan_iface_id(self) -> int:

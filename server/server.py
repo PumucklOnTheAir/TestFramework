@@ -3,6 +3,10 @@ from .ipc import IPC
 from .router import Router
 from config.configmanager import ConfigManager
 from typing import List
+from queue import Queue
+from .test import AbstractTest
+from copy import copy
+from concurrent.futures import ThreadPoolExecutor
 
 
 class Server(ServerProxy):
@@ -18,9 +22,10 @@ class Server(ServerProxy):
     _ipc_server = IPC()
 
     # runtime vars
-    _runningTests = []
     _routers = []
-    _reports = []
+    _reports = Queue()
+    # TODO reichen Threads aus? oder müssen es Prozesse sein wegen VLAN?
+    executor = None
 
     @classmethod
     def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH, vlan_activate: bool=True) -> None:
@@ -44,6 +49,8 @@ class Server(ServerProxy):
 
         print("Runtime Server started")
 
+        cls.executor = ThreadPoolExecutor(max_workers=len(cls._routers))
+
         cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
 
         # at this point all code will be ignored
@@ -51,7 +58,7 @@ class Server(ServerProxy):
     @classmethod
     def __load_configuration(cls):
         # (re)load the configuration only then no tests are running
-        assert len(cls._runningTests) == 0
+        assert len(cls.get_running_tests) == 0
         cls._routers = ConfigManager.get_router_auto_list()
         assert len(cls._routers) != 0
         assert len(cls._reports) == 0
@@ -65,14 +72,49 @@ class Server(ServerProxy):
         pass
 
     @classmethod
-    def start_test(cls, router_name, test_name) -> bool:
+    def get_router_by_id(cls, router_id: int) -> Router:
+        for router in cls._routers:
+            if router.get_id() == router_id:
+                return router
+
+    @classmethod
+    def get_test_by_name(cls, test_name: str) -> AbstractTest:
+        # TODO test verwaltung
+        pass
+
+    @classmethod
+    def start_test(cls, router_id: int, test_name: str) -> bool:
         """Start an specific test on an router
-        :param router_name: The name of the router on which the test will run
+        :param router_id: The id of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
         """
-        # runningTests.add(Thread.start(test, router))
-        pass
+        router = cls.get_router_by_id(router_id)
+        return cls.__start_test(router, test_name)
+
+    @classmethod
+    def __start_test(cls, router: Router, test: AbstractTest) -> bool:
+        if router.running_tests is None:
+            if test is None:
+                if len(router.waiting_tests) != 0:
+                    test = router.waiting_tests.get()
+                else:
+                    test = copy.deepcopy(cls.get_test_by_name(test))
+                router.running_tests = test
+                task = cls.executor.submit(cls.__execute_test, test, router)
+                task.add_done_callback(cls.__start_test, router, None)
+                test.thread = task
+                return True
+        else:
+            router.waiting_tests.put(test)
+            return False
+
+    @classmethod
+    def __execute_test(cls, test: AbstractTest, router: Router):
+        test.prepare(router)
+        result = test.run()
+        cls._reports.put(result)
+        router.running_tests = None
 
     @classmethod
     def get_routers(cls) -> List[Router]:
@@ -87,10 +129,11 @@ class Server(ServerProxy):
         return cls._routers.copy()
 
     @classmethod
-    def get_running_tests(cls) -> []:
+    def get_running_tests(cls) -> List[AbstractTest]:
         """
         :return: List of running test on the test server. List is a copy of the original list.
         """
+        # TODO exist now in router
         return cls._runningTests.copy()
 
     @classmethod
@@ -101,7 +144,7 @@ class Server(ServerProxy):
         return cls._reports
 
     @classmethod
-    def get_tests(cls) -> []:
+    def get_tests(cls) -> List[AbstractTest]:
         """
         :return: List of available tests on the server
         """
