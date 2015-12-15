@@ -1,11 +1,14 @@
 import yaml
 import io
-import logging
+from log.logger import Logger
 import os.path
 from server.router import *
 
 
 class ConfigManager:
+    """
+    Manager who handles the config files
+    """
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
@@ -16,44 +19,64 @@ class ConfigManager:
 
     @staticmethod
     def read_file(path: str = "") -> []:
+        """
+        Read a config file from the path
+        :param path: File path
+        :return: Array with the output from the file
+        """
         try:
             if path == "":
-                logging.error("Path is an empty string")
+                Logger().error("Path is an empty string")
                 return
             file_stream = io.open(path, "r", encoding="utf-8")
             output = yaml.safe_load(file_stream)
             file_stream.close()
             return output
         except IOError as ex:
-            logging.error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
+            Logger().error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
         except yaml.YAMLError as ex:
-            logging.error("Error at safe load the YAML-File\nError: {0}".format(ex))
+            Logger().error("Error at safe load the YAML-File\nError: {0}".format(ex))
 
     @staticmethod
     def write_file(data: str = "", path: str = "") -> None:
+        """
+        Write a config file on the path
+        :param data: String of data to write in the file
+        :param path: File path
+        :return: None
+        """
         try:
             if path == "":
-                logging.error("Path is an empty string")
+                Logger().error("Path is an empty string")
                 return
             file_stream = io.open(path, "w", encoding="utf-8")
             yaml.safe_dump(data, file_stream)
             file_stream.flush()
             file_stream.close()
         except IOError as ex:
-            logging.error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
+            Logger().error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
         except yaml.YAMLError as ex:
-            logging.error("Error at safe dump the YAML-File\nError: {0}".format(ex))
+            Logger().error("Error at safe dump the YAML-File\nError: {0}".format(ex))
 
     @staticmethod
     def get_router_auto_config() -> []:
+        """
+        Read the Router Auto Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.ROUTER_AUTO_CONFIG_PATH)
 
     @staticmethod
     def get_router_auto_list(count: int = 0) -> []:
+        """
+        Read the Router Manual Config file
+        :param count: Count of the Router
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_router_auto_config()
 
         if not len(output) == 8:
-            logging.error("List must be length of 8 but has a length of {0}".format(len(output)))
+            Logger().error("List must be length of 8 but has a length of {0}".format(len(output)))
             return
 
         try:
@@ -85,14 +108,22 @@ class ConfigManager:
             return router_list
 
         except Exception as ex:
-            logging.error("Error at building the list of Router's\nError: {0}".format(ex))
+            Logger().error("Error at building the list of Router's\nError: {0}".format(ex))
 
     @staticmethod
     def get_router_manual_config() -> []:
+        """
+        Read the Router Manual Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.ROUTER_MANUAL_CONFIG_PATH)
 
     @staticmethod
     def get_router_manual_list() -> []:
+        """
+        Read the Router Manual Config file
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_router_manual_config()
 
         router_list = []
@@ -101,7 +132,7 @@ class ConfigManager:
             router_info = output[i]
 
             if not len(router_info) == 7:
-                logging.error("List must be length of 7 but has a length of {0}".format(len(output)))
+                Logger().error("List must be length of 7 but has a length of {0}".format(len(output)))
                 return
 
             try:
@@ -110,24 +141,40 @@ class ConfigManager:
                 router_list.append(v)
 
             except Exception as ex:
-                logging.error("Error at building the list of Router's\nError: {0}".format(ex))
+                Logger().error("Error at building the list of Router's\nError: {0}".format(ex))
 
         return router_list
 
     @staticmethod
     def get_server_config() -> []:
+        """
+        Read the Server Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.SERVER_CONFIG_PATH)
 
     @staticmethod
     def get_server_property_list() -> []:
+        """
+        Read the Server Config file
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_server_config()
         return output
 
     @staticmethod
     def get_test_config() -> []:
+        """
+        Read the Test Config file
+        :return: Array with the output from the file
+        """
         return ConfigManager.read_file(ConfigManager.TEST_CONFIG_PATH)
 
     @staticmethod
     def get_test_list() -> []:
+        """
+        Read the Test Config file
+        :return: List with a specific output from the file
+        """
         output = ConfigManager.get_test_config()
         return output
