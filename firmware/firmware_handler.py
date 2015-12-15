@@ -38,7 +38,8 @@ class FirmwareHandler:
             Logger().info("[1] automatically", 1)
             Logger().info("[2] from the manifest", 1)
             Logger().info("[3] via URL", 1)
-            val = 1 # TODO int(input("Select number: "))
+            Logger().info("Select number: ", 1)
+            val = int(input())
             Logger().info("<== " + str(val), 1)
             if val == 1:
                 firmware = self._get_firmware_info_auto(update_type, router_model, freifunk_verein, firmware_version)
@@ -118,8 +119,9 @@ class FirmwareHandler:
         """
         if self.release_model.name != release_model.name:
             Logger().warning("The release_model of the selected(" + self.release_model.name
-                 + ") and the given(" + release_model.name + ") are different", 2)
-            val = input("Keep going? [y/n]:")
+                 + ") and the given(" + release_model.name + ") are different", 1)
+            Logger().info("Keep going? [y/n]:",1)
+            val = input()
             Logger().info("<== " + val, 1)
             if val == "y":
                 self.release_model = release_model
@@ -181,12 +183,13 @@ class FirmwareHandler:
         val = 0
         while not valid_input:
             Logger().info("Which firmware should be downloaded?")
-            val = 24 # TODO int(input("Select a number: "))
+            Logger().info("Select number: ")
+            val = int(input())
             Logger().info("<== " + str(val))
             valid_input = True if (val >= 0) and (val < len(firmwares)) else False
-        tmp = "-sysupgrade.bin" if (update_type.name == "sysupgrade") else ".bin"
+        tmp = "-sysupgrade.bin" if (update_type == UpdateType.sysupgrade) else ".bin"
         firmware_name = "gluon" + firmwares[val].split("gluon")[1].split("-sysupgrade")[0]+tmp
-        hash = firmwares[val].split(' ')[3]
+        hash = firmwares[val].split(' ')[4]
         return [firmware_name, hash]
 
     def _get_firmwares_from_manifest(self) -> str:

@@ -5,6 +5,7 @@ from server.router import Router
 from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware import Firmware, ReleaseModel, UpdateType
 from log.logger import Logger
+import os
 
 
 class RouterFlashFirmware:

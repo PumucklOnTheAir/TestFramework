@@ -2,7 +2,8 @@ from threading import Thread
 from network.network_ctrl import NetworkCtrl
 from typing import List
 from server.router import Router
-
+from log.logger import Logger
+import os
 
 class RouterInfo:
 
