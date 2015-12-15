@@ -15,7 +15,7 @@ class NetworkCtrl:
         :param router:
         :return:
         """
-        Logger().info("Create Network Controller for Router(" + router.mac + ") ...", 1)
+        Logger().info("Create Network Controller for Router(" + str(router.vlan_iface_id) + ") ...", 1)
         self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None, vlan_iface_ip_mask=None)
         self.namespace = Namespace("nsp"+str(router.vlan_iface_id), self.vlan.vlan_iface_name, self.vlan.ipdb)
         self.ssh = paramiko.SSHClient()
@@ -27,13 +27,13 @@ class NetworkCtrl:
         Ignores a missing signatur.
         :return:
         """
-        Logger().info("Connect with Router(" + self.router.mac + ") ...", 1)
+        Logger().info("Connect with Router(" + str(self.router.vlan_iface_id) + ") ...", 1)
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.router.ip, port=22, username=self.router.usr_name, password=self.router.usr_password)
-            Logger().debug("[+] Successfully connected with Router(" + self.router.mac + ")", 2)
+            Logger().debug("[+] Successfully connected with Router(" + str(self.router.vlan_iface_id) + ")", 2)
         except Exception as e:
-            Logger().error("[-] Couldn't connect to the Router(" + self.router.mac + ")", 2)
+            Logger().error("[-] Couldn't connect to the Router(" + str(self.router.vlan_iface_id) + ")", 2)
             Logger().error(""+str(e), 1)
 
     def send_router_command(self, command) -> str:
@@ -44,11 +44,11 @@ class NetworkCtrl:
         """
         try:
             stdin, stdout, stderr = self.ssh.exec_command(command)
-            Logger().debug("[+] Sent the command (" + command + ") to the Router(" + self.router.ip + ")", 2)
+            Logger().debug("[+] Sent the command (" + command + ") to the Router(" + str(self.router.vlan_iface_id) + ")", 2)
             output = stdout.readlines()
             return str(output)
         except Exception as e:
-            Logger().error("[-] Couldn't send the command (" + command + ") to the Router(" + self.router.ip + ")", 2)
+            Logger().error("[-] Couldn't send the command (" + command + ") to the Router(" + str(self.router.vlan_iface_id) + ")", 2)
             Logger().error(str(e), 2)
 
     def send_data(self, local_file: str, remote_file: str):
@@ -62,9 +62,9 @@ class NetworkCtrl:
             sftp = self.ssh.open_sftp()
             sftp.put(local_file, remote_file)
             sftp.close()
-            Logger().debug("[+] Sent data '" + local_file + "' to Router(" + self.router.mac + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
+            Logger().debug("[+] Sent data '" + local_file + "' to Router(" + str(self.router.vlan_iface_id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
         except Exception as e:
-            Logger().error("[-] Couldn't send '" + local_file + "' to Router(" + self.router.mac + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
+            Logger().error("[-] Couldn't send '" + local_file + "' to Router(" + str(self.router.vlan_iface_id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
     def exit(self):
@@ -72,6 +72,6 @@ class NetworkCtrl:
         Delete the VLAN resp. the Namespace with the VLAN
         :return:
         """
-        Logger().info("Disconnect with Router(" + self.router.mac + ") ...", 1)
+        Logger().info("Disconnect with Router(" + str(self.router.vlan_iface_id) + ") ...", 1)
         self.vlan.delete_interface()
         self.namespace.remove()
