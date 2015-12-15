@@ -1,5 +1,4 @@
 from server.ipc import IPC
-from server.server import Server
 from cli.cli_util import CLIUtil
 import argparse
 import time
@@ -183,14 +182,14 @@ def main():
     if args.mode == "status":
         if args.all_routers:
             """return status of routers"""
-            routers = Server.get_routers()
+            routers = server_proxy.get_routers()
             if not routers:
                 util.print_bullet("No routers in network")
             else:
                 print_routers(routers)
 
         elif args.router:
-            routers = Server.get_routers()
+            routers = server_proxy.get_routers()
             print_router_info(routers, args.router[0])
         elif args.test:
             get_tests_progress()
