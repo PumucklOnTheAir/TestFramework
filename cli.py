@@ -175,7 +175,7 @@ def main():
     global util
     util = CLIUtil()
     util.print_header()
-    connect_to_server()  # --> remember to uncomment ipc shutdown
+    connect_to_server()
 
     if verbose:
         util.print_bullet("Mode set to verbose")
