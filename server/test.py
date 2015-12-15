@@ -17,6 +17,6 @@ class AbstractTest(metaclass=ABCMeta, TestCase):
 
     def __prepare_vlan(self):
         # TODO proof if this is right
-        network_ctrl = NetworkCtrl(self.__router)
-        network_ctrl.connect_with_router()
+        NetworkCtrl(self.__router)
+        # network_ctrl.connect_with_router()
 
