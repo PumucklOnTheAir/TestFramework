@@ -13,7 +13,7 @@ Git Cheat Sheet http://www.git-tower.com/blog/git-cheat-sheet/
 ### Starten
 Server manuel starten mit `python3 start_server.py` oder `./start_server.py`
 
-Wen das FreifunkTestFramework schon als Service installiert ist, dann kann man über systemd es starten:
+Wenn das FreifunkTestFramework schon als Service installiert ist, dann kann man über systemd es starten:
 `systemctl start fftserver`
 
 Tickets und Aufgabenplanung auf
@@ -26,7 +26,14 @@ https://waffle.io/PumucklOnTheAir/Organisatorisches/
 `./install.sh`
 unter unix mit systemd
 
+### Ausführen
+Über `python cli.py -h`können alle Subkommandos aufgelistet werden. 
 
+`python cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf.
+z.B. `python cli.py status -a` zeigt die Übersicht über alle Router an
+     `python cli.py status -r [VLAN ID]` zeigt detaillierte Infos zu einem bestimmten Router an, der sich
+     im VLAN mit der gegebenen ID befindet.
+     
 
 _Konventionen, Vorgehensweise und Dokumentation im Wiki_
 

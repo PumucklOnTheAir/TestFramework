@@ -1,5 +1,4 @@
 from server.ipc import IPC
-# from server.serverproxy import ServerProxy
 from server.server import Server
 from cli.cli_util import CLIUtil
 import argparse
@@ -11,17 +10,16 @@ def connect_to_server():
     """ Initiates connection to the IPC server by creating a client
     """
 
-    Server.start(True, "", True)
     if verbose:
         util.print_action("Setting up client...")
-    time.sleep(1)
-
-    # util.print_error("Direkt vom server: " + str(len(Server.get_routers())))
 
     global ipc_client
     """Global Variable for the IPC Client"""
     ipc_client = IPC()
     ipc_client.connect()
+
+    # Wait for connection
+    time.sleep(1)
 
     if verbose:
         util.print_action("...done.")
@@ -141,7 +139,7 @@ def main():
     """
 
     # Argument Parsing
-    parser = argparse.ArgumentParser(description="\tA program to test the firmwares on Freifunk routers")
+    parser = argparse.ArgumentParser(description="\tA program to test the firmware on Freifunk routers")
     subparsers = parser.add_subparsers(help="help for subcommands", dest="mode")
 
     # Verbose mode
@@ -180,14 +178,12 @@ def main():
     connect_to_server()  # --> remember to uncomment ipc shutdown
 
     if verbose:
-        util.print_error("VERBOSE!!!!!!")
+        util.print_bullet("Mode set to verbose")
 
     if args.mode == "status":
         if args.all_routers:
             """return status of routers"""
             routers = Server.get_routers()
-            if verbose:
-                util.print_warning("Router vom Server direkt: " + str(len(routers)))
             if not routers:
                 util.print_bullet("No routers in network")
             else:
@@ -207,12 +203,6 @@ def main():
     elif args.mode == "setup":
         print("setup setup setup")
 
-    if verbose:
-        util.print_action("Shutting down server...")
-    Server.stop()
-    if verbose:
-        util.print_action("...done")
-        util.print_action("Exiting")
 
 if __name__ == "__main__":
     main()
