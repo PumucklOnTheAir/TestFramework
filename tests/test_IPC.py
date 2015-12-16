@@ -95,6 +95,15 @@ class DummyServer(ServerProxy):
     @classmethod
     def stop(cls) -> []:
         pass
+    @classmethod
+    def get_router_by_id(cls) -> []:
+        pass
+    @classmethod
+    def sysupdate_firmware(cls) -> []:
+        pass
+    @classmethod
+    def sysupgrade_firmware(cls) -> []:
+        pass
 
 
 
