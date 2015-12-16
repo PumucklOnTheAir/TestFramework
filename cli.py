@@ -162,10 +162,23 @@ def main():
                                help="Runs selected test on")
     parser_action.add_argument("-tid", "--testid", metavar="Test ID", type=int,
                                default=0, action="store")
-    parser_action.add_argument("-sysupdate", "--sysupdate", metavar="ID", type=int, nargs=1,
-                               default=0, action="store", help="Downloads the system upgrade for a router")
-    parser_action.add_argument("-sysupgrade", "--sysupgrade", metavar="ID", type=int, nargs=1,
-                               default=0, action="store", help="Upgrades the router")
+    parser_action.add_argument("-sysupdate", "--sysupdate", metavar="ID", type=int, nargs="?",
+                               default=0, action="store", help="Downloads the system upgrade for the routers")
+    parser_action.add_argument("-sysupgrade", "--sysupgrade", metavar="ID", type=int, nargs="?",
+                               default=0, action="store", help="Upgrades the routers")
+
+    # subparser for sysupgrade
+    parser_upgrade = subparsers.add_parser("sysupgrade", help="Upgrades the routers")
+    parser_upgrade.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                default=0, action="store", help="List of routers to be upgraded")
+    parser_upgrade.add_argument("-a", "--all", action="store_true", help="Apply to all routers")
+    parser_upgrade.add_argument("-n", "--n", action="store_true", help="Do not save existing configuration")
+
+    # subparser for sysupdate
+    parser_update = subparsers.add_parser("sysupdate", help="Fetches the updates for the routers")
+    parser_update.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                               default=0, action="store", help="List of routers to be updated")
+    parser_update.add_argument("-a", "--all", action="store_true", help="Apply to all routers")
 
     # subparser for setup
     parser_setup = subparsers.add_parser("setup", help="Setup the VLANs")
@@ -203,11 +216,18 @@ def main():
         else:
             Logger().info("Please specify. See status -h")
     elif args.mode == "run":
-        if args.sysupdate:
-            server_proxy.sysupdate_firmware(router_ids, all)
-        elif args.sysupgrade:
-            server_proxy.sysupgrade_firmware(router_ids, all, n)
         Logger().info("Run run run")
+    elif args.sysupgrade:
+        if args.all:
+            server_proxy.sysupgrade_firmware([], True, args.n)
+        else:
+            server_proxy.sysupgrade_firmware(args.sysupgrade, False, args.n)
+    elif args.sysupdate:
+        if args.all:
+            server_proxy.sysupdate_firmware([], True)
+        else:
+            server_proxy.sysupdate_firmware(args.sysupdate, False)
+
     elif args.mode == "setup":
         Logger().info("setup setup setup")
     else:
