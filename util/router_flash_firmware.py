@@ -34,8 +34,8 @@ class RouterFlashFirmware:
         """
         Logger().info("Configure Firmware for Router(" + router.mac + ") ...")
         router = router
-        firmware_handler = FirmwareHandler(firmware_config[1], firmware_config[0])
-        firmware = firmware_handler.get_firmware(firmware_config[2], router.model, firmware_config[3], firmware_config[4])
+        firmware_handler = FirmwareHandler(ReleaseModel(firmware_config[1]), firmware_config[0])
+        firmware = firmware_handler.get_firmware(UpdateType(firmware_config[2]), router.model, firmware_config[3], firmware_config[4])
 
         Logger().info("Copy Firmware to Router(" + router.mac + ") ...")
         network_ctrl = NetworkCtrl(router)

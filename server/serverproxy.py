@@ -60,6 +60,14 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     #### TODO: Von Simon
+    @abstractclassmethod
+    def get_router_by_id(cls, id: int) -> Router:
+        """
+        Returns a Router with the given id.
+        :param id:
+        :return: Router
+        """
+    @abstractclassmethod
     def sysupdate_firmware(self, router_ids: List[int], all: bool):
         """
         Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
@@ -67,7 +75,7 @@ class ServerProxy(metaclass=ABCMeta):
         :param all: Is True if all Routers should be updated
         """
         pass
-
+    @abstractclassmethod
     def sysupgrade_firmware(self, router_ids: List[int], all: bool, n: bool):
         """
         Upgrades the firmware on the given Router(s)

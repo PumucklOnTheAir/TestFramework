@@ -118,6 +118,21 @@ class Server(ServerProxy):
 
     #### TODO: Von Simon
     @classmethod
+    def get_router_by_id(cls, id: int) -> Router:
+        """
+        Returns a Router with the given id.
+        :param id:
+        :return: Router
+        """
+        routers = cls.get_routers()
+        if routers[id].id == id:
+            return id
+        for router in routers:
+            if router.id == id:
+                return router
+        return None
+
+    @classmethod
     def sysupdate_firmware(cls, router_ids: List[int], all: bool):
         """
         Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
@@ -126,11 +141,11 @@ class Server(ServerProxy):
         """
         from util.router_flash_firmware import RouterFlashFirmware
         if all:
-            RouterFlashFirmware.sysupdate(cls.get_routers(), cls.get_firmware_config())
+            RouterFlashFirmware.sysupdate(cls.get_routers(), ConfigManager.get_firmware_list())
         else:
             for id in router_ids:
-                router = get_router(id)
-                RouterFlashFirmware.sysupdate_single_router(router, cls.get_firmware_config())
+                router = cls.get_router_by_id(id)
+                RouterFlashFirmware.sysupdate_single_router(router, ConfigManager.get_firmware_list())
 
     @classmethod
     def sysupgrade_firmware(cls, router_ids: List[int], all: bool, n: bool):
@@ -145,6 +160,6 @@ class Server(ServerProxy):
             RouterFlashFirmware.sysupgrade(cls.get_routers(), n)
         else:
             for id in router_ids:
-                router = get_router(id)
-                RouterFlashFirmware.sysupgrade_single_router(router, cls.get_firmware_config())
+                router = cls.get_router_by_id(id)
+                RouterFlashFirmware.sysupgrade_single_router(router, n)
     ##############
