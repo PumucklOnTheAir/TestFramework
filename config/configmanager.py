@@ -16,6 +16,7 @@ class ConfigManager:
     ROUTER_MANUAL_CONFIG_PATH = os.path.join(CONFIG_PATH, 'router_manual_config.yaml')
     SERVER_CONFIG_PATH = os.path.join(CONFIG_PATH, 'server_config.yaml')
     TEST_CONFIG_PATH = os.path.join(CONFIG_PATH, 'test_config.yaml')
+    FIRMWARE_CONFIG_PATH = os.path.join(CONFIG_PATH, 'firmware_config.yaml')
 
     @staticmethod
     def read_file(path: str = "") -> []:
@@ -178,3 +179,42 @@ class ConfigManager:
         """
         output = ConfigManager.get_test_config()
         return output
+
+    @staticmethod
+    def get_firmware_config() -> []:
+        """
+        Read the Firmware Config file
+        :return: Array with the output from the file
+        """
+        return ConfigManager.read_file(ConfigManager.FIRMWARE_CONFIG_PATH)
+
+    @staticmethod
+    def get_firmware_list() -> []:
+        """
+        Read the Firmware Config file
+        :return: List with a specific output from the file
+        """
+        output = ConfigManager.get_firmware_config()
+        firmware_list = []
+        for x in output:
+            for v in x.values():
+                firmware_list.append(v)
+        return firmware_list
+
+    @staticmethod
+    def get_firmware_property(prop: str = "") -> object:
+        """
+        Read the Firmware Config file and give the property back
+        :param prop: Property from Firmware file
+        :return: Value of the property from the file
+        """
+        dic_keys = {"default_URL", "default_Release_Model", "default_Update_Type", "default_FreiFunk_Verein",
+                    "default_Firmware_Version"}
+
+        if prop in dic_keys:
+            output = ConfigManager.get_firmware_config()
+            for x in output:
+                if prop in x.keys():
+                    return x[prop]
+
+        return None

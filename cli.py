@@ -30,12 +30,12 @@ def connect_to_server():
 
 
 def print_routers(routers):
-    headers = ["Router Model/Vers", "VLAN ID", "VLAN Name", "Router Name", "IP", "MAC"]
+    headers = ["ID", "Router Model/Vers", "VLAN ID", "Router Name", "IP", "MAC"]
     string_list = []
     for i in range(len(routers)):
-        string_list.append([routers[i].model,
+        string_list.append([routers[i].id,
+                            routers[i].model,
                             routers[i].vlan_iface_id,
-                            routers[i].vlan_iface_name,
                             routers[i].wlan_mode,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
@@ -43,12 +43,13 @@ def print_routers(routers):
 
 
 def print_router_info(router_list, rid):
-    router = [elem for elem in router_list if str(elem.vlan_iface_id) == str(rid)]
+    router = [elem for elem in router_list if str(elem.id) == str(rid)]
     if not router:
         Logger().info("No such router found, check the list again")
     else:
         router = router[0]
-        info = [["Model", router.model],
+        info = [["ID", router.id]
+                ["Model", router.model],
                 ["MAC", router.mac],
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
@@ -56,7 +57,8 @@ def print_router_info(router_list, rid):
                 ["WLAN Modus", router.wlan_mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
-                ["SSID", router.ssid]]
+                ["SSID", router.ssid],
+                ["Firmware", router.firmware.name]]
 
         util.print_router(info)
 
@@ -148,10 +150,10 @@ def main():
 
     # subparser for status requests
     parser_status = subparsers.add_parser("status", help="Show status of routers, network or tests")
-    parser_status.add_argument("-a", "--all_routers", help="Return status of all routers in network",
+    parser_status.add_argument("-a", "--all", help="Return status of all routers in network",
                                action="store_true")
     parser_status.add_argument("-r", "--router", help="Return detailed info on router", nargs=1,
-                               action="store", metavar="VLAN ID")
+                               action="store", metavar="Router ID")
     parser_status.add_argument("-t", "--test", help="Return currently running tests", action="store_true")
     parser_status.add_argument("-l", "--list", help="List all available tests", action="store_true")
 
@@ -179,10 +181,6 @@ def main():
     parser_update.add_argument("-a", "--all", action="store_true", default=False,
                                help="Apply to all routers")
 
-    # subparser for setup
-    parser_setup = subparsers.add_parser("setup", help="Setup the VLANs")
-    parser_setup.add_argument("--setup", help="Setup the network", action="store_true")
-
     args = parser.parse_args()
 
     global verbose
@@ -197,7 +195,7 @@ def main():
         Logger().info("Mode set to verbose")
 
     if args.mode == "status":
-        if args.all_routers:
+        if args.all:
             """return status of routers"""
             routers = server_proxy.get_routers()
             if not routers:
@@ -216,19 +214,16 @@ def main():
             Logger().info("Please specify. See status -h")
     elif args.mode == "run":
         Logger().info("Run run run")
-    elif args.sysupgrade:
+    elif args.mode == "sysupgrade":
         if args.all:
             server_proxy.sysupgrade_firmware([], True, args.n)
         else:
             server_proxy.sysupgrade_firmware(args.sysupgrade, False, args.n)
-    elif args.sysupdate:
+    elif args.mode == "sysupdate":
         if args.all:
             server_proxy.sysupdate_firmware([], True)
         else:
             server_proxy.sysupdate_firmware(args.sysupdate, False)
-
-    elif args.mode == "setup":
-        Logger().info("setup setup setup")
     else:
         Logger().info("Check -h for help")
 
