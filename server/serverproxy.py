@@ -58,3 +58,21 @@ class ServerProxy(metaclass=ABCMeta):
         :return: Shutdown the server
         """
         pass
+
+    #### TODO: Von Simon
+    def sysupdate_firmware(self, router_ids: List[int], all: bool):
+        """
+        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+        :param router_ids: List of unique numbers to identify a Router
+        :param all: Is True if all Routers should be updated
+        """
+        pass
+
+    def sysupgrade_firmware(self, router_ids: List[int], all: bool, n: bool):
+        """
+        Upgrades the firmware on the given Router(s)
+        :param router_ids:
+        :param all: If all is True all Routers were upgraded
+        :param n: If n is True the upgrade discard the last firmware
+        """
+    ###################

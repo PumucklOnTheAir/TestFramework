@@ -204,9 +204,9 @@ def main():
             Logger().info("Please specify. See status -h")
     elif args.mode == "run":
         if args.sysupdate:
-            Logger().info("Call Sysupdate on IPC for Router " + str(args.sysupdate[0]))
+            server_proxy.sysupdate_firmware(router_ids, all)
         elif args.sysupgrade:
-            Logger().info("Call Sysupgrade on IPC for Router " + str(args.sysupgrade[0]))
+            server_proxy.sysupgrade_firmware(router_ids, all, n)
         Logger().info("Run run run")
     elif args.mode == "setup":
         Logger().info("setup setup setup")

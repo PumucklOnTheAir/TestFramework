@@ -5,6 +5,7 @@ from server.router import Router
 from log.logger import Logger
 import os
 
+
 class RouterInfo:
 
     @staticmethod
@@ -15,11 +16,27 @@ class RouterInfo:
         :return:
         """
         for router in routers:
+            RouterInfo.update_single_router(router)
+            '''
             worker = Worker(router)
             worker.start()
             worker.join()
-
-
+            '''
+    @staticmethod
+    def update_single_router(router: Router):
+        network_ctrl = NetworkCtrl(router)
+        network_ctrl.connect_with_router()
+        # Model
+        router.model = network_ctrl.send_router_command(
+            'cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
+        # MAC
+        router.mac = network_ctrl.send_router_command(
+            'uci show network.client.macaddr').split('=')[1][:-4]
+        # SSID
+        router.ssid = network_ctrl.send_router_command(
+            'uci show wireless.client_radio0.ssid').split('=')[1][:-4]
+        network_ctrl.exit()
+'''
 class Worker(Thread):
 
     def __init__(self, router: Router):
@@ -47,3 +64,4 @@ class Worker(Thread):
 
     def join(self):
         Thread.join(self)
+'''

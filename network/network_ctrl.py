@@ -13,7 +13,6 @@ class NetworkCtrl:
         The VLAN will be encapsulate in the Namespace.
         Also the a SSHClient will be created.
         :param router:
-        :return:
         """
         Logger().info("Create Network Controller for Router(" + str(router.vlan_iface_id) + ") ...", 1)
         self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None, vlan_iface_ip_mask=None)
@@ -25,7 +24,6 @@ class NetworkCtrl:
         """
         Connects to the Router via SSH(Paramiko).
         Ignores a missing signatur.
-        :return:
         """
         Logger().info("Connect with Router(" + str(self.router.vlan_iface_id) + ") ...", 1)
         try:
@@ -56,7 +54,6 @@ class NetworkCtrl:
         Sends Data via sftp to the Router
         :param local_file: Path to the local file
         :param remote_file: Path on the Router, where the file should be saved
-        :return:
         """
         try:
             sftp = self.ssh.open_sftp()
@@ -70,7 +67,6 @@ class NetworkCtrl:
     def exit(self):
         """
         Delete the VLAN resp. the Namespace with the VLAN
-        :return:
         """
         Logger().info("Disconnect with Router(" + str(self.router.vlan_iface_id) + ") ...", 1)
         self.vlan.delete_interface()

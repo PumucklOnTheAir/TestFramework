@@ -15,7 +15,6 @@ class FirmwareHandler:
         """
         :param release_model: stable, beta, experimental
         :param url: alike "https://firmware.darmstadt.freifunk.net"
-        :return:
         """
         self.url = url
         self.release_model = release_model
@@ -83,6 +82,7 @@ class FirmwareHandler:
         """
         Creates a firmware, with the url and the save-file.
         The User can chose a firmware from the manifest.
+        The manifest contains also a hash of the firmware so this hash is also return.
         :param update_type: factory, sysupgrade
         :return: Firmware, hash
         """
@@ -129,13 +129,13 @@ class FirmwareHandler:
             return False
         return True
 
-    def _download_firmware(self, url: str, file: str, update_type: UpdateType):
+    def _download_firmware(self, url: str, file: str, update_type: UpdateType) -> bool:
         """
         Downloads the firmware from the url and saves it into the given file
-        :param url:
-        :param file:
-        :param update_type:
-        :return:
+        :param url: the url to the firmware
+        :param file: the path/file were the firmware should be stored on the system
+        :param update_type: factory, sysupgrade
+        :return: True if the firmware was successfully downloaded
         """
         Logger().info("Download " + url + " ...", 2)
         self._create_path(self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + update_type.name)
@@ -151,8 +151,8 @@ class FirmwareHandler:
 
     def _download_manifest(self) -> str:
         """
-        Downloads the manifest and saves it
-        :return:
+        Downloads the manifest and saves it.
+        :return: The path/file were the manifest is stored.(builds from the url a path)
         """
         url = self.url + '/'+self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + self.release_model.name + '.manifest'
         file = self.FIRMWARE_FILE + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + self.release_model.name + '.manifest'
@@ -242,7 +242,6 @@ class FirmwareHandler:
         """
         Creates directories if necessary
         :param path:
-        :return:
         """
         try:
             Logger().debug("Create path " + path + " ...", 3)

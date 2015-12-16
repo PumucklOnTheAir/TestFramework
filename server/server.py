@@ -115,3 +115,36 @@ class Server(ServerProxy):
         """
         # TODO vllt vom config?
         pass
+
+    #### TODO: Von Simon
+    @classmethod
+    def sysupdate_firmware(cls, router_ids: List[int], all: bool):
+        """
+        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+        :param router_ids: List of unique numbers to identify a Router
+        :param all: Is True if all Routers should be updated
+        """
+        from util.router_flash_firmware import RouterFlashFirmware
+        if all:
+            RouterFlashFirmware.sysupdate(cls.get_routers(), cls.get_firmware_config())
+        else:
+            for id in router_ids:
+                router = get_router(id)
+                RouterFlashFirmware.sysupdate_single_router(router, cls.get_firmware_config())
+
+    @classmethod
+    def sysupgrade_firmware(cls, router_ids: List[int], all: bool, n: bool):
+        """
+        Upgrades the firmware on the given Router(s)
+        :param router_ids:
+        :param all: If all is True all Routers were upgraded
+        :param n: If n is True the upgrade discard the last firmware
+        """
+        from util.router_flash_firmware import RouterFlashFirmware
+        if all:
+            RouterFlashFirmware.sysupgrade(cls.get_routers(), n)
+        else:
+            for id in router_ids:
+                router = get_router(id)
+                RouterFlashFirmware.sysupgrade_single_router(router, cls.get_firmware_config())
+    ##############

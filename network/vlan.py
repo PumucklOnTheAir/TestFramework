@@ -5,9 +5,19 @@ import re
 import socket, struct, fcntl
 from log.logger import Logger
 
+
 class Vlan:
 
     def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str, vlan_iface_ip_mask: int):
+        """
+        Creats a virtual interface on a existing interface (like eth0).
+        It uses IPDB: IPDB is a transactional database, containing records, representing network stack objects.
+                    Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
+        :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
+        :param vlan_iface_id: the id of the vlan
+        :param vlan_iface_ip: ip of the virtual interface
+        :param vlan_iface_ip_mask: network-mask of the virtual interface
+        """
         self.vlan_iface_name = vlan_iface_name
         self.vlan_iface_id = vlan_iface_id
         self.ipdb = IPDB()
@@ -16,7 +26,7 @@ class Vlan:
     def create_interface(self, link_iface_name: str='eth0', vlan_iface_name: str='Lan1', vlan_iface_id: int=10, vlan_iface_ip: str=None,
                          vlan_iface_ip_mask: int=None):
         """
-        :Desc : Creats a virtual interface on a existing interface (like eth0)
+         Creats a virtual interface on a existing interface (like eth0)
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
         :param vlan_iface_id: the id of the vlan
         :param vlan_iface_ip: ip of the virtual interface
@@ -40,7 +50,7 @@ class Vlan:
 
     def delete_interface(self):
         """
-        : Desc : removes the virtual interface
+        Removes the virtual interface
         """
         Logger().debug("Delete VLAN Interface ...", 2)
         try:
@@ -56,7 +66,7 @@ class Vlan:
 
     def _wait_for_ip_assignment(self, vlan_iface_name):
         """
-        :Desc : Waits until the dhcp-client got an ip
+        Waits until the dhcp-client got an ip
         :param vlan_iface_name:
         """
         Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + vlan_iface_name + ") ...", 3)
@@ -68,7 +78,7 @@ class Vlan:
 
     def _get_ip(self, vlan_iface_name ='eth0') -> str:
         """
-        :Desc : gets the ip of a specific interface
+        Gets the ip of a specific interface
         :param vlan_iface_name:
         :return: the ip of an interface without network-mask
         """
@@ -82,9 +92,9 @@ class Vlan:
         ip = struct.unpack('16sH2x4s8x', res)[2]
         return socket.inet_ntoa(ip)
 
-    def _get_ipv4_from_dictionary(self, iface):
+    def _get_ipv4_from_dictionary(self, iface) -> str:
         """
-        : Desc : gets the ip and network-mask from the ipdb
+        Gets the ip and network-mask from the ipdb
         :param iface: the interface from ipdb
         :return: ip with network-mask
         """

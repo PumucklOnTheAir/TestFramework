@@ -5,14 +5,16 @@ import re, sys
 import traceback
 from log.logger import Logger
 
+
 class Namespace:
+
     def __init__(self, nsp_name: str, vlan_iface_name: str, ipdb: IPDB):
         """
         Creats a namespace for a specific vlan_iface
         :param nsp_name:
         :param vlan_iface_name:
-        :param ipdb:
-        :return:
+        :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
+                    Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
         """
         Logger().debug("Create Namespace ...", 2)
         self.nsp_name = nsp_name
@@ -34,8 +36,7 @@ class Namespace:
 
     def remove(self):
         """
-        : Desc : removes the virtual namespace and interface
-        :return:
+        Removes the virtual namespace and interface.
         """
         Logger().debug("Delete Namespace ...", 2)
         try:
@@ -54,7 +55,7 @@ class Namespace:
 
     def encapsulate_interface(self):
         """
-        :Desc : capture the assigned interface in a namespace
+        Capture the assigned interface in a namespace.
         """
         vlan_ip = self.get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])
         with self.ipdb.interfaces[self.vlan_iface_name] as vlan:
@@ -67,7 +68,7 @@ class Namespace:
 
     def get_ipv4_from_dictionary(self, iface):
         """
-        : Desc : gets the ip and network-mask from the ipdb
+        Gets the ip and network-mask from the ipdb
         :param iface: the interface from ipdb
         :return: ip with network-mask
         """
