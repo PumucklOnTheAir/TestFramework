@@ -46,24 +46,8 @@ class CLIUtil:
 
         # Liste der Router nach Name sortieren
         routers.sort(key=lambda x: x[0])
-        self.print_action("routers in network: " + str(len(routers)))
+        print("Routers in network: " + str(len(routers)))
         self.print_dynamic_table(routers, headers)
-
-    @staticmethod
-    def print_action(message):
-        print("[+]" + message)
-
-    @staticmethod
-    def print_warning(message):
-        print(OutputColors.yellow + "Warning: " + message + OutputColors.clear)
-
-    @staticmethod
-    def print_error(message):
-        print(OutputColors.red + "\nERROR: " + message + OutputColors.clear)
-
-    @staticmethod
-    def print_bullet(message):
-        print("(*) " + message)
 
     @staticmethod
     def print_header():
