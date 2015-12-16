@@ -8,7 +8,7 @@ from log.logger import Logger
 
 class Vlan:
 
-    def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str, vlan_iface_ip_mask: int):
+    def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
         """
         Creats a virtual interface on a existing interface (like eth0).
         It uses IPDB: IPDB is a transactional database, containing records, representing network stack objects.
