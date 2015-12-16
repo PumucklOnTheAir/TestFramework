@@ -36,7 +36,7 @@ class ColoredFormatter(logging.Formatter):
     COLORS = {
         'WARNING': 33,
         'INFO': 30,
-        'DEBUG': 34,
+        'DEBUG': 31,
         'CRITICAL': 31,
         'ERROR': 31,
     }
