@@ -13,10 +13,13 @@ class Mode(Enum):
 
 class Router(ProxyObject, NetworkIface):
 
-    def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
+    def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
                  usr_password: str, power_socket: int):
 
         ProxyObject.__init__(self)
+
+        self._id = None
+        self._id = id
 
         self._ip = None
         self._ip = ip
@@ -42,6 +45,14 @@ class Router(ProxyObject, NetworkIface):
         self._ssid = ""
         self._firmware = None
         self._firmware_tmp = None
+
+    @property
+    def id(self) -> int:
+        """
+        ID of the Router
+        :return: ID number as in
+        """
+        return self._id
 
     @property
     def ip(self) -> str:

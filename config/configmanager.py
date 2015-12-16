@@ -99,7 +99,7 @@ class ConfigManager:
                 count = count
 
             for x in range(0, count):
-                v = Router(name['default_Name'] + "{0}".format(i), i, ip['default_IP'], mask['default_Mask'],
+                v = Router(x, name['default_Name'] + "{0}".format(i), i, ip['default_IP'], mask['default_Mask'],
                            username['default_Username'], password['default_Password'], socket_id)
                 router_list.append(v)
                 i += 1
@@ -136,7 +136,7 @@ class ConfigManager:
                 return
 
             try:
-                v = Router(router_info['Name'], router_info['Id'], router_info['IP'], router_info['Mask'],
+                v = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['Mask'],
                            router_info['Username'], router_info['Password'], router_info['PowerSocket'])
                 router_list.append(v)
 
