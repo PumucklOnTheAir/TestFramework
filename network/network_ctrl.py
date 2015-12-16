@@ -3,7 +3,7 @@ from network.vlan import Vlan
 from network.namespace import Namespace
 from server.server import Router
 from log.logger import Logger
-
+import os
 
 class NetworkCtrl:
 
@@ -56,9 +56,13 @@ class NetworkCtrl:
         :param remote_file: Path on the Router, where the file should be saved
         """
         try:
+            '''
             sftp = self.ssh.open_sftp()
             sftp.put(local_file, remote_file)
             sftp.close()
+            '''
+            command = 'sshpass  -p' + self.router.usr_password + ' scp ' + local_file + ' ' + self.router.usr_name +'@' + self.router.ip + ':' + remote_file
+            os.system(command)
             Logger().debug("[+] Sent data '" + local_file + "' to Router(" + str(self.router.vlan_iface_id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
         except Exception as e:
             Logger().error("[-] Couldn't send '" + local_file + "' to Router(" + str(self.router.vlan_iface_id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)

@@ -64,7 +64,7 @@ class Vlan:
             Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
             Logger().error(str(e), 3)
 
-    def _wait_for_ip_assignment(self, vlan_iface_name):
+    def _wait_for_ip_assignment(self, vlan_iface_name: str):
         """
         Waits until the dhcp-client got an ip
         :param vlan_iface_name:
@@ -76,7 +76,7 @@ class Vlan:
             while self._get_ip(vlan_iface_name) is None:
                 time.sleep(0.5)
 
-    def _get_ip(self, vlan_iface_name ='eth0') -> str:
+    def _get_ip(self, vlan_iface_name: str) -> str:
         """
         Gets the ip of a specific interface
         :param vlan_iface_name:
