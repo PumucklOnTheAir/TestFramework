@@ -11,6 +11,11 @@ class Server(ServerProxy):
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
     and using his inherit public methods of ServerProxy.
+
+    Troubleshooting:
+    The server returns an
+        "OSError: [Errno 48] Address already in use" if the server is already started
+        "OSError: [Errno 99] Cannot assign requested address" ?? try to restart the computer TODO #51
     """""
     DEBUG = False
     VLAN = True
