@@ -3,7 +3,7 @@ from server.router import Router
 from firmware.firmware import ReleaseModel, UpdateType
 
  # Create router
-router = Router("vlan21", 21, "192.168.1.1", 24, "root", "root", 1)
+router = Router(1, "vlan21", 21, "192.168.1.1", 24, "root", "root", 1)
 router.model = "TP-LINK TL-WR841N/ND v9"
 router.mac = "e8:de:27:b7:7c:e2"
 # Create firware configuration

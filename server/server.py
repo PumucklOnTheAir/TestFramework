@@ -141,7 +141,8 @@ class Server(ServerProxy):
         """
         from util.router_flash_firmware import RouterFlashFirmware
         if all:
-            RouterFlashFirmware.sysupdate(cls.get_routers(), ConfigManager.get_firmware_list())
+            for router in cls.get_routers():
+                RouterFlashFirmware.sysupdate_single_router(router, ConfigManager.get_firmware_list())
         else:
             for id in router_ids:
                 router = cls.get_router_by_id(id)
@@ -157,7 +158,8 @@ class Server(ServerProxy):
         """
         from util.router_flash_firmware import RouterFlashFirmware
         if all:
-            RouterFlashFirmware.sysupgrade(cls.get_routers(), n)
+            for router in cls.get_routers():
+                RouterFlashFirmware.sysupgrade_single_router(router, n)
         else:
             for id in router_ids:
                 router = cls.get_router_by_id(id)

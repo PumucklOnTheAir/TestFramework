@@ -57,12 +57,18 @@ class NetworkCtrl:
         """
         try:
             '''
+            If sftp is installed on the Router
             sftp = self.ssh.open_sftp()
             sftp.put(local_file, remote_file)
             sftp.close()
             '''
             command = 'sshpass  -p' + self.router.usr_password + ' scp ' + local_file + ' ' + self.router.usr_name +'@' + self.router.ip + ':' + remote_file
             os.system(command)
+            '''
+            Paramiko_scp have to installed
+            scp = SCPClient(self.ssh.get_transport())
+            scp.put(local_file, remote_file)
+            '''
             Logger().debug("[+] Sent data '" + local_file + "' to Router(" + str(self.router.vlan_iface_id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
         except Exception as e:
             Logger().error("[-] Couldn't send '" + local_file + "' to Router(" + str(self.router.vlan_iface_id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)

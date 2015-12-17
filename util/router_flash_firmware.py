@@ -32,12 +32,12 @@ class RouterFlashFirmware:
         :param router:
         :param firmware_config:
         """
-        Logger().info("Configure Firmware for Router(" + router.mac + ") ...")
-        router = router
+        Logger().info("Configure Firmware for Router(" + str(router.id) + ") ...")
+        # TODO: Der Zugriff auf firmware_config muss über einen str geschehen
         firmware_handler = FirmwareHandler(ReleaseModel(firmware_config[1]), firmware_config[0])
         firmware = firmware_handler.get_firmware(UpdateType(firmware_config[2]), router.model, firmware_config[3], firmware_config[4])
 
-        Logger().info("Copy Firmware to Router(" + router.mac + ") ...")
+        Logger().info("Copy Firmware to Router(" + str(router.id) + ") ...")
         network_ctrl = NetworkCtrl(router)
         network_ctrl.connect_with_router()
         network_ctrl.send_data(firmware.file, '/tmp/' + firmware.name)
@@ -69,19 +69,16 @@ class RouterFlashFirmware:
         :param router:
         :param n: If n is True the upgrade discard the last firmware
         """
-        Logger().info("Sysupgrade of Firmware from Router(" + router.mac + ") ...")
-        router = router
-        n = n
+        Logger().info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
         network_ctrl = NetworkCtrl(router)
         network_ctrl.connect_with_router()
         # Validate that the firmware is in the right directory "/tmp/"
         firmware_exists = network_ctrl.send_router_command('[ -f /tmp/'+ router.firmware_tmp.name + ' ]')
         if firmware_exists:
-            # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
             arg = '-n' if n else ''
             network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + router.firmware_tmp.name)
         else:
-            print("The firmware " + router.firmware_tmp.name + " doesn't exist in /tmp/")
+            Logger().info("[-] The firmware " + router.firmware_tmp.name + " doesn't exist in /tmp/", 1)
         network_ctrl.exit()
 
 '''
