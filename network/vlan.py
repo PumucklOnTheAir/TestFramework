@@ -4,6 +4,7 @@ import time
 import re
 import socket, struct, fcntl
 from log.logger import Logger
+import os
 
 
 class Vlan:
@@ -18,34 +19,32 @@ class Vlan:
         :param vlan_iface_ip: ip of the virtual interface
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
+        self.link_iface_name = link_iface_name
         self.vlan_iface_name = vlan_iface_name
         self.vlan_iface_id = vlan_iface_id
         self.ipdb = IPDB()
-        self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
+        #self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
 
-    def create_interface(self, link_iface_name: str='eth0', vlan_iface_name: str='Lan1', vlan_iface_id: int=10, vlan_iface_ip: str=None,
-                         vlan_iface_ip_mask: int=None):
+    def create_interface(self, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
         """
          Creats a virtual interface on a existing interface (like eth0)
-        :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
-        :param vlan_iface_id: the id of the vlan
         :param vlan_iface_ip: ip of the virtual interface
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
         Logger().debug("Create VLAN Interface ...", 2)
         try:
-            link_iface = self.ipdb.interfaces[link_iface_name]
-            with self.ipdb.create(kind="vlan", ifname=vlan_iface_name, link=link_iface, vlan_id=vlan_iface_id).commit()\
+            link_iface = self.ipdb.interfaces[self.link_iface_name]
+            with self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface, vlan_id=self.vlan_iface_id).commit()\
                     as i:
                 if vlan_iface_ip:
                     i.add_ip(vlan_iface_ip, vlan_iface_ip_mask)
                 i.mtu = 1400
             if not vlan_iface_ip:
-                self._wait_for_ip_assignment(vlan_iface_name)
-                vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[vlan_iface_name])
-            Logger().debug("[+] " + vlan_iface_name + " created with: Link=" + link_iface_name + ", VLAN_ID=" + str(vlan_iface_id)+ ", IP=" + vlan_iface_ip, 3)
+                self._wait_for_ip_assignment()
+                vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])
+            Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name + ", VLAN_ID=" + str(self.vlan_iface_id)+ ", IP=" + vlan_iface_ip, 3)
         except Exception as e:
-            Logger().debug("[-] " + vlan_iface_name + " couldn't be created", 3)
+            Logger().debug("[-] " + self.vlan_iface_name + " couldn't be created", 3)
             Logger().error(str(e), 3)
 
     def delete_interface(self):
@@ -64,27 +63,24 @@ class Vlan:
             Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
             Logger().error(str(e), 3)
 
-    def _wait_for_ip_assignment(self, vlan_iface_name: str):
+    def _wait_for_ip_assignment(self):
         """
         Waits until the dhcp-client got an ip
-        :param vlan_iface_name:
         """
-        Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + vlan_iface_name + ") ...", 3)
-        time.sleep(2)
-        if not self._get_ip(vlan_iface_name):
-            Popen(["dhclient", vlan_iface_name], stdout=PIPE)
-            while self._get_ip(vlan_iface_name) is None:
+        Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...", 3)
+        if not self.get_ip():
+            os.system('dhclient ' + self.vlan_iface_name)
+            while self.get_ip() is None:
                 time.sleep(0.5)
 
-    def _get_ip(self, vlan_iface_name: str) -> str:
+    def get_ip(self) -> str:
         """
         Gets the ip of a specific interface
-        :param vlan_iface_name:
         :return: the ip of an interface without network-mask
         """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sockfd = sock.fileno()
-        ifreq = struct.pack('16sH14s', vlan_iface_name.encode('utf-8'), socket.AF_INET, b'\x00' * 14)
+        ifreq = struct.pack('16sH14s', self.vlan_iface_name.encode('utf-8'), socket.AF_INET, b'\x00' * 14)
         try:
             res = fcntl.ioctl(sockfd, 0x8915, ifreq)
         except:

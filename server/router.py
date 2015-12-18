@@ -3,6 +3,7 @@ from enum import Enum
 from firmware.firmware import Firmware
 from network.network_iface import NetworkIface
 
+
 class Mode(Enum):
     master = 1
     managed = 2
@@ -40,11 +41,11 @@ class Router(ProxyObject, NetworkIface):
         self._model = None
         self._usr_name = usr_name
         self._usr_password = usr_password
-        self._mac = None
+        self._mac = '00:00:00:00:00:00'
         self._wlan_mode = Mode.unknown
-        self._ssid = ""
-        self._firmware = None
-        self._firmware_tmp = None
+        self._ssid = ''
+        self._firmware = Firmware.get_default_firmware()
+        self._firmware_tmp = Firmware.get_default_firmware()
 
     @property
     def id(self) -> int:
@@ -97,14 +98,6 @@ class Router(ProxyObject, NetworkIface):
         """
         return self._usr_name
 
-    @usr_name.setter
-    def usr_name(self, value: str):
-        """
-        :type value: str
-        """
-        assert isinstance(value, str)
-        self._usr_name = value
-
     @property
     def usr_password(self) -> str:
         """
@@ -113,14 +106,6 @@ class Router(ProxyObject, NetworkIface):
         :return:
         """
         return self._usr_password
-
-    @usr_password.setter
-    def usr_password(self, value: str):
-        """
-        :type value: str
-        """
-        assert isinstance(value, str)
-        self._usr_password = value
 
     @property
     def mac(self) -> str:
@@ -226,7 +211,6 @@ class Router(ProxyObject, NetworkIface):
     def firmware_tmp(self) -> Firmware:
         """
         The firmware int the directory /tmp/ of the routers
-        :rtype: int
         :return:
         """
         return self._firmware_tmp

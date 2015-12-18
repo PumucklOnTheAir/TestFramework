@@ -36,6 +36,13 @@ class Firmware:
         self._url = url
         self._hash = ""
 
+    @staticmethod
+    def get_default_firmware():
+        """
+        :return: A firmware-obj which can be used as a default value, if the firmware isn't known already
+        """
+        return Firmware('Firmware not known', '0.0.0', 'ffxx', ReleaseModel.stable, UpdateType.factory, '', '')
+
     def check_hash(self, excep_hash: str) -> bool:
         """
         Checks whether the excepted Hash is equal the actual of the Firmware.

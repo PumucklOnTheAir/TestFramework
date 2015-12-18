@@ -1,96 +1,47 @@
 from threading import Thread
-from network.network_ctrl import NetworkCtrl
-from typing import List
-from server.router import Router
+
 from firmware.firmware_handler import FirmwareHandler
-from firmware.firmware import Firmware, ReleaseModel, UpdateType
 from log.logger import Logger
-import os
+from network.network_ctrl import NetworkCtrl
+from server.router import Router
+import time
+from network.webserver import WebServer
 
 
+# TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
+# TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
 class RouterFlashFirmware:
 
     @staticmethod
-    def sysupdate(routers: List[Router], firmware_config):
+    def sysupdate(router: Router, firmware_config):
         """
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
         :param routers:
         :param firmware_config:
         """
-        for router in routers:
-            RouterFlashFirmware.sysupdate_single_router(router, firmware_config)
-            '''
-            worker = ConfigurationWorker(router, firmware_config)
-            worker.start()
-            worker.join()
-            '''
+        worker = SysupdateWorker(router, firmware_config)
+        worker.start()
+        worker.join()
 
     @staticmethod
-    def sysupdate_single_router(router: Router, firmware_config):
-        """
-        Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
-        :param router:
-        :param firmware_config:
-        """
-        Logger().info("Configure Firmware for Router(" + str(router.id) + ") ...")
-        # TODO: Der Zugriff auf firmware_config muss über einen str geschehen
-        firmware_handler = FirmwareHandler(ReleaseModel(firmware_config[1]), firmware_config[0])
-        firmware = firmware_handler.get_firmware(UpdateType(firmware_config[2]), router.model, firmware_config[3], firmware_config[4])
-
-        Logger().info("Copy Firmware to Router(" + str(router.id) + ") ...")
-        network_ctrl = NetworkCtrl(router)
-        network_ctrl.connect_with_router()
-        network_ctrl.send_data(firmware.file, '/tmp/' + firmware.name)
-        network_ctrl.exit()
-
-        router.firmware_tmp = firmware
-
-
-    @staticmethod
-    def sysupgrade(routers: List[Router], n: bool):
+    def sysupgrade(router: Router, n: bool):
         """
         Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
         and does a Sysupgrade.
         :param routers:
         :param n: If n is True the upgrade discard the last firmware
         """
-        for router in routers:
-            RouterFlashFirmware.sysupgrade_single_router(router, n)
-            '''
-            worker = SysupgradeWorker(router, n)
-            worker.start()
-            worker.join()
-            '''
+        worker = SysupgradeWorker(router, n)
+        worker.start()
+        worker.join()
 
-    @staticmethod
-    def sysupgrade_single_router(router: Router, n: bool):
-        """
-        Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
-        :param router:
-        :param n: If n is True the upgrade discard the last firmware
-        """
-        Logger().info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
-        network_ctrl = NetworkCtrl(router)
-        network_ctrl.connect_with_router()
-        # Validate that the firmware is in the right directory "/tmp/"
-        firmware_exists = network_ctrl.send_router_command('[ -f /tmp/'+ router.firmware_tmp.name + ' ]')
-        if firmware_exists:
-            arg = '-n' if n else ''
-            network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + router.firmware_tmp.name)
-        else:
-            Logger().info("[-] The firmware " + router.firmware_tmp.name + " doesn't exist in /tmp/", 1)
-        network_ctrl.exit()
 
-'''
-class ConfigurationWorker(Thread):
+class SysupdateWorker(Thread):
 
     def __init__(self, router: Router, firmware_config):
         Thread.__init__(self)
-        Logger().info("Configure Firmware for Router(" + router.mac + ") ...")
         self.router = router
-        self.firmware_handler = FirmwareHandler(firmware_config[1], firmware_config[0])
-        self.firmware = self.firmware_handler.get_firmware(firmware_config[2], router.model, firmware_config[3],
-                                                           firmware_config[4])
+        self.firmware_config = firmware_config
         self.daemon = True
 
     def run(self):
@@ -98,12 +49,11 @@ class ConfigurationWorker(Thread):
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
         :return:
         """
-        Logger().info("Copy Firmware to Router(" + self.router.mac + ") ...")
-        network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.connect_with_router()
-        network_ctrl.send_data(self.firmware.file, '/tmp/'+self.firmware.name)
-        network_ctrl.exit()
-        self.router.firmware_tmp = self.firmware
+        Logger().info("Configure Firmware for Router(" + str(self.router.id) + ") ...")
+        firmware_handler = FirmwareHandler(self.firmware_config[1], self.firmware_config[0])
+        firmware = firmware_handler.get_firmware(self.firmware_config[2], self.router.model, self.firmware_config[3],
+                                                           self.firmware_config[4])
+        self.router.firmware = firmware
 
     def join(self):
         Thread.join(self)
@@ -113,9 +63,11 @@ class SysupgradeWorker(Thread):
 
     def __init__(self, router: Router, n: bool):
         Thread.__init__(self)
-        Logger().info("Sysupgrade of Firmware from Router(" + router.mac + ") ...")
+        Logger().info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
+
         self.router = router
         self.n = n
+
         self.daemon = True
 
     def run(self):
@@ -126,16 +78,12 @@ class SysupgradeWorker(Thread):
         """
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_router()
-        # Validate that the firmware is in the right directory "/tmp/"
-        firmware_exists = network_ctrl.send_router_command('[ -f /tmp/'+self.router.firmware_tmp.name + ' ]')
-        if firmware_exists:
-            # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
-            arg = '-n' if self.n else ''
-            network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
-        else:
-            print("The firmware " + self.router.firmware_tmp.name + " doesn't exist in /tmp/")
+        network_ctrl.router_wget(self.router.firmware.file, '/tmp/')
+        # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
+        arg = '-n' if self.n else ''
+        #network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
+        self.router.sysupgrade()
         network_ctrl.exit()
 
     def join(self):
         Thread.join(self)
-'''

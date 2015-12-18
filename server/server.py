@@ -121,19 +121,18 @@ class Server(ServerProxy):
         # TODO vllt vom config?
         pass
 
-    #### TODO: Von Simon
     @classmethod
-    def get_router_by_id(cls, id: int) -> Router:
+    def get_router_by_id(cls, router_id: int) -> Router:
         """
         Returns a Router with the given id.
-        :param id:
+        :param router_id:
         :return: Router
         """
         routers = cls.get_routers()
-        if routers[id].id == id:
-            return id
+        if routers[router_id].id == router_id:
+            return router_id
         for router in routers:
-            if router.id == id:
+            if router.id == router_id:
                 return router
         return None
 
@@ -147,11 +146,11 @@ class Server(ServerProxy):
         from util.router_flash_firmware import RouterFlashFirmware
         if all:
             for router in cls.get_routers():
-                RouterFlashFirmware.sysupdate_single_router(router, ConfigManager.get_firmware_list())
+                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
         else:
             for id in router_ids:
                 router = cls.get_router_by_id(id)
-                RouterFlashFirmware.sysupdate_single_router(router, ConfigManager.get_firmware_list())
+                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
 
     @classmethod
     def sysupgrade_firmware(cls, router_ids: List[int], all: bool, n: bool):
@@ -164,9 +163,9 @@ class Server(ServerProxy):
         from util.router_flash_firmware import RouterFlashFirmware
         if all:
             for router in cls.get_routers():
-                RouterFlashFirmware.sysupgrade_single_router(router, n)
+                RouterFlashFirmware.sysupgrade(router, n)
         else:
             for id in router_ids:
                 router = cls.get_router_by_id(id)
-                RouterFlashFirmware.sysupgrade_single_router(router, n)
-    ##############
+                RouterFlashFirmware.sysupgrade(router, n)
+

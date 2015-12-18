@@ -16,12 +16,16 @@ class RouterInfo:
         :return:
         """
         for router in routers:
+            # TODO: wird anstelle des threadings benutzt. Führ allerdings zu abstürtzen beim icp-server
+            '''
             RouterInfo.update_single_router(router)
             '''
             worker = Worker(router)
             worker.start()
             worker.join()
-            '''
+
+    # TODO: ohne threads
+    '''
     @staticmethod
     def update_single_router(router: Router):
         network_ctrl = NetworkCtrl(router)
@@ -36,7 +40,8 @@ class RouterInfo:
         router.ssid = network_ctrl.send_router_command(
             'uci show wireless.client_radio0.ssid').split('=')[1][:-4]
         network_ctrl.exit()
-'''
+    '''
+
 class Worker(Thread):
 
     def __init__(self, router: Router):
@@ -64,4 +69,3 @@ class Worker(Thread):
 
     def join(self):
         Thread.join(self)
-'''
