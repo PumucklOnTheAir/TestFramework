@@ -3,9 +3,8 @@ import re
 import os
 import errno
 from firmware.firmware import Firmware, ReleaseModel, UpdateType
-from typing import List
 from log.logger import Logger
-from network.webserver import WebServer
+
 
 class FirmwareHandler:
 
@@ -44,8 +43,8 @@ class FirmwareHandler:
             if val == 1:
                 firmware = self._get_firmware_info_auto(update_type, router_model, freifunk_verein, firmware_version)
             elif val == 2:
-                firmware, hash = self._get_firmware_info_manifest(update_type)
-                if not firmware.check_hash(hash):
+                firmware, hash_firmware = self._get_firmware_info_manifest(update_type)
+                if not firmware.check_hash(hash_firmware):
                     valid_download = False
                     continue
             elif val == 3:
@@ -59,8 +58,8 @@ class FirmwareHandler:
             valid_download = self._download_firmware(firmware.url, firmware.file, firmware.update_type)
         return firmware
 
-
-    def _get_firmware_info_auto(self, update_type: UpdateType, router_model: str, freifunk_verein: str, firmware_version: str) -> Firmware:
+    def _get_firmware_info_auto(self, update_type: UpdateType, router_model: str, freifunk_verein: str,
+                                firmware_version: str) -> Firmware:
         """
         Creates a firmware, with the url and the save-file.
         The firmware url is automatically determined.
@@ -88,12 +87,13 @@ class FirmwareHandler:
         :return: Firmware, hash
         """
         Logger().debug("The firmware will be choosen from the manifest ...", 2)
-        firmware_name, hash = self._chose_firmware_from_manifest(update_type)
+        firmware_name, hash_firmware = self._chose_firmware_from_manifest(update_type)
         freifunk_verein = firmware_name.split('-')[1]
         firmware_version = firmware_name.split('-')[2]
         file = self.FIRMWARE_PATH + '/' + self.release_model.name + '/' + update_type.name + '/' + firmware_name
         url = self.url + '/' + self.release_model.name + '/' + update_type.name + '/' + firmware_name
-        return [Firmware(firmware_name, firmware_version, freifunk_verein, self.release_model, update_type, file, url), hash]
+        return [Firmware(firmware_name, firmware_version, freifunk_verein, self.release_model, update_type, file, url),
+                hash_firmware]
 
     def _get_firmware_info_manually(self) -> Firmware:
         """
@@ -119,8 +119,8 @@ class FirmwareHandler:
         :return: bool
         """
         if self.release_model.name != release_model.name:
-            Logger().warning("The release_model of the selected(" + self.release_model.name
-                 + ") and the given(" + release_model.name + ") are different", 1)
+            Logger().warning("The release_model of the selected(" + self.release_model.name +
+                             ") and the given(" + release_model.name + ") are different", 1)
             Logger().info("Keep going? [y/n]:", 1)
             val = input()
             Logger().info("<== " + val, 1)
@@ -155,8 +155,10 @@ class FirmwareHandler:
         Downloads the manifest and saves it.
         :return: The path/file were the manifest is stored.(builds from the url a path)
         """
-        url = self.url + '/'+self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + self.release_model.name + '.manifest'
-        file = self.FIRMWARE_PATH + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + self.release_model.name + '.manifest'
+        url = self.url + '/'+self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + \
+              self.release_model.name + '.manifest'
+        file = self.FIRMWARE_PATH + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + \
+               self.release_model.name + '.manifest'
         self._create_path(self.FIRMWARE_PATH + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name)
 
         try:
@@ -191,8 +193,8 @@ class FirmwareHandler:
             valid_input = True if (val >= 0) and (val < len(firmwares)) else False
         tmp = "-sysupgrade.bin" if (update_type == UpdateType.sysupgrade) else ".bin"
         firmware_name = "gluon" + firmwares[val].split("gluon")[1].split("-sysupgrade")[0]+tmp
-        hash = firmwares[val].split(' ')[4]
-        return [firmware_name, hash]
+        hash_firmware = firmwares[val].split(' ')[4]
+        return [firmware_name, hash_firmware]
 
     def _get_firmwares_from_manifest(self) -> str:
         """
@@ -217,7 +219,8 @@ class FirmwareHandler:
         :param firmware_name:
         :return: bool
         """
-        file = self.FIRMWARE_PATH + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + self.release_model.name + '.manifest'
+        file = self.FIRMWARE_PATH + '/' + self.release_model.name + '/' + UpdateType.sysupgrade.name + '/' + \
+               self.release_model.name + '.manifest'
         with open(file, 'r') as f:
             for line in f:
                 if firmware_name in line:

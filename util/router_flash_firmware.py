@@ -4,8 +4,6 @@ from firmware.firmware_handler import FirmwareHandler
 from log.logger import Logger
 from network.network_ctrl import NetworkCtrl
 from server.router import Router
-import time
-from network.webserver import WebServer
 
 
 # TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
@@ -16,7 +14,7 @@ class RouterFlashFirmware:
     def sysupdate(router: Router, firmware_config):
         """
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
-        :param routers:
+        :param router:
         :param firmware_config:
         """
         worker = SysupdateWorker(router, firmware_config)
@@ -28,7 +26,7 @@ class RouterFlashFirmware:
         """
         Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
         and does a Sysupgrade.
-        :param routers:
+        :param router:
         :param n: If n is True the upgrade discard the last firmware
         """
         worker = SysupgradeWorker(router, n)
@@ -81,7 +79,7 @@ class SysupgradeWorker(Thread):
         network_ctrl.router_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
-        #network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
+        network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
         self.router.sysupgrade()
         network_ctrl.exit()
 

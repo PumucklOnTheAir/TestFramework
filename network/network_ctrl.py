@@ -21,7 +21,8 @@ class NetworkCtrl:
         Logger().info("Create Network Controller for Router(" + str(router.id) + ") ...", 1)
         self.router = router
 
-        self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id, vlan_iface_ip=None, vlan_iface_ip_mask=None)
+        self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id,
+                         vlan_iface_ip=None, vlan_iface_ip_mask=None)
         self.vlan.create_interface()
 
         self.namespace = Namespace("nsp"+str(router.vlan_iface_id), self.vlan.ipdb)
@@ -59,14 +60,15 @@ class NetworkCtrl:
             Logger().debug("[+] Sent the command (" + command + ") to the Router(" + str(self.router.id) + ")", 2)
             return str(output)
         except Exception as e:
-            Logger().error("[-] Couldn't send the command (" + command + ") to the Router(" + str(self.router.id) + ")", 2)
+            Logger().error("[-] Couldn't send the command (" + command +
+                           ") to the Router(" + str(self.router.id) + ")", 2)
             Logger().error(str(e), 2)
 
     def router_wget(self, file: str, remote_path: str):
         """
         The Router downloads the file from the PI and stores it at remote_file
         :param file: like /root/TestFramework/firmware/.../<firmware>.bin
-        :param remote_file: like /tmp/
+        :param remote_path: like /tmp/
         """
         self.send_router_command('wget -N http://' +
                                  self.namespace.get_ip_of_encapsulate_interface() + ':' +
@@ -87,7 +89,8 @@ class NetworkCtrl:
             sftp.put(local_file, remote_file)
             sftp.close()
             '''
-            command = 'sshpass  -p' + self.router.usr_password + ' scp ' + local_file + ' ' + self.router.usr_name +'@' + self.router.ip + ':' + remote_file
+            command = 'sshpass  -p' + self.router.usr_password + ' scp ' + local_file + ' ' + \
+                      self.router.usr_name + '@' + self.router.ip + ':' + remote_file
             os.system(command)
 
             # TODO: Paramiko_scp have to installed
@@ -95,11 +98,12 @@ class NetworkCtrl:
             scp = SCPClient(self.ssh.get_transport())
             scp.put(local_file, remote_file)
             '''
-            Logger().debug("[+] Sent data '" + local_file + "' to Router(" + str(self.router.id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
+            Logger().debug("[+] Sent data '" + local_file + "' to Router(" + str(self.router.id) + ") '" +
+                           self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
         except Exception as e:
-            Logger().error("[-] Couldn't send '" + local_file + "' to Router(" + str(self.router.id) + ") '" + self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
+            Logger().error("[-] Couldn't send '" + local_file + "' to Router(" + str(self.router.id) + ") '" +
+                           self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
-
 
     def exit(self):
         """
