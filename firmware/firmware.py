@@ -16,8 +16,7 @@ class UpdateType(Enum):
 
 class Firmware:
 
-    def __init__(self, name: str, version: str, freifunk_verein: str, release_model: ReleaseModel,
-                 update_type: UpdateType, file: str, url: str):
+    def __init__(self, name: str, version: str, freifunk_verein: str, release_model: ReleaseModel, file: str, url: str):
         """
         :param name: including router_model_name, router_model_version, firmware_version, freifunk_verein
         :param version: version of the firmware (not version of router !!!)
@@ -31,7 +30,6 @@ class Firmware:
         self._version = version
         self._freifunk_verein = freifunk_verein
         self._release_model = release_model
-        self._update_type = update_type
         self._file = file
         self._url = url
         self._hash = ""
@@ -41,7 +39,7 @@ class Firmware:
         """
         :return: A firmware-obj which can be used as a default value, if the firmware isn't known already
         """
-        return Firmware('Firmware not known', '0.0.0', 'ffxx', ReleaseModel.stable, UpdateType.factory, '', '')
+        return Firmware('Firmware not known', '0.0.0', 'ffxx', ReleaseModel.stable, '', '')
 
     def check_hash(self, excep_hash: str) -> bool:
         """
@@ -49,14 +47,14 @@ class Firmware:
         :param excep_hash:
         :return:
         """
-        Logger().debug("Check Hash of the Firmware(" + self.name + ") ...", 2)
+        Logger().debug("Check Hash of the Firmware(" + self.name + ") ...", 3)
         self.calc_hash()
         if self.hash == excep_hash:
-            Logger().debug("[+] The Hash is correct", 3)
+            Logger().debug("[+] The Hash is correct", 4)
             return True
-        Logger().debug("[-] The Hash is incorrect", 3)
-        Logger().debug("Hash of the Firmware: " + self.hash, 3)
-        Logger().debug("Excepted Hash: " + excep_hash, 3)
+        Logger().debug("[-] The Hash is incorrect", 4)
+        Logger().debug("Hash of the Firmware: " + self.hash, 4)
+        Logger().debug("Excepted Hash: " + excep_hash, 4)
         return False
 
     def calc_hash(self):
@@ -105,15 +103,6 @@ class Firmware:
     def release_model(self, value: ReleaseModel):
         assert isinstance(value, ReleaseModel)
         self._release_model = value
-
-    @property
-    def update_type(self) -> UpdateType:
-        return self._update_type
-
-    @update_type.setter
-    def update_type(self, value: UpdateType):
-        assert isinstance(value, UpdateType)
-        self._update_type = value
 
     @property
     def file(self) -> str:

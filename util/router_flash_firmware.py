@@ -47,10 +47,9 @@ class SysupdateWorker(Thread):
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
         :return:
         """
-        Logger().info("Configure Firmware for Router(" + str(self.router.id) + ") ...")
-        firmware_handler = FirmwareHandler(self.firmware_config[1], self.firmware_config[0])
-        firmware = firmware_handler.get_firmware(self.firmware_config[2], self.router.model, self.firmware_config[3],
-                                                           self.firmware_config[4])
+        Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
+        firmware_handler = FirmwareHandler(self.firmware_config[0])
+        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config[1], self.firmware_config[3], self.firmware_config[4], False)
         self.router.firmware = firmware
 
     def join(self):
@@ -79,7 +78,8 @@ class SysupgradeWorker(Thread):
         network_ctrl.router_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
-        network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
+        # TODO:
+        # network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
         self.router.sysupgrade()
         network_ctrl.exit()
 
