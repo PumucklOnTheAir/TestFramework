@@ -14,3 +14,4 @@ Autodoc test
 ========
 
 .. automodule:: server.server
+  :members:
