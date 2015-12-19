@@ -2,16 +2,9 @@
 Welcome to Freifunk TestFramework documentation!
 #####################################
 
-.. image:: images/-logo.png
-   :alt: The Freifunk Logo
-   :align: right
+TODO include REAMDE.md here
 
-This documentation is still in process
-
-
-
-Autodoc test
-========
-
-.. automodule:: server.server
-  :members:
+Documentation Generation
+====
+local in the docs/ directory
+python3 -m sphinx . ./_build/html/

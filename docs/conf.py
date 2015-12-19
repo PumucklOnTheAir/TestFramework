@@ -16,7 +16,7 @@ from subprocess import call
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.insert(0, os.path.abspath('../server/'))
+# sys.path.insert(0, os.path.abspath('../server/'))
 sys.path.insert(0, os.path.abspath('../'))
 # sys.path.append(os.path.abspath('sphinxext'))
 
@@ -140,7 +140,7 @@ if not on_rtd:  # only import and set the theme if we're building docs locally
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
 def setup(app):
     app.add_stylesheet("theme_overrides.css")
@@ -270,7 +270,7 @@ texinfo_documents = [
 # generate uml images
 # os.path.abspath('../')
 call(['mkdir', '-p', '_build/html/uml'])
-for package in ['server', 'util', 'network', 'config', 'cli']:
+for package in ['server', 'util', 'network', 'config', 'cli', 'log']:
    call(['python3', '-m', 'pylint.pyreverse.main', '-mn', '-a1', '-s1', '-f', 'ALL', '-p', package, '-o', 'png', '../' + package])
    call(['mv', 'classes_' + package + '.png', '_build/html/uml/'])
    call(['mv', 'packages_' + package + '.png', '_build/html/uml/'])
