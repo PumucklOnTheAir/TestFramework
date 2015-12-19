@@ -8,6 +8,8 @@ Welcome to Freifunk TestFramework documentation!
 
 This documentation is still in process
 
+.. automodule:: server
+
 Contents
 ========
 
