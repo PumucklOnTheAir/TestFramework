@@ -8,17 +8,9 @@ Welcome to Freifunk TestFramework documentation!
 
 This documentation is still in process
 
-.. automodule:: server
 
-Contents
+
+Autodoc test
 ========
 
-.. toctree::
-   :maxdepth: 2
-
-   features/index.rst
-   configuration/index.rst
-   api/index.rst
-   events/index.rst
-   plugins/index.rst
-   modules/index.rst
+.. automodule:: server.server
