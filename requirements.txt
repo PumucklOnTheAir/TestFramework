@@ -4,4 +4,5 @@ pyyaml
 typing
 paramiko
 pyroute2
-
+sphinx
+pylint

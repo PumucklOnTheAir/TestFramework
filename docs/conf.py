@@ -11,6 +11,7 @@
 # serve to show the default.
 
 import sys, os
+from subprocess import call
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -188,6 +189,7 @@ def setup(app):
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'FreifunkTestFrameworkDoc'
 
+html_scaled_image_link = True
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -262,3 +264,10 @@ texinfo_documents = [
 
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #texinfo_no_detailmenu = False
+
+
+# -- Own preprocess
+# generate uml images
+# os.path.abspath('../')
+for package in ['server', 'util', 'network', 'config', 'cli']:
+   call(['python3', '-m', 'pylint.pyreverse.main', '-mn', '-a1', '-s1', '-f', 'ALL', '-p', package, '-o', 'png', '../' + package])
