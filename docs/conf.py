@@ -269,5 +269,8 @@ texinfo_documents = [
 # -- Own preprocess
 # generate uml images
 # os.path.abspath('../')
+call(['mkdir', '-p', '_build/html/uml'])
 for package in ['server', 'util', 'network', 'config', 'cli']:
    call(['python3', '-m', 'pylint.pyreverse.main', '-mn', '-a1', '-s1', '-f', 'ALL', '-p', package, '-o', 'png', '../' + package])
+   call(['mv', 'classes_' + package + '.png', '_build/html/uml/'])
+   call(['mv', 'packages_' + package + '.png', '_build/html/uml/'])
