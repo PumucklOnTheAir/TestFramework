@@ -38,7 +38,7 @@ class MyTestCase(unittest.TestCase):
 
     def test_firmware_list(self):
         data = ConfigManager.get_firmware_list()
-        self.assertEqual(len(data), 5, "firmware_Yaml: Wrong size of the List")
+        self.assertEqual(len(data), 4, "firmware_Yaml: Wrong size of the List")
 
     if __name__ == '__main__':
         unittest.main()

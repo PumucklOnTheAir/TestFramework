@@ -208,7 +208,7 @@ class ConfigManager:
         :param prop: Property from Firmware file
         :return: Value of the property from the file
         """
-        dic_keys = {"URL", "Release_Model", "Update_Type", "FreiFunk_Verein", "Firmware_Version"}
+        dic_keys = {"URL", "Release_Model", "Firmware_Version"}
 
         if prop in dic_keys:
             output = ConfigManager.get_firmware_config()
