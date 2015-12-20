@@ -1,28 +1,28 @@
 from threading import Thread
 from network.network_ctrl import NetworkCtrl
-from typing import List
 from server.router import Router
 from log.logger import Logger
-import os
 
 
 class RouterInfo:
+    """
+    The RouterInfo collects in a new Thread informations about the Routers
+    """
 
     @staticmethod
-    def update(routers: List[Router]):
+    def update(router: Router):
         """
-        : Desc : starts a thread for each router and stores new information
-        :param routers: list of router objects
-        :return:
+        Starts a thread for a router and stores new information
+        :param router: Router objects
         """
-        for router in routers:
-            # TODO: wird anstelle des threadings benutzt. Führ allerdings zu abstürtzen beim icp-server
-            '''
-            RouterInfo.update_single_router(router)
-            '''
-            worker = Worker(router)
-            worker.start()
-            worker.join()
+        # TODO: wird anstelle des threadings benutzt. Führt allerdings zu abstürtzen beim icp-server
+        '''
+        RouterInfo.update_single_router(router)
+        '''
+        Logger().info("Update the Infos of the Router(" + str(router.id) + ") ...", 1)
+        worker = Worker(router)
+        worker.start()
+        worker.join()
 
     # TODO: ohne threads
     '''
@@ -42,6 +42,7 @@ class RouterInfo:
         network_ctrl.exit()
     '''
 
+
 class Worker(Thread):
 
     def __init__(self, router: Router):
@@ -51,7 +52,7 @@ class Worker(Thread):
 
     def run(self):
         """
-        : Desc : runs new thread and gets the information from the router via ssh
+        Runs new thread and gets the information from the router via ssh
         :return:
         """
         network_ctrl = NetworkCtrl(self.router)
