@@ -49,7 +49,7 @@ class SysupdateWorker(Thread):
         """
         Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         firmware_handler = FirmwareHandler(self.firmware_config[0])
-        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config[1], self.firmware_config[3], self.firmware_config[4], False)
+        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config[1], False)
         self.router.firmware = firmware
 
     def join(self):
@@ -78,9 +78,7 @@ class SysupgradeWorker(Thread):
         network_ctrl.router_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
-        # TODO:
-        # network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
-        self.router.sysupgrade()
+        network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware_tmp.name)
         network_ctrl.exit()
 
     def join(self):

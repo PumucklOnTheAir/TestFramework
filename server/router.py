@@ -45,7 +45,6 @@ class Router(ProxyObject, NetworkIface):
         self._wlan_mode = Mode.unknown
         self._ssid = ''
         self._firmware = Firmware.get_default_firmware()
-        self._firmware_tmp = Firmware.get_default_firmware()
 
     @property
     def id(self) -> int:
@@ -206,26 +205,3 @@ class Router(ProxyObject, NetworkIface):
         """
         assert isinstance(value, Firmware)
         self._firmware = value
-
-    @property
-    def firmware_tmp(self) -> Firmware:
-        """
-        The firmware int the directory /tmp/ of the routers
-        :return:
-        """
-        return self._firmware_tmp
-
-    @firmware_tmp.setter
-    def firmware_tmp(self, value: Firmware):
-        """
-        :type value: Firmware
-        """
-        assert isinstance(value, Firmware)
-        self._firmware_tmp = value
-
-    def sysupgrade(self):
-        """
-        The Router has been flashed
-        :return:
-        """
-        self.firmware = self.firmware_tmp

@@ -10,6 +10,13 @@ from server.server import Router
 
 
 class NetworkCtrl:
+    """
+    The NetworkCtrl manages:
+        1. Creates a Vlan and a Namespace
+        2. Encapsulates the Vlan inside the Namespace
+        3. Provides a SSH-Connection via paramiko
+        4. Provides a WebServer
+    """
 
     def __init__(self, router: Router):
         """
