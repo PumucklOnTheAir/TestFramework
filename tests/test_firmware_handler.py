@@ -1,6 +1,6 @@
 from unittest import TestCase
 from firmware.firmware_handler import FirmwareHandler
-from firmware.firmware import ReleaseModel, Firmware, UpdateType
+from firmware.firmware import str, Firmware, UpdateType
 from server.router import Router
 
 
@@ -13,7 +13,7 @@ class TestFirmwareHandler(TestCase):
         assert isinstance(router, Router)
 
         # Create firmware_handler
-        release_model = ReleaseModel.stable
+        release_model = str.stable
         url = "https://firmware.darmstadt.freifunk.net"
         firmware_handler = FirmwareHandler(release_model, url)
         assert isinstance(firmware_handler, FirmwareHandler)
@@ -23,7 +23,7 @@ class TestFirmwareHandler(TestCase):
         assert firmware.name == "gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9.bin"
         assert firmware.version == "0.7.3"
         assert firmware.freifunk_verein == "ffda"
-        assert firmware.release_model == ReleaseModel.stable
+        assert firmware.release_model == str.stable
         assert firmware.update_type == UpdateType.factory
         assert firmware.file == 'firmwares/stable/factory/gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9.bin'
 
@@ -35,7 +35,7 @@ class TestFirmwareHandler(TestCase):
         assert isinstance(router, Router)
 
         # Create firmware_handler
-        release_model = ReleaseModel.stable
+        release_model = str.stable
         url = "https://firmware.darmstadt.freifunk.net"
         firmware_handler = FirmwareHandler(release_model, url)
         assert isinstance(firmware_handler, FirmwareHandler)
@@ -43,7 +43,7 @@ class TestFirmwareHandler(TestCase):
         firmware = firmware_handler.get_firmware(UpdateType.sysupgrade, router.model, "ffda", "0.7.3")
         assert isinstance(firmware, Firmware)
         assert firmware.name == "gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9-sysupgrade.bin"
-        assert firmware.release_model == ReleaseModel.stable
+        assert firmware.release_model == str.stable
         assert firmware.update_type == UpdateType.sysupgrade
         assert firmware.file == 'firmwares/stable/sysupgrade/gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9-sysupgrade.bin'
 

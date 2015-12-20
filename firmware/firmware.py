@@ -3,20 +3,9 @@ import hashlib
 from log.logger import Logger
 
 
-class ReleaseModel(Enum):
-    stable = 1
-    beta = 2
-    experimental = 3
-
-
-class UpdateType(Enum):
-    factory = 1
-    sysupgrade = 2
-
-
 class Firmware:
 
-    def __init__(self, name: str, version: str, freifunk_verein: str, release_model: ReleaseModel, file: str, url: str):
+    def __init__(self, name: str, version: str, freifunk_verein: str, release_model: str, file: str, url: str):
         """
         :param name: including router_model_name, router_model_version, firmware_version, freifunk_verein
         :param version: version of the firmware (not version of router !!!)
@@ -39,7 +28,7 @@ class Firmware:
         """
         :return: A firmware-obj which can be used as a default value, if the firmware isn't known already
         """
-        return Firmware('Firmware not known', '0.0.0', 'ffxx', ReleaseModel.stable, '', '')
+        return Firmware('Firmware not known', '0.0.0', 'ffxx', 'stable', '', '')
 
     def check_hash(self, excep_hash: str) -> bool:
         """
@@ -96,12 +85,12 @@ class Firmware:
         self._freifunk_verein = value
 
     @property
-    def release_model(self) -> ReleaseModel:
+    def release_model(self) -> str:
         return self._release_model
 
     @release_model.setter
-    def release_model(self, value: ReleaseModel):
-        assert isinstance(value, ReleaseModel)
+    def release_model(self, value: str):
+        assert isinstance(value, str)
         self._release_model = value
 
     @property

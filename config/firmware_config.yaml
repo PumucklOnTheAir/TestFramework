@@ -1,6 +1,7 @@
 --- # default for config the Firmware
-- default_URL: https://firmware.darmstadt.freifunk.net
-- default_Release_Model: stable
-- default_Update_Type: sysupgrade
-- default_FreiFunk_Verein: ffda
-- default_Firmware_Version: 0.7.3
+- URL: https://firmware.darmstadt.freifunk.net
+- Release_Model: stable
+- Update_Type: sysupgrade
+- FreiFunk_Verein: ffda
+- Firmware_Version: 0.7.3
+- download_all: False
