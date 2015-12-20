@@ -60,7 +60,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool):
+    def update_router_info(self, router_ids: List[int], update_all: bool):
         """
         Updates all the informwations about the Router
         :param router_ids: List of unique numbers to identify a Router
@@ -69,7 +69,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_router_by_id(cls, router_id: int) -> Router:
+    def get_router_by_id(self, router_id: int) -> Router:
         """
         Returns a Router with the given id.
         :param router_id:
