@@ -33,7 +33,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(len(data), 2, "test_Yaml: Wrong size of the List")
 
     def test_firmware_property(self):
-        data = ConfigManager.get_firmware_property("default_Firmware_Version")
+        data = ConfigManager.get_firmware_property("Firmware_Version")
         self.assertEqual(data, "0.7.3", "firmware_Yaml: Wrong prop from the file")
 
     def test_firmware_list(self):
