@@ -45,7 +45,8 @@ class Server(ServerProxy):
 
         if cls.VLAN:
             from util.router_info import RouterInfo
-            RouterInfo.update(cls.get_routers())
+            # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
+            RouterInfo.update(cls.get_routers()[0])
 
         print("Runtime Server started")
 
@@ -122,6 +123,22 @@ class Server(ServerProxy):
         pass
 
     @classmethod
+    def update_router_info(cls, router_ids: List[int], update_all: bool):
+        """
+        Updates all the informwations about the Router
+        :param router_ids: List of unique numbers to identify a Router
+        :param update_all: Is True if all Routers should be updated
+        """
+        from util.router_info import RouterInfo
+        if update_all:
+            for router in cls.get_routers():
+                RouterInfo.update(router)
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                RouterInfo.update(router)
+
+    @classmethod
     def get_router_by_id(cls, router_id: int) -> Router:
         """
         Returns a Router with the given id.
@@ -137,35 +154,34 @@ class Server(ServerProxy):
         return None
 
     @classmethod
-    def sysupdate_firmware(cls, router_ids: List[int], all: bool):
+    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool):
         """
         Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
         :param router_ids: List of unique numbers to identify a Router
-        :param all: Is True if all Routers should be updated
+        :param update_all: Is True if all Routers should be updated
         """
         from util.router_flash_firmware import RouterFlashFirmware
-        if all:
+        if update_all:
             for router in cls.get_routers():
                 RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
         else:
-            for id in router_ids:
-                router = cls.get_router_by_id(id)
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
                 RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
 
     @classmethod
-    def sysupgrade_firmware(cls, router_ids: List[int], all: bool, n: bool):
+    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool):
         """
         Upgrades the firmware on the given Router(s)
         :param router_ids:
-        :param all: If all is True all Routers were upgraded
+        :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
         from util.router_flash_firmware import RouterFlashFirmware
-        if all:
+        if upgrade_all:
             for router in cls.get_routers():
                 RouterFlashFirmware.sysupgrade(router, n)
         else:
-            for id in router_ids:
-                router = cls.get_router_by_id(id)
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
                 RouterFlashFirmware.sysupgrade(router, n)
-
