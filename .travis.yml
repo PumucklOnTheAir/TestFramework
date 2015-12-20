@@ -30,3 +30,8 @@ script:
  # - python -m unittest tests/test_Server_2.py
   - python -m unittest tests/test_Yaml.py
   - python -m unittest tests/test_Logger.py
+  - python -m unittest tests/test_vlan.py
+  - python -m unittest tests/test_namespace.py
+  - python -m unittest tests/test_network_ctrl.py
+  - python -m unittest tests/test_firmware_handler.py
+

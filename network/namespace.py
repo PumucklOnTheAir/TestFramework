@@ -51,7 +51,8 @@ class Namespace:
             if re.match("\[Errno 2\]*",str(e)):
                 Logger().debug("[+] Namespace(" + self.nsp_name + ") is already deleted", 3)
                 return
-            Logger().debug("[-] Namespace(" + self.nsp_name + ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", 3)
+            Logger().debug("[-] Namespace(" + self.nsp_name +
+                           ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", 3)
             Logger().error(str(e), 3)
 
     def encapsulate_interface(self, vlan_iface_name: str):
@@ -70,6 +71,7 @@ class Namespace:
             Logger().debug("[+] Encapsulate Interface(" + self.vlan_iface_name + ")", 3)
         except Exception as e:
             Logger().debug("[-] Couldn't encapsulate the Interface(" + self.vlan_iface_name + ")", 3)
+            Logger().error(str(e), 3)
 
     def get_ip_of_encapsulate_interface(self) -> str:
         """

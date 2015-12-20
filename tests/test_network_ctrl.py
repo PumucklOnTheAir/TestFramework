@@ -14,7 +14,7 @@ class TestNetworkCtrl(TestCase):
         network_ctrl = NetworkCtrl(router)
         assert isinstance(network_ctrl, NetworkCtrl)
 
-        #network_ctrl.connect_with_router()
+        # network_ctrl.connect_with_router()
         network_ctrl.exit()
 
     """
