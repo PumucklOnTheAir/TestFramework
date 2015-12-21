@@ -2,7 +2,7 @@
 Welcome to Freifunk TestFramework documentation!
 #####################################
 
-TODO include REAMDE.md here
+For a quick start take a look into the *README.md* file.
 
 .. toctree::
    :maxdepth: 2
@@ -11,5 +11,3 @@ TODO include REAMDE.md here
    ipc.rst
    log.rst
    doc.rst
-
-.. include:: ../README.md
