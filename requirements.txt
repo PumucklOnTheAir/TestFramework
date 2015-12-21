@@ -4,5 +4,6 @@ pyyaml
 typing
 paramiko
 pyroute2
-sphinx
 pylint
+recommonmark
+sphinx

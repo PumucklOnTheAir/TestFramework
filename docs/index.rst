@@ -4,7 +4,12 @@ Welcome to Freifunk TestFramework documentation!
 
 TODO include REAMDE.md here
 
-Documentation Generation
-====
-local in the docs/ directory
-python3 -m sphinx . ./_build/html/
+.. toctree::
+   :maxdepth: 2
+
+   server.rst
+   ipc.rst
+   log.rst
+   doc.rst
+
+.. include:: ../README.md
