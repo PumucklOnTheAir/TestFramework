@@ -2,6 +2,8 @@ from util.router_flash_firmware import RouterFlashFirmware
 from server.router import Router
 from config.configmanager import ConfigManager
 
+# TODO: kann eigentlich gelöscht werden. Diente nur dem Testen der RouterFlashFirmware.py
+
 # Create router
 router = Router(1, "vlan20", 20, "192.168.2.13", 24, "bananapi", "bananapi", 1)
 router.model = "TP-LINK TL-WR841N/ND v9"
