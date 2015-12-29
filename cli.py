@@ -1,7 +1,6 @@
 from server.ipc import IPC
-# from server.serverproxy import ServerProxy
-from server.server import Server
 from cli.cli_util import CLIUtil
+from log.logger import Logger
 import argparse
 import time
 import random
@@ -11,20 +10,19 @@ def connect_to_server():
     """ Initiates connection to the IPC server by creating a client
     """
 
-    Server.start(True, "", False)
     if verbose:
-        util.print_action("Setting up client...")
-    time.sleep(1)
-
-    # util.print_error("Direkt vom server: " + str(len(Server.get_routers())))
+        Logger().info("Setting up IPC client")
 
     global ipc_client
     """Global Variable for the IPC Client"""
     ipc_client = IPC()
     ipc_client.connect()
 
+    # Wait for connection
+    time.sleep(1)
+
     if verbose:
-        util.print_action("...done.")
+        Logger().info("Client succesfully setup")
 
     global server_proxy
     """global variable for the proxy server"""
@@ -32,12 +30,12 @@ def connect_to_server():
 
 
 def print_routers(routers):
-    headers = ["Router Model/Vers", "VLAN ID", "VLAN Name", "Router Name", "IP", "MAC"]
+    headers = ["ID", "Router Model/Vers", "VLAN ID", "Router Name", "IP", "MAC"]
     string_list = []
     for i in range(len(routers)):
-        string_list.append([routers[i].model,
+        string_list.append([routers[i].id,
+                            routers[i].model,
                             routers[i].vlan_iface_id,
-                            routers[i].vlan_iface_name,
                             routers[i].wlan_mode,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
@@ -45,12 +43,13 @@ def print_routers(routers):
 
 
 def print_router_info(router_list, rid):
-    router = [elem for elem in router_list if str(elem.vlan_iface_id) == str(rid)]
+    router = [elem for elem in router_list if str(elem.id) == str(rid)]
     if not router:
-        util.print_action("No such router found, check the list again")
+        Logger().info("No such router found, check the list again")
     else:
         router = router[0]
-        info = [["Model", router.model],
+        info = [["ID", router.id]
+                ["Model", router.model],
                 ["MAC", router.mac],
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
@@ -58,7 +57,8 @@ def print_router_info(router_list, rid):
                 ["WLAN Modus", router.wlan_mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
-                ["SSID", router.ssid]]
+                ["SSID", router.ssid],
+                ["Firmware", router.firmware.name]]
 
         util.print_router(info)
 
@@ -74,7 +74,7 @@ def get_test_progress():
     try:
         tests = server_proxy.get_running_tests()
         if tests == ():
-            util.print_action("No running tests")
+            Logger().info("No running tests")
         else:
             print("\tCurrently running Test: " + str(tests[0][0]))
             test = tests[1]
@@ -86,7 +86,7 @@ def get_test_progress():
             print("\n")
 
     except KeyboardInterrupt:
-        util.print_warning("Interrupted")
+        Logger().info("Interrupted")
 
 
 def get_tests_progress():
@@ -98,7 +98,7 @@ def get_tests_progress():
 
     # no tests returned
     if not tests:
-        util.print_action("No running tests")
+        Logger().info("No running tests")
     else:
         try:
             while working:
@@ -116,18 +116,18 @@ def get_tests_progress():
                 if working:
                     print("\033[" + str(lines) + "A")
                 else:
-                    util.print_action("All tests completed")
+                    Logger().info("All tests completed")
 
         except KeyboardInterrupt:
             print("\n" * lines)
-            util.print_warning("Interrupted by user")
+            Logger().info("Interrupted by user")
 
 
 def list_all_tests():
     tests = server_proxy.get_tests()
 
     if not tests:
-        util.print_warning("No tests found")
+        Logger().info("No tests found")
     else:
         print("\tList of all Tests in Framework")
         util.print_list(tests)
@@ -150,24 +150,36 @@ def main():
 
     # subparser for status requests
     parser_status = subparsers.add_parser("status", help="Show status of routers, network or tests")
-    parser_status.add_argument("-a", "--all_routers", help="return status of all routers in network",
+    parser_status.add_argument("-a", "--all", help="Return status of all routers in network",
                                action="store_true")
-    parser_status.add_argument("-r", "--router", help="return detailed info on router", nargs=1,
+    parser_status.add_argument("-r", "--router", help="Return detailed info on router", nargs=1,
                                action="store", metavar="Router ID")
-    parser_status.add_argument("-t", "--test", help="return currently running tests", action="store_true")
-    parser_status.add_argument("-l", "--list", help="list all available tests", action="store_true")
+    parser_status.add_argument("-t", "--test", help="Return currently running tests", action="store_true")
+    parser_status.add_argument("-l", "--list", help="List all available tests", action="store_true")
 
     # subparser for actions
     parser_action = subparsers.add_parser("run", help="Execute different actions on the server")
     parser_action.add_argument("-vid", "--vlanid", metavar="VLan ID", type=int,
                                default=0, action="store",
-                               help="run selected test, -r [RouterID] [TestID]")
+                               help="Runs selected test on")
     parser_action.add_argument("-tid", "--testid", metavar="Test ID", type=int,
                                default=0, action="store")
 
-    # subparser for setup
-    parser_setup = subparsers.add_parser("setup", help="Setup the VLans")
-    parser_setup.add_argument("--setup", help="setup the network", action="store_true")
+    # subparser for sysupgrade
+    parser_upgrade = subparsers.add_parser("sysupgrade", help="Upgrades the routers")
+    parser_upgrade.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                default=[], action="store", help="List of routers to be upgraded", nargs="+")
+    parser_upgrade.add_argument("-a", "--all", action="store_true", default=False,
+                                help="Apply to all routers")
+    parser_upgrade.add_argument("-n", "--n", action="store_true", default=False,
+                                help="Do not save existing configuration")
+
+    # subparser for sysupdate
+    parser_update = subparsers.add_parser("sysupdate", help="Fetches the updates for the routers")
+    parser_update.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                               default=[], action="store", help="List of routers to be updated", nargs="+")
+    parser_update.add_argument("-a", "--all", action="store_true", default=False,
+                               help="Apply to all routers")
 
     args = parser.parse_args()
 
@@ -177,42 +189,44 @@ def main():
     global util
     util = CLIUtil()
     util.print_header()
-    connect_to_server()  # --> remember to uncomment ipc shutdown
+    connect_to_server()
 
     if verbose:
-        util.print_error("VERBOSE!!!!!!")
+        Logger().info("Mode set to verbose")
 
     if args.mode == "status":
-        if args.all_routers:
+        if args.all:
             """return status of routers"""
-            routers = Server.get_routers()
-            if verbose:
-                util.print_warning("Router vom Server direkt: " + str(len(routers)))
+            routers = server_proxy.get_routers()
             if not routers:
-                util.print_bullet("No routers in network")
+                Logger().warning("No routers in network")
             else:
                 print_routers(routers)
 
         elif args.router:
-            routers = Server.get_routers()
+            routers = server_proxy.get_routers()
             print_router_info(routers, args.router[0])
         elif args.test:
             get_tests_progress()
         elif args.list:
             list_all_tests()
         else:
-            print("Please specify. See status -h")
+            Logger().info("Please specify. See status -h")
     elif args.mode == "run":
-        print("Run run run")
-    elif args.mode == "setup":
-        print("setup setup setup")
+        Logger().info("Run run run")
+    elif args.mode == "sysupgrade":
+        if args.all:
+            server_proxy.sysupgrade_firmware([], True, args.n)
+        else:
+            server_proxy.sysupgrade_firmware(args.sysupgrade, False, args.n)
+    elif args.mode == "sysupdate":
+        if args.all:
+            server_proxy.sysupdate_firmware([], True)
+        else:
+            server_proxy.sysupdate_firmware(args.sysupdate, False)
+    else:
+        Logger().info("Check -h for help")
 
-    if verbose:
-        util.print_action("Shutting down server...")
-    Server.stop()
-    if verbose:
-        util.print_action("...done")
-        util.print_action("Exiting")
 
 if __name__ == "__main__":
     main()
