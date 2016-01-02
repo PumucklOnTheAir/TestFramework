@@ -5,9 +5,9 @@ import paramiko
 from log.logger import Logger
 from network.namespace import Namespace
 from network.vlan import Vlan
+from network.web_config_assist import WebConfigurationAssist
 from network.webserver import WebServer
 from server.server import Router
-from util.web_config_assist import WebConfigurationAssist
 
 
 class NetworkCtrl:
@@ -113,6 +113,11 @@ class NetworkCtrl:
         webserver.join()
 
     def wca_setup_wizard(self, wizard_config):
+        """
+        Starts the WebConfigurationAssist and
+        sets the values provided by the wizard (in the WebConfiguration)
+        :param wizard_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact
+        """
         wca = WebConfigurationAssist()
         wca.setup_wizard(wizard_config)
         wca.exit()
