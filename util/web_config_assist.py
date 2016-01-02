@@ -1,5 +1,6 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
+from log.logger import Logger
 
 
 class WebConfigurationAssist:
@@ -12,6 +13,7 @@ class WebConfigurationAssist:
         Sets the values provided by the wizard (in the WebConfiguration)
         :param wizard_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact}
         '''
+        Logger().debug("WebConfigurationAssist: Setup 'wizard' with: " + str(wizard_config), 2)
         self.driver.get(wizard_config['url'])
         NODE_NAME_FIELD_ID = "cbid.wizard.1._hostname"
         MESH_VPN_FIELD_ID = "cbid.wizard.1._meshvpn"
