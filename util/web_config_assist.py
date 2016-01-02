@@ -1,20 +1,29 @@
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
+from pyvirtualdisplay import Display
 from log.logger import Logger
 
 
 class WebConfigurationAssist:
+    """
+    To use this class the following has to be installed: 'sudo apt-get install iceweasel xvfb'
+    """
 
     def __init__(self):
-        self.driver = webdriver.Firefox()
+        Logger().debug("Create WebConfigurationAssist ...", 2)
+        # TODO: On raspberry pi necessary: create virtual display
+        #self.display = Display(visible=0, size=(800, 600))
+        #self.display.start()
+
+        self.browser = webdriver.Firefox()
 
     def setup_wizard(self, wizard_config):
-        '''
+        """
         Sets the values provided by the wizard (in the WebConfiguration)
         :param wizard_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact}
-        '''
-        Logger().debug("WebConfigurationAssist: Setup 'wizard' with: " + str(wizard_config), 2)
-        self.driver.get(wizard_config['url'])
+        """
+        Logger().debug("Setup 'wizard' with: " + str(wizard_config), 3)
+        self.browser.get(wizard_config['url'])
         NODE_NAME_FIELD_ID = "cbid.wizard.1._hostname"
         MESH_VPN_FIELD_ID = "cbid.wizard.1._meshvpn"
         LIMIT_BANDWIDTH_FIELD_ID = "cbid.wizard.1._limit_enabled"
@@ -25,23 +34,23 @@ class WebConfigurationAssist:
         CONTACT_FIELD_ID = "cbid.wizard.1._contact"
         SAFE_RESTART_BUTTON_XPATH = "/html/body/div[2]/div/form/div[3]/input"
 
-        NODE_NAME_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        NODE_NAME_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(NODE_NAME_FIELD_ID))
-        MESH_VPN_FIELD_ELEMENT  = WebDriverWait(self.driver, 10).\
+        MESH_VPN_FIELD_ELEMENT  = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(MESH_VPN_FIELD_ID))
-        LIMIT_BANDWIDTH_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        LIMIT_BANDWIDTH_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(LIMIT_BANDWIDTH_FIELD_ID))
-        SHOW_LOCATION_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        SHOW_LOCATION_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(SHOW_LOCATION_FIELD_ID))
-        LATITUDE_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        LATITUDE_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(LATITUDE_FIELD_ID))
-        LONGITUDE_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        LONGITUDE_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(LONGITUDE_FIELD_ID))
-        ALTITUDE_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        ALTITUDE_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(ALTITUDE_FIELD_ID))
-        CONTACT_FIELD_ELEMENT = WebDriverWait(self.driver, 10).\
+        CONTACT_FIELD_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(CONTACT_FIELD_ID))
-        SAFE_RESTART_BUTTON_ELEMENT = WebDriverWait(self.driver, 10).\
+        SAFE_RESTART_BUTTON_ELEMENT = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_xpath(SAFE_RESTART_BUTTON_XPATH))
 
         NODE_NAME_FIELD_ELEMENT.clear()
@@ -67,3 +76,8 @@ class WebConfigurationAssist:
 
     #def setup_expert_mode(self):
         # TODO
+
+    def exit(self):
+        self.browser.close()
+        # TODO:
+        #self.display.stop()

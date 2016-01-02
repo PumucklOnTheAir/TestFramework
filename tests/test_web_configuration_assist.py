@@ -15,9 +15,8 @@ class TestWebConfigurationAssist(TestCase):
         network_ctrl = NetworkCtrl(router)
         assert isinstance(network_ctrl, NetworkCtrl)
 
-        wca = WebConfigurationAssist()
         wizard_conf = {'url': 'http://192.168.1.1/',
-                       'node_name': '64293-testframework2',
+                       'node_name': '64293-testframework1',
                        'mesh_vpn': True,
                        'limit_bandwidth': False,
                        'latitude': '49.872160',
@@ -25,6 +24,6 @@ class TestWebConfigurationAssist(TestCase):
                        'altitude': '140.5',
                        'contact': 'ops@darmstadt.freifunk.net'}
 
-        wca.setup_wizard(wizard_conf)
+        network_ctrl.wca_setup_wizard(wizard_conf)
 
         network_ctrl.exit()
