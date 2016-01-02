@@ -7,6 +7,7 @@ from network.namespace import Namespace
 from network.vlan import Vlan
 from network.webserver import WebServer
 from server.server import Router
+from util.web_config_assist import WebConfigurationAssist
 
 
 class NetworkCtrl:
@@ -36,10 +37,6 @@ class NetworkCtrl:
         self.namespace.encapsulate_interface(self.vlan.vlan_iface_name)
 
         self.ssh = paramiko.SSHClient()
-
-        # Needs to be in the same process created as the namespace
-        self.webserver = WebServer()
-        self.webserver.start()
 
     def connect_with_router(self):
         """
@@ -71,18 +68,6 @@ class NetworkCtrl:
                            ") to the Router(" + str(self.router.id) + ")", 2)
             Logger().error(str(e), 2)
 
-    def router_wget(self, file: str, remote_path: str):
-        """
-        The Router downloads the file from the PI and stores it at remote_file
-        :param file: like /root/TestFramework/firmware/.../<firmware>.bin
-        :param remote_path: like /tmp/
-        """
-        self.send_router_command('wget -N http://' +
-                                 self.namespace.get_ip_of_encapsulate_interface() + ':' +
-                                 str(WebServer.PORT_WEBSERVER) +
-                                 file.replace(WebServer.BASE_DIR, '') +
-                                 ' -P ' + remote_path)
-
     def send_data(self, local_file: str, remote_file: str):
         """
         Sends Data via sftp to the Router
@@ -112,6 +97,26 @@ class NetworkCtrl:
                            self.router.usr_name + "@" + self.router.ip + ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
+    def router_wget(self, file: str, remote_path: str):
+        """
+        The Router downloads the file from the PI and stores it at remote_file
+        :param file: like /root/TestFramework/firmware/.../<firmware>.bin
+        :param remote_path: like /tmp/
+        """
+        webserver = WebServer()
+        webserver.start()
+        self.send_router_command('wget -N http://' +
+                                 self.namespace.get_ip_of_encapsulate_interface() + ':' +
+                                 str(WebServer.PORT_WEBSERVER) +
+                                 file.replace(WebServer.BASE_DIR, '') +
+                                 ' -P ' + remote_path)
+        webserver.join()
+
+    def wca_setup_wizard(self, wizard_config):
+        wca = WebConfigurationAssist()
+        wca.setup_wizard(wizard_config)
+        wca.exit()
+
     def exit(self):
         """
         Delete the VLAN resp. the Namespace with the VLAN
@@ -119,4 +124,3 @@ class NetworkCtrl:
         Logger().info("Disconnect with Router(" + str(self.router.id) + ") ...", 1)
         self.vlan.delete_interface()
         self.namespace.remove()
-        self.webserver.join()
