@@ -1,11 +1,8 @@
 from .proxyobject import ProxyObject
 from enum import Enum
-<<<<<<< HEAD
 from queue import Queue
-=======
 from firmware.firmware import Firmware
 from network.network_iface import NetworkIface
->>>>>>> master
 
 
 class Mode(Enum):
