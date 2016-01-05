@@ -8,3 +8,7 @@ __pycache__/
 *.pyc
 
 docs/_build/
+
+*.log
+
+firmware/firmwares/
