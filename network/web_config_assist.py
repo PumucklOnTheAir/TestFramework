@@ -14,11 +14,15 @@ class WebConfigurationAssist:
 
     def __init__(self):
         Logger().debug("Create WebConfigurationAssist ...", 2)
-        # todO: On raspberry pi necessary: create virtual display
+        # TODO: On raspberry pi necessary: create virtual display
         #self.display = Display(visible=0, size=(800, 600))
         #self.display.start()
-
-        self.browser = webdriver.Firefox()
+        try:
+            self.browser = webdriver.Firefox()
+            Logger().debug("[+] FireFox started", 3)
+        except Exception as e:
+            Logger().debug("[-] Couldn't start FireFox", 3)
+            raise e
 
     def setup_wizard(self, config):
         """
@@ -190,7 +194,6 @@ class WebConfigurationAssist:
         for i, server in enumerate(static_dns_server):
             static_dns_server_field_ids.append(static_dns_server_fiel_id + str(i))
 
-
         ipv4_automatic_field_element = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(ipv4_automatic_field_id))
         ipv4_static_field_element = WebDriverWait(self.browser, 10).\
@@ -257,7 +260,115 @@ class WebConfigurationAssist:
 
         safe_button_element.click()
 
+    def setup_expert_wlan(self, config):
+        Logger().debug("Setup 'Private WLAN' with: " + str(config), 3)
+        self.browser.get(config['url'])
 
+        client_network_field_id = "cbid.wifi.1.radio0_client_enabled"
+        mesh_network_field_id = "cbid.wifi.1.radio0_mesh_enabled"
+        safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
+        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
+        transmission_power_field_id = "cbi-wifi-1-radio0_txpower-"
+        transmission_power_field_ids = []
+        transmission_power_field_ids.append(transmission_power_field_id+"default")
+        for i in range(0, 19):
+            transmission_power_field_ids.append(transmission_power_field_id + str(i))
+
+        client_network_field_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_id(client_network_field_id))
+        mesh_network_field_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_id(mesh_network_field_id))
+        safe_button_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
+        reset_button_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
+        transmission_power_field_elements = []
+        for i, field_id in enumerate(transmission_power_field_ids):
+            transmission_power_field_element = WebDriverWait(self.browser, 10).\
+                until(lambda driver: driver.find_element_by_id(field_id))
+
+        # The checkboxes are set to 'display = none' via css.
+        # Because selenium can't see them we have to set the checkboxes to 'display = inline'
+        self.browser.execute_script("arguments[0].style.display = 'inline';",client_network_field_id)
+        self.browser.execute_script("arguments[0].style.display = 'inline';",mesh_network_field_element)
+
+        if config['client_network']:
+            if not client_network_field_element.is_selected():
+                client_network_field_element.click()
+        else:
+            if client_network_field_element.is_selected():
+                client_network_field_element.click()
+
+        if config['mesh_network']:
+            if not mesh_network_field_element.is_selected():
+                mesh_network_field_element.click()
+        else:
+            if mesh_network_field_element.is_selected():
+                mesh_network_field_element.click()
+
+        if config['transmission_power'] == "default":
+            transmission_power_field_elements[0].click()
+        else:
+            transmission_power_field_elements[config['transmission_power']].click()
+
+        if config['reset']:
+            reset_button_element.click()
+
+        safe_button_element.click()
+
+
+    def setup_expert_autoupdate(self, config):
+        Logger().debug("Setup 'Private WLAN' with: " + str(config), 3)
+        self.browser.get(config['url'])
+
+        autoupdate_field_id = "cbid.autoupdater.settings.enabled"
+        branch_stable_field_id = "cbi-autoupdater-settings-branch-stable"
+        branch_beta_field_if = "cbi-autoupdater-settings-branch-beta"
+        branch_experimental_field_id = "cbi-autoupdater-settings-branch-experimental"
+        safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
+        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
+
+        autoupdate_field_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_id(autoupdate_field_id))
+        branch_stable_field_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_id(branch_stable_field_id))
+        branch_beta_field_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_id(branch_beta_field_if))
+        branch_experimental_field_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_id(branch_experimental_field_id))
+        safe_button_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
+        reset_button_element = WebDriverWait(self.browser, 10).\
+            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
+
+        # The checkboxes are set to 'display = none' via css.
+        # Because selenium can't see them we have to set the checkboxes to 'display = inline'
+        self.browser.execute_script("arguments[0].style.display = 'inline';",autoupdate_field_element)
+        self.browser.execute_script("arguments[0].style.display = 'inline';",branch_stable_field_element)
+        self.browser.execute_script("arguments[0].style.display = 'inline';",branch_beta_field_element)
+        self.browser.execute_script("arguments[0].style.display = 'inline';",branch_experimental_field_element)
+
+        if config['client_network']:
+            if not autoupdate_field_element.is_selected():
+                autoupdate_field_element.click()
+        else:
+            if autoupdate_field_element.is_selected():
+                autoupdate_field_element.click()
+
+        if config['branch'] == "stable":
+            branch_stable_field_element.click()
+        elif config['branch'] == "beta":
+            branch_beta_field_element.click()
+        else:
+            branch_experimental_field_element.click()
+
+        if config['reset']:
+            reset_button_element.click()
+
+        safe_button_element.click()
+
+    # def setup_expert_upgrade(self, config):
+        # TODO
 
     def exit(self):
         self.browser.close()
