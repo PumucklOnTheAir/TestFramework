@@ -19,7 +19,7 @@ class NetworkCtrl:
         4. Provides a WebServer
     """
 
-    def __init__(self, router: Router):
+    def __init__(self, router: Router, link_iface_name='eth0'):
         """
         Creats a VLAN and a Namespace for the specific Router and 'eth0' as the link-interface.
         The VLAN will be encapsulate in the Namespace.
@@ -29,7 +29,7 @@ class NetworkCtrl:
         Logger().info("Create Network Controller for Router(" + str(router.id) + ") ...", 1)
         self.router = router
 
-        self.vlan = Vlan('eth0', router.vlan_iface_name, router.vlan_iface_id,
+        self.vlan = Vlan(link_iface_name, router.vlan_iface_name, router.vlan_iface_id,
                          vlan_iface_ip=None, vlan_iface_ip_mask=None)
         self.vlan.create_interface()
 
@@ -103,14 +103,17 @@ class NetworkCtrl:
         :param file: like /root/TestFramework/firmware/.../<firmware>.bin
         :param remote_path: like /tmp/
         """
-        webserver = WebServer()
-        webserver.start()
-        self.send_router_command('wget -N http://' +
-                                 self.namespace.get_ip_of_encapsulate_interface() + ':' +
-                                 str(WebServer.PORT_WEBSERVER) +
-                                 file.replace(WebServer.BASE_DIR, '') +
-                                 ' -P ' + remote_path)
-        webserver.join()
+        try:
+            webserver = WebServer()
+            webserver.start()
+            self.send_router_command('wget -N http://' +
+                                     self.namespace.get_ip_of_encapsulate_interface() + ':' +
+                                     str(WebServer.PORT_WEBSERVER) +
+                                     file.replace(WebServer.BASE_DIR, '') +
+                                     ' -P ' + remote_path)
+            webserver.join()
+        except Exception as e:
+            Logger().error(str(e), 2)
 
     def wca_setup_wizard(self, wizard_config):
         """
@@ -118,14 +121,17 @@ class NetworkCtrl:
         sets the values provided by the wizard (in the WebConfiguration)
         :param wizard_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact
         """
-        wca = WebConfigurationAssist()
-        wca.setup_wizard(wizard_config)
-        wca.exit()
+        try:
+            wca = WebConfigurationAssist()
+            wca.setup_wizard(wizard_config)
+            wca.exit()
+        except Exception as e:
+            Logger().error(str(e), 2)
 
     def exit(self):
         """
         Delete the VLAN resp. the Namespace with the VLAN
         """
-        Logger().info("Disconnect with Router(" + str(self.router.id) + ") ...", 1)
+        Logger().info("Close NetworkCrtl for Router(" + str(self.router.id) + ") ...", 1)
         self.vlan.delete_interface()
         self.namespace.remove()

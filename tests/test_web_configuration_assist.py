@@ -4,6 +4,7 @@ from network.network_ctrl import NetworkCtrl
 from server.router import Router
 from network.web_config_assist import WebConfigurationAssist
 
+
 class TestWebConfigurationAssist(TestCase):
     def test_setup_wizard(self):
         # Create router
@@ -12,10 +13,10 @@ class TestWebConfigurationAssist(TestCase):
         router.mac = "e8:de:27:b7:7c:e2"
         assert isinstance(router, Router)
         # Create NetworkCrtl
-        #network_ctrl = NetworkCtrl(router)
-        #assert isinstance(network_ctrl, NetworkCtrl)
+        network_ctrl = NetworkCtrl(router, 'enp0s25')
+        assert isinstance(network_ctrl, NetworkCtrl)
 
-        wizard_conf = {'url': 'http://192.168.2.13:8000/index2.xhtml',
+        wizard_conf = {'url': 'http://192.168.2.13:8000/index.xhtml',
                        'node_name': '64293-testframework1',
                        'mesh_vpn': True,
                        'limit_bandwidth': False,
@@ -25,8 +26,10 @@ class TestWebConfigurationAssist(TestCase):
                        'altitude': '140.5',
                        'contact': 'ops@darmstadt.freifunk.net'}
 
-        wca = WebConfigurationAssist()
-        wca.setup_wizard(wizard_conf)
-        wca.exit()
+        network_ctrl.wca_setup_wizard(wizard_conf)
 
-        #network_ctrl.exit()
+        #wca = WebConfigurationAssist()
+        #wca.setup_wizard(wizard_conf)
+        #wca.exit()
+
+        network_ctrl.exit()
