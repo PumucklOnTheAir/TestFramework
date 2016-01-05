@@ -1,22 +1,46 @@
 from threading import Thread
 from network.network_ctrl import NetworkCtrl
-from typing import List
 from server.router import Router
+from log.logger import Logger
 
 
 class RouterInfo:
+    """
+    The RouterInfo collects in a new Thread informations about the Routers
+    """
 
     @staticmethod
-    def update(routers: List[Router]):
+    def update(router: Router):
         """
-        : Desc : starts a thread for each router and stores new information
-        :param routers: list of router objects
-        :return:
+        Starts a thread for a router and stores new information
+        :param router: Router objects
         """
-        for router in routers:
-            worker = Worker(router)
-            worker.start()
-            worker.join()
+        # TODO: wird anstelle des threadings benutzt. Führt allerdings zu abstürtzen beim icp-server
+        '''
+        RouterInfo.update_single_router(router)
+        '''
+        Logger().info("Update the Infos of the Router(" + str(router.id) + ") ...", 1)
+        worker = Worker(router)
+        worker.start()
+        worker.join()
+
+    # TODO: ohne threads
+    '''
+    @staticmethod
+    def update_single_router(router: Router):
+        network_ctrl = NetworkCtrl(router)
+        network_ctrl.connect_with_router()
+        # Model
+        router.model = network_ctrl.send_router_command(
+            'cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
+        # MAC
+        router.mac = network_ctrl.send_router_command(
+            'uci show network.client.macaddr').split('=')[1][:-4]
+        # SSID
+        router.ssid = network_ctrl.send_router_command(
+            'uci show wireless.client_radio0.ssid').split('=')[1][:-4]
+        network_ctrl.exit()
+    '''
 
 
 class Worker(Thread):
@@ -28,10 +52,9 @@ class Worker(Thread):
 
     def run(self):
         """
-        : Desc : runs new thread and gets the information from the router via ssh
+        Runs new thread and gets the information from the router via ssh
         :return:
         """
-        print("run new thread ...")
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_router()
         # Model

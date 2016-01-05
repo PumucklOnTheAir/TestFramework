@@ -1,6 +1,11 @@
 from .proxyobject import ProxyObject
 from enum import Enum
+<<<<<<< HEAD
 from queue import Queue
+=======
+from firmware.firmware import Firmware
+from network.network_iface import NetworkIface
+>>>>>>> master
 
 
 class Mode(Enum):
@@ -11,12 +16,15 @@ class Mode(Enum):
     unknown = 5
 
 
-class Router(ProxyObject):
+class Router(ProxyObject, NetworkIface):
 
-    def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
+    def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
                  usr_password: str, power_socket: int):
 
         ProxyObject.__init__(self)
+
+        self._id = None
+        self._id = id
 
         self._ip = None
         self._ip = ip
@@ -37,9 +45,18 @@ class Router(ProxyObject):
         self._model = None
         self._usr_name = usr_name
         self._usr_password = usr_password
-        self._mac = None
+        self._mac = '00:00:00:00:00:00'
         self._wlan_mode = Mode.unknown
-        self._ssid = ""
+        self._ssid = ''
+        self._firmware = Firmware.get_default_firmware()
+
+    @property
+    def id(self) -> int:
+        """
+        ID of the Router
+        :return: ID number as in
+        """
+        return self._id
 
         # test handling
         self.running_tests = None
@@ -96,14 +113,6 @@ class Router(ProxyObject):
         """
         return self._usr_name
 
-    @usr_name.setter
-    def usr_name(self, value: str):
-        """
-        :type value: str
-        """
-        assert isinstance(value, str)
-        self._usr_name = value
-
     @property
     def usr_password(self) -> str:
         """
@@ -112,14 +121,6 @@ class Router(ProxyObject):
         :return:
         """
         return self._usr_password
-
-    @usr_password.setter
-    def usr_password(self, value: str):
-        """
-        :type value: str
-        """
-        assert isinstance(value, str)
-        self._usr_password = value
 
     @property
     def mac(self) -> str:
@@ -203,3 +204,20 @@ class Router(ProxyObject):
         """
         assert isinstance(value, int)
         self._power_socket = value
+
+    @property
+    def firmware(self) -> Firmware:
+        """
+        The firmware of the routers
+        :rtype: Firmware
+        :return:
+        """
+        return self._firmware
+
+    @firmware.setter
+    def firmware(self, value: Firmware):
+        """
+        :type value: Firmware
+        """
+        assert isinstance(value, Firmware)
+        self._firmware = value
