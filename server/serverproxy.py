@@ -60,6 +60,10 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
+    def stop_all_tasks(self):
+        pass
+
+    @abstractclassmethod
     def update_router_info(self, router_ids: List[int], update_all: bool):
         """
         Updates all the informwations about the Router

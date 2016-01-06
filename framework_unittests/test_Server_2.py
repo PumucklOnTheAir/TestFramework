@@ -42,3 +42,19 @@ class ServerTestCase2(unittest.TestCase):
     def test_little_self_check_test(self):
         started = self.server_proxy.start_test(21, "ConnectionTest")
         assert started
+        time.sleep(2)
+        reports = self.server_proxy.get_reports()
+        assert len(reports) != 0
+
+    def test_little_self_check_test(self):
+        started = self.server_proxy.start_test(21, "VeryLongTest")
+        assert started
+        time.sleep(2)
+
+        self.server_proxy.stop_all_tasks()
+
+        time.sleep(1)
+
+        routers = self.server_proxy.get_routers()
+        for router in routers:
+            assert router.running_task is None

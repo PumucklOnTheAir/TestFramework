@@ -4,6 +4,10 @@ from enum import Enum
 from firmware.firmware import Firmware
 from network.network_iface import NetworkIface
 
+from abc import ABCMeta, abstractmethod
+from log.logger import Logger
+from threading import Thread
+
 
 class Mode(Enum):
     master = 1
@@ -47,10 +51,9 @@ class Router(ProxyObject, NetworkIface):
         self._ssid = ''
         self._firmware = Firmware.get_default_firmware()
 
-        # test handling
-        from multiprocessing import Queue
-        self.running_tests = None
-        self.waiting_tests = []
+        # test/task handling
+        self.running_task = None
+        self.waiting_tasks = []
 
     def __str__(self):
         return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
@@ -222,3 +225,19 @@ class Router(ProxyObject, NetworkIface):
         """
         assert isinstance(value, Firmware)
         self._firmware = value
+
+
+class RouterTask(metaclass=ABCMeta):
+    def __init__(self):
+        self.router = None
+
+    def prepare(self, router: Router):
+        Logger().debug("TestCase prepare", 3)
+        self.router = router
+
+
+class RouterJob(RouterTask, Thread, metaclass=ABCMeta):
+
+    @abstractmethod
+    def post_process(self, data):
+        pass
