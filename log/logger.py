@@ -1,4 +1,5 @@
 import logging
+import logging.handlers
 import os
 import sys
 
@@ -197,6 +198,10 @@ class Logger(metaclass=Singleton):
             stream_handler = logging.StreamHandler(sys.stdout)
             stream_handler.setLevel(stream_log_level)
 
+            # create a SysLogHandler
+            syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+            syslog_handler.setLevel(stream_log_level)
+
             # create a logging format
             if log_file_format == "":
                 log_file_format = "%(asctime)-23s - %(name)-10s - %(levelname)-8s : %(message)s"
@@ -206,15 +211,18 @@ class Logger(metaclass=Singleton):
             if log_stream_format == "":
                 log_stream_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
                 stream_handler.setFormatter(ColoredFormatter(log_stream_format))
+                syslog_handler.setFormatter(ColoredFormatter(log_stream_format))
             else:
                 stream_formatter = logging.Formatter(log_stream_format)
                 stream_handler.setFormatter(stream_formatter)
+                syslog_handler.setFormatter(stream_formatter)
 
             # add the handlers to the logger
             if self._logger.hasHandlers():
                 self._logger.handlers.clear()
             self._logger.addHandler(file_handler)
             self._logger.addHandler(stream_handler)
+            self.logger.addHandler(syslog_handler)
 
             self._max_detail_log_level = max_detail_log_level
 
