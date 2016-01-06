@@ -29,7 +29,7 @@ script:
   - python -m  pyflakes server cli util config network log
   - python -m unittest framework_unittests/test_IPC.py
   - python -m unittest framework_unittests/test_Router.py
-  - python -m unittest framework_unittests/test_Server.py
+  - coverage run framework_unittests/test_Server.py
  # - python -m unittest framework_unittests/test_Server_2.py
   - python -m unittest framework_unittests/test_Yaml.py
   - python -m unittest framework_unittests/test_Logger.py
