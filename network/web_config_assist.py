@@ -18,10 +18,11 @@ class WebConfigurationAssist:
         #self.display = Display(visible=0, size=(800, 600))
         #self.display.start()
         try:
-            self.browser = webdriver.Firefox()
-            Logger().debug("[+] FireFox started", 3)
+            command = "ip netns exec nsp21 phantomjs"
+            self.browser = webdriver.PhantomJS()
+            Logger().debug("[+] Browser started", 3)
         except Exception as e:
-            Logger().debug("[-] Couldn't start FireFox", 3)
+            Logger().debug("[-] Couldn't start Browser", 3)
             raise e
 
     def setup_wizard(self, config):
@@ -46,16 +47,8 @@ class WebConfigurationAssist:
             until(lambda driver: driver.find_element_by_id(node_name_field_id))
         mesh_vpn_field_element = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(mesh_vpn_field_id))
-        limit_bandwidth_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(limit_bandwidth_field_id))
         show_location_field_element = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(show_location_field_id))
-        latitude_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(latitude_field_id))
-        longitude_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(longitude_field_id))
-        altitude_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(altitude_field_id))
         contact_field_element = WebDriverWait(self.browser, 10).\
             until(lambda driver: driver.find_element_by_id(contact_field_id))
         safe_restart_button_element = WebDriverWait(self.browser, 10).\
@@ -64,7 +57,6 @@ class WebConfigurationAssist:
         # The checkboxes are set to 'display = none' via css.
         # Because selenium can't see them we have to set the checkboxes to 'display = inline'
         self.browser.execute_script("arguments[0].style.display = 'inline';",mesh_vpn_field_element)
-        self.browser.execute_script("arguments[0].style.display = 'inline';",limit_bandwidth_field_element)
         self.browser.execute_script("arguments[0].style.display = 'inline';",show_location_field_element)
 
         node_name_field_element.clear()
@@ -73,6 +65,9 @@ class WebConfigurationAssist:
         if config['mesh_vpn']:
             if not mesh_vpn_field_element.is_selected():
                 mesh_vpn_field_element.click()
+            limit_bandwidth_field_element = WebDriverWait(self.browser, 10).\
+                until(lambda driver: driver.find_element_by_id(limit_bandwidth_field_id))
+            self.browser.execute_script("arguments[0].style.display = 'inline';",limit_bandwidth_field_element)
             if config['limit_bandwidth']:
                 if not limit_bandwidth_field_element.is_selected():
                     limit_bandwidth_field_element.click()
@@ -86,6 +81,12 @@ class WebConfigurationAssist:
         if config['show_location']:
             if not show_location_field_element.is_selected():
                 show_location_field_element.click()
+            latitude_field_element = WebDriverWait(self.browser, 10).\
+                until(lambda driver: driver.find_element_by_id(latitude_field_id))
+            longitude_field_element = WebDriverWait(self.browser, 10).\
+                until(lambda driver: driver.find_element_by_id(longitude_field_id))
+            altitude_field_element = WebDriverWait(self.browser, 10).\
+                until(lambda driver: driver.find_element_by_id(altitude_field_id))
             latitude_field_element.clear()
             latitude_field_element.send_keys(config['latitude'])
             longitude_field_element.clear()

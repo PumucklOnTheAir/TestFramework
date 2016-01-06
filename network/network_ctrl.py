@@ -122,11 +122,20 @@ class NetworkCtrl:
         :param wizard_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact
         """
         try:
+            from subprocess import Popen, PIPE
+            process = Popen(['ip', 'netns', 'exec', 'nsp21', 'ip', 'addr', 'add', '127.0.0.1/8', 'dev', 'lo'], stdout=PIPE, stderr=PIPE)
+            stdout, sterr = process.communicate()
+            Logger().error(sterr.decode('utf-8'))
+            process = Popen(['ip', 'netns', 'exec', 'nsp21', 'ip', 'link', 'set', 'dev', 'lo', 'up'], stdout=PIPE, stderr=PIPE)
+            stdout, sterr = process.communicate()
+            Logger().error(sterr.decode('utf-8'))
             wca = WebConfigurationAssist()
             wca.setup_wizard(wizard_config)
             wca.exit()
         except Exception as e:
             Logger().error(str(e), 2)
+            self.exit()
+            raise e
 
     def exit(self):
         """
