@@ -16,11 +16,11 @@ sudo: false
 
 install:
   - pip install -r requirements.txt
-before_script:
-  - python -m  pyflakes server cli util config network log
+
 
 # script: python -m unittest discover -s framework_unittests
 script:
+  - python -m  pyflakes server cli util config network log
   - python -m unittest framework_unittests/test_IPC.py
   - python -m unittest framework_unittests/test_Router.py
   - python -m unittest framework_unittests/test_Server.py
