@@ -59,14 +59,6 @@ class Router(ProxyObject, NetworkIface):
         return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
 
     @property
-    def id(self) -> int:
-        """
-        ID of the Router
-        :return: ID number as in
-        """
-        return self._id
-
-    @property
     def ip(self) -> str:
         """
         IP number of the Router

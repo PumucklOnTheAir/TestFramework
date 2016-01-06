@@ -82,11 +82,7 @@ class Server(ServerProxy):
         for router in cls.get_routers():
             router.running_task = None
 
-    @classmethod
-    def get_router_by_id(cls, router_id: int) -> Router:
-        for router in cls._routers:
-            if router.get_id() == router_id:
-                return router
+
 
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
@@ -332,5 +328,3 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 RouterFlashFirmware.sysupgrade(router, n)
-
-

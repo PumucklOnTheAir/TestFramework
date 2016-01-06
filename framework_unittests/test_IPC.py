@@ -112,5 +112,9 @@ class DummyServer(ServerProxy):
     def sysupgrade_firmware(cls, router_ids, upgrade_all, n) -> []:
         pass
 
+    @classmethod
+    def stop_all_tasks(cls):
+        pass
+
 
 

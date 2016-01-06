@@ -1,4 +1,3 @@
-from subprocess import Popen, PIPE
 from pyroute2.ipdb import IPDB
 import time
 import re
@@ -58,6 +57,7 @@ class Vlan:
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
         except KeyError as ke:
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
+            Logger().error(str(ke), 3)
             return
         except Exception as e:
             Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)

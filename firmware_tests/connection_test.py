@@ -1,6 +1,7 @@
 from server.test import FirmwareTest
 import time
 
+
 class ConnectionTest(FirmwareTest):
 
     def test_buzz1(self):
