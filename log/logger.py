@@ -33,11 +33,10 @@ class ColoredFormatter(logging.Formatter):
     RESET_SEQ = "\033[0m"
     COLOR_SEQ = "\033[0;%dm"
 
-    # Colors: 30=schwarz ,31=rot ,32=gruen ,33=orange ,34=blau ,35=rosa, 36=Türkis ,37= weiß/grau
     COLORS = {
         'WARNING': 33,
-        'INFO': 37,
-        'DEBUG': 37,
+        'INFO': 30,
+        'DEBUG': 30,
         'CRITICAL': 31,
         'ERROR': 31,
     }

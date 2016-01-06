@@ -164,6 +164,23 @@ class ConfigManager:
         return output
 
     @staticmethod
+    def get_server_property(prop: str = "") -> object:
+        """
+        Read the Server Config file and give the property back
+        :param prop: Property from Server file
+        :return: Value of the property from the file
+        """
+        dic_keys = {"default_Name"}
+
+        if prop in dic_keys:
+            output = ConfigManager.get_server_config()
+            for x in output:
+                if prop in x.keys():
+                    return x[prop]
+
+        return None
+
+    @staticmethod
     def get_test_config() -> []:
         """
         Read the Test Config file
