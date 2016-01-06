@@ -3,6 +3,7 @@ from .ipc import IPC
 from .router import Router
 from config.configmanager import ConfigManager
 from typing import List
+import os
 
 
 class Server(ServerProxy):
@@ -19,7 +20,8 @@ class Server(ServerProxy):
     """""
     DEBUG = False
     VLAN = True
-    CONFIG_PATH = "../config"
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+    CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
     _ipc_server = IPC()
 
     # runtime vars
@@ -38,6 +40,8 @@ class Server(ServerProxy):
         cls.DEBUG = debug_mode
 
         cls.CONFIG_PATH = config_path
+        # set the config_path at the manager
+        ConfigManager.set_config_path(config_path)
 
         cls.VLAN = vlan_activate
 
