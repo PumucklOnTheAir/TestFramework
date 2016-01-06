@@ -17,17 +17,17 @@ sudo: false
 install:
   - pip install -r requirements.txt
 before_script:
-  - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util config"
-  - python -m  pyflakes server
+  - python -m  pyflakes server cli util config network log
 
-  #run tests
-# script: python -m unittest discover -s tests
+# script: python -m unittest discover -s framework_unittests
 script:
-  - python -m unittest tests/test_IPC.py
-  - python -m unittest tests/test_Router.py
-  - python -m unittest tests/test_Server.py
- # - python -m unittest tests/test_Server_2.py
-  - python -m unittest tests/test_Yaml.py
-  - python -m unittest tests/test_Logger.py
-  - python -m unittest tests/test_firmware_handler.py
+  - python -m unittest framework_unittests/test_IPC.py
+  - python -m unittest framework_unittests/test_Router.py
+  - python -m unittest framework_unittests/test_Server.py
+ # - python -m unittest framework_unittests/test_Server_2.py
+  - python -m unittest framework_unittests/test_Yaml.py
+  - python -m unittest framework_unittests/test_Logger.py
+  - python -m unittest framework_unittests/test_firmware_handler.py
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util config"
+
 
