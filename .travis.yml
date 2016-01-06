@@ -26,7 +26,7 @@ install:
 
 # script: python -m unittest discover -s framework_unittests
 script:
-  - python run -m  pyflakes server cli util config network log
+  - python -m pyflakes server cli util config network log
   - coverage run -m unittest framework_unittests/test_IPC.py
   - coverage run -m unittest framework_unittests/test_Router.py
   - coverage run -m unittest framework_unittests/test_Server.py
