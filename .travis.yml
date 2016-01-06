@@ -26,14 +26,14 @@ install:
 
 # script: python -m unittest discover -s framework_unittests
 script:
-  - python -m  pyflakes server cli util config network log
-  - python -m unittest framework_unittests/test_IPC.py
-  - python -m unittest framework_unittests/test_Router.py
+  - python run -m  pyflakes server cli util config network log
+  - coverage run -m unittest framework_unittests/test_IPC.py
+  - coverage run -m unittest framework_unittests/test_Router.py
   - coverage run -m unittest framework_unittests/test_Server.py
  # - python -m unittest framework_unittests/test_Server_2.py
-  - python -m unittest framework_unittests/test_Yaml.py
-  - python -m unittest framework_unittests/test_Logger.py
-  - python -m unittest framework_unittests/test_firmware_handler.py
+  - coverage run -m unittest framework_unittests/test_Yaml.py
+  - coverage run -m unittest framework_unittests/test_Logger.py
+  - coverage run -m unittest framework_unittests/test_firmware_handler.py
   - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util config"
 
 notifications:
