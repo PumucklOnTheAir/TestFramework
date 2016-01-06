@@ -82,8 +82,6 @@ class Server(ServerProxy):
         for router in cls.get_routers():
             router.running_task = None
 
-
-
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
         # TODO test verwaltung
