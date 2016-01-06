@@ -5,8 +5,11 @@ from config.configmanager import ConfigManager
 from typing import List
 from queue import Queue
 from .test import AbstractTest
-from copy import copy
-from concurrent.futures import ThreadPoolExecutor
+import copy
+from concurrent.futures import ProcessPoolExecutor
+# from util.router_info import RouterInfo # TODO can not import properly the RouterInfo #64
+from log.logger import Logger
+from concurrent.futures import Future
 
 
 class Server(ServerProxy):
@@ -29,7 +32,7 @@ class Server(ServerProxy):
     # runtime vars
     _routers = []
     _reports = Queue()
-    # TODO reichen Threads aus? oder müssen es Prozesse sein wegen VLAN?
+    # TODO reichen Threads aus? oder müssen es Prozesse sein wegen VLAN? -> Es müssen Prozesse sein..
     executor = None
 
     @classmethod
@@ -48,32 +51,29 @@ class Server(ServerProxy):
 
         cls.__load_configuration()
 
-        if cls.VLAN:
-            from util.router_info import RouterInfo
-            # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
-            RouterInfo.update(cls.get_routers()[0])
+        cls.update_router_info(cls.get_routers()[0])  # TODO das ist doch nicht richtig? #64
 
-        print("Runtime Server started")
+        Logger().info("Runtime Server started")
 
-        cls.executor = ThreadPoolExecutor(max_workers=len(cls._routers))
+        cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
 
         cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
 
-        # at this point all code will be ignored
+        # at this point following code will be ignored
 
     @classmethod
     def __load_configuration(cls):
-        # (re)load the configuration only then no tests are running
-        assert len(cls.get_running_tests) == 0
+        Logger().debug("Load configuration")
         cls._routers = ConfigManager.get_router_auto_list()
-        assert len(cls._routers) != 0
-        assert len(cls._reports) == 0
+        # cls._ set fixed demo test ConnectionTest
+
 
     @classmethod
     def stop(cls) -> None:
         """
         Stops the server, all running tests and closes all connections.
         """
+        cls.executor.shutdown()
         cls._ipc_server.shutdown()
         pass
 
@@ -96,31 +96,65 @@ class Server(ServerProxy):
         :return: True if start was successful
         """
         router = cls.get_router_by_id(router_id)
-        return cls.__start_test(router, test_name)
+        # TODO Testverwaltung - ermittlung des passenden Tests #36
+        # cls.get_test_by_name
+        from firmware_tests.connection_test import ConnectionTest
+        if test_name == "ConnectionTest":
+            demo_test = ConnectionTest()
+        else:
+            Logger().error("Testname unknown")
+            return False
+
+        return cls.__start_test(router, demo_test)
 
     @classmethod
     def __start_test(cls, router: Router, test: AbstractTest) -> bool:
-        if router.running_tests is None:
-            if test is None:
-                if len(router.waiting_tests) != 0:
-                    test = router.waiting_tests.get()
+        if test is None:  # no test given? look up for the next test in the queue
+            Logger().debug("Test object is none", 1)
+            if len(router.waiting_tests) == 0:
+                Logger().debug("No tests in the queue to run.", 2)
+                return False
+            else:
+                if router.running_tests is not None:
+                    Logger().debug("Router working. Next test has to wait..", 3)
+                    return False
                 else:
-                    test = copy.deepcopy(cls.get_test_by_name(test))
-                router.running_tests = test
-                task = cls.executor.submit(cls.__execute_test, test, router)
-                task.add_done_callback(cls.__start_test, router, None)
-                test.thread = task
-                return True
+                    Logger().debug("Get next test from the queue", 3)
+                    test = router.waiting_tests.get()
         else:
+            test = copy.deepcopy(test)
+
+        if router.running_tests is None:
+            Logger().debug("Starting test " + str(test), 1)
+            router.running_tests = test
+            task = cls.executor.submit(cls._execute_test, test, router)
+            task.add_done_callback(cls._test_done)  # TODO das muss anders gehen, z.B. über eine eigenen Fnk
+            test.thread = task
+            return True
+        else:
+            Logger().debug("Put test in the wait queue. " + str(test), 1)
             router.waiting_tests.put(test)
             return False
 
     @classmethod
-    def __execute_test(cls, test: AbstractTest, router: Router):
+    def _execute_test(cls, test: AbstractTest, router: Router):
+        Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
         test.prepare(router)
-        result = test.run()
+        Logger().debug("Execute test cases.. ", 3)
+        result = test.run()  # TODO if debug set, run as debug()
+        # TODO falsche Position?
+        Logger().debug("Result form test " + str(result), 3)
         cls._reports.put(result)
         router.running_tests = None
+
+    @classmethod
+    def _test_done(cls, task: Future):
+        Logger().debug("Test done" + str(task), 1)
+        exception = task.exception()
+        if exception is not None:
+            Logger().error("Test case raised an exception: " + str(exception), 1)
+
+
 
     @classmethod
     def get_routers(cls) -> List[Router]:
@@ -166,20 +200,24 @@ class Server(ServerProxy):
         pass
 
     @classmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool):
+    def update_router_info(cls, router_ids: List[int], update_all: bool = False):
         """
-        Updates all the informwations about the Router
+        Updates all the informations about the Router
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_info import RouterInfo
-        if update_all:
-            for router in cls.get_routers():
-                RouterInfo.update(router)
+        if cls.VLAN:
+            from util.router_info import RouterInfo  # TODO remove it from here #64
+
+            if update_all:
+                for router in cls.get_routers():
+                    RouterInfo.update(router)
+            else:
+                for router_id in router_ids:
+                    router = cls.get_router_by_id(router_id)
+                    RouterInfo.update(router)
         else:
-            for router_id in router_ids:
-                router = cls.get_router_by_id(router_id)
-                RouterInfo.update(router)
+            Logger().info("Update Router Info deactivated - set VLAN to true to activate it")
 
     @classmethod
     def get_router_by_id(cls, router_id: int) -> Router:
@@ -188,11 +226,13 @@ class Server(ServerProxy):
         :param router_id:
         :return: Router
         """
+        Logger().debug("get_router_by_id with id: " + str(router_id), 1)
         routers = cls.get_routers()
-        if routers[router_id].id == router_id:
-            return router_id
+        # if routers[router_id].id == router_id:
+        #     return router_id # IndexError
         for router in routers:
             if router.id == router_id:
+                Logger().debug("return Router: " + str(router), 2)
                 return router
         return None
 

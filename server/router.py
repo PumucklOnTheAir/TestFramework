@@ -1,6 +1,6 @@
 from .proxyobject import ProxyObject
 from enum import Enum
-from queue import Queue
+
 from firmware.firmware import Firmware
 from network.network_iface import NetworkIface
 
@@ -47,6 +47,14 @@ class Router(ProxyObject, NetworkIface):
         self._ssid = ''
         self._firmware = Firmware.get_default_firmware()
 
+        # test handling
+        from multiprocessing import Queue
+        self.running_tests = None
+        self.waiting_tests = []
+
+    def __str__(self):
+        return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
+
     @property
     def id(self) -> int:
         """
@@ -54,10 +62,6 @@ class Router(ProxyObject, NetworkIface):
         :return: ID number as in
         """
         return self._id
-
-        # test handling
-        self.running_tests = None
-        self.waiting_tests = Queue()
 
     @property
     def ip(self) -> str:
