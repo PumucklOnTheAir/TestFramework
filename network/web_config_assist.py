@@ -316,7 +316,6 @@ class WebConfigurationAssist:
 
         safe_button_element.click()
 
-
     def setup_expert_autoupdate(self, config):
         Logger().debug("Setup 'Private WLAN' with: " + str(config), 3)
         self.browser.get(config['url'])
