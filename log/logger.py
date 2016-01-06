@@ -199,7 +199,7 @@ class Logger(metaclass=Singleton):
             stream_handler.setLevel(stream_log_level)
 
             # create a SysLogHandler
-            syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+            syslog_handler = logging.handlers.SysLogHandler(address=('localhost', 514))
             syslog_handler.setLevel(stream_log_level)
 
             # create a logging format
