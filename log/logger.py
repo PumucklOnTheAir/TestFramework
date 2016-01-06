@@ -222,7 +222,7 @@ class Logger(metaclass=Singleton):
                 self._logger.handlers.clear()
             self._logger.addHandler(file_handler)
             self._logger.addHandler(stream_handler)
-            self.logger.addHandler(syslog_handler)
+            self._logger.addHandler(syslog_handler)
 
             self._max_detail_log_level = max_detail_log_level
 
