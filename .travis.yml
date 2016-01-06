@@ -14,6 +14,9 @@ notifications:
 
 sudo: false
 
+before_install:
+  - pip install codecov
+
 install:
   - pip install -r requirements.txt
 
@@ -30,4 +33,5 @@ script:
   - python -m unittest framework_unittests/test_firmware_handler.py
   - "python -m pep8 --exclude=migrations --ignore=E501,E225 server cli util config"
 
-
+after_success:
+  - codecov
