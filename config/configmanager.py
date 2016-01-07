@@ -12,11 +12,20 @@ class ConfigManager:
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
-    ROUTER_AUTO_CONFIG_PATH = os.path.join(CONFIG_PATH, 'router_auto_config.yaml')
-    ROUTER_MANUAL_CONFIG_PATH = os.path.join(CONFIG_PATH, 'router_manual_config.yaml')
-    SERVER_CONFIG_PATH = os.path.join(CONFIG_PATH, 'server_config.yaml')
-    TEST_CONFIG_PATH = os.path.join(CONFIG_PATH, 'test_config.yaml')
-    FIRMWARE_CONFIG_PATH = os.path.join(CONFIG_PATH, 'firmware_config.yaml')
+    ROUTER_AUTO_CONFIG_FILE = 'router_auto_config.yaml'
+    ROUTER_MANUAL_CONFIG_FILE = 'router_manual_config.yaml'
+    SERVER_CONFIG_FILE = 'server_config.yaml'
+    TEST_CONFIG_FILE = 'test_config.yaml'
+    FIRMWARE_CONFIG_FILE = 'firmware_config.yaml'
+
+    @classmethod
+    def set_config_path(cls, config_path: str = "") -> None:
+        """
+        Set the path from the files
+        :param config_path: where the files are
+        :return: None
+        """
+        cls.CONFIG_PATH = config_path
 
     @staticmethod
     def read_file(path: str = "") -> []:
@@ -65,7 +74,8 @@ class ConfigManager:
         Read the Router Auto Config file
         :return: Array with the output from the file
         """
-        return ConfigManager.read_file(ConfigManager.ROUTER_AUTO_CONFIG_PATH)
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.ROUTER_AUTO_CONFIG_FILE)
+        return ConfigManager.read_file(path)
 
     @staticmethod
     def get_router_auto_list(count: int = 0) -> []:
@@ -117,7 +127,8 @@ class ConfigManager:
         Read the Router Manual Config file
         :return: Array with the output from the file
         """
-        return ConfigManager.read_file(ConfigManager.ROUTER_MANUAL_CONFIG_PATH)
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.ROUTER_MANUAL_CONFIG_FILE)
+        return ConfigManager.read_file(path)
 
     @staticmethod
     def get_router_manual_list() -> []:
@@ -152,7 +163,8 @@ class ConfigManager:
         Read the Server Config file
         :return: Array with the output from the file
         """
-        return ConfigManager.read_file(ConfigManager.SERVER_CONFIG_PATH)
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.SERVER_CONFIG_FILE)
+        return ConfigManager.read_file(path)
 
     @staticmethod
     def get_server_property_list() -> []:
@@ -186,7 +198,8 @@ class ConfigManager:
         Read the Test Config file
         :return: Array with the output from the file
         """
-        return ConfigManager.read_file(ConfigManager.TEST_CONFIG_PATH)
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.TEST_CONFIG_FILE)
+        return ConfigManager.read_file(path)
 
     @staticmethod
     def get_test_list() -> []:
@@ -203,7 +216,8 @@ class ConfigManager:
         Read the Firmware Config file
         :return: Array with the output from the file
         """
-        return ConfigManager.read_file(ConfigManager.FIRMWARE_CONFIG_PATH)
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.FIRMWARE_CONFIG_FILE)
+        return ConfigManager.read_file(path)
 
     @staticmethod
     def get_firmware_list() -> []:
