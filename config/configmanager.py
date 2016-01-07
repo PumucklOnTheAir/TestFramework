@@ -82,7 +82,7 @@ class ConfigManager:
         """
         Read the Router Manual Config file
         :param count: Count of the Router
-        :return: List with a specific output from the file
+        :return: List with any Router objects from the file
         """
         output = ConfigManager.get_router_auto_config()
 
@@ -134,7 +134,7 @@ class ConfigManager:
     def get_router_manual_list() -> []:
         """
         Read the Router Manual Config file
-        :return: List with a specific output from the file
+        :return: List with any Router objects from the file
         """
         output = ConfigManager.get_router_manual_config()
 
@@ -167,13 +167,26 @@ class ConfigManager:
         return ConfigManager.read_file(path)
 
     @staticmethod
-    def get_server_property_list() -> []:
+    def get_server_dict() -> []:
+        """
+        Read the Server Config file
+        :return: Dictionary with a specific output from the file
+        """
+        output = ConfigManager.get_server_config()
+        return output
+
+    @staticmethod
+    def get_server_list() -> []:
         """
         Read the Server Config file
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_server_config()
-        return output
+        server_list = []
+        for x in output:
+            for v in x.values():
+                server_list.append(v)
+        return server_list
 
     @staticmethod
     def get_server_property(prop: str = "") -> object:
@@ -182,7 +195,7 @@ class ConfigManager:
         :param prop: Property from Server file
         :return: Value of the property from the file
         """
-        dic_keys = {"default_Name"}
+        dic_keys = {"Server_Name", "Log_Level", "Vlan_On"}
 
         if prop in dic_keys:
             output = ConfigManager.get_server_config()
@@ -202,13 +215,26 @@ class ConfigManager:
         return ConfigManager.read_file(path)
 
     @staticmethod
+    def get_test_dict() -> []:
+        """
+        Read the Test Config file
+        :return: Dictionary with a specific output from the file
+        """
+        output = ConfigManager.get_test_config()
+        return output
+
+    @staticmethod
     def get_test_list() -> []:
         """
         Read the Test Config file
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_test_config()
-        return output
+        test_list = []
+        for x in output:
+            for v in x.values():
+                test_list.append(v)
+        return test_list
 
     @staticmethod
     def get_firmware_config() -> []:
@@ -218,6 +244,15 @@ class ConfigManager:
         """
         path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.FIRMWARE_CONFIG_FILE)
         return ConfigManager.read_file(path)
+
+    @staticmethod
+    def get_firmware_dict() -> []:
+        """
+        Read the Firmware Config file
+        :return: Dictionary with a specific output from the file
+        """
+        output = ConfigManager.get_firmware_config()
+        return output
 
     @staticmethod
     def get_firmware_list() -> []:
@@ -239,7 +274,7 @@ class ConfigManager:
         :param prop: Property from Firmware file
         :return: Value of the property from the file
         """
-        dic_keys = {"URL", "Release_Model", "Firmware_Version"}
+        dic_keys = {"URL", "Release_Model", "Firmware_Version", "Download_All"}
 
         if prop in dic_keys:
             output = ConfigManager.get_firmware_config()

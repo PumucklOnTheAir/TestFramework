@@ -30,21 +30,29 @@ class Server(ServerProxy):
     _reports = []
 
     @classmethod
-    def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH, vlan_activate: bool=True) -> None:
+    def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
         Starts the runtime server with all components
         :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
         :param vlan_activate: Activates/Deactivates VLANs
         """
-        cls.DEBUG = debug_mode
-
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
         ConfigManager.set_config_path(config_path)
 
+        # read from config the Vlan mode
+        vlan_activate = ConfigManager.get_server_property("Vlan_On")
         cls.VLAN = vlan_activate
 
+        # read from config if debug mode is on
+        log_level = ConfigManager.get_server_property("Log_Level")
+        debug_mode = False
+        if log_level is 10:
+            debug_mode = True
+        cls.DEBUG = debug_mode
+
+        # load Router configs
         cls.__load_configuration()
 
         if cls.VLAN:
