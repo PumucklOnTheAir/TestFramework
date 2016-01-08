@@ -26,6 +26,7 @@ class Namespace:
         try:
             self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
             netns.setns(nsp_name)
+            self.ipdb_netns.interfaces['lo'].up().commit()
             Logger().debug("[+] Namespace(" + nsp_name + ") successfully created", 3)
             # self.encapsulate_interface()
         except Exception as e:

@@ -49,8 +49,8 @@ class SysupdateWorker(Thread):
         """
         Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         # TODO: Liste sollte noch in directorys geändert werden, damit per string auf Elemente zugegriffen werden kann
-        firmware_handler = FirmwareHandler(self.firmware_config[0])
-        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config[1], self.firmware_config[3])
+        firmware_handler = FirmwareHandler(self.firmware_config['URL'])
+        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config['Release_Model'], self.firmware_config['Download_All'])
         self.router.firmware = firmware
 
     def join(self):

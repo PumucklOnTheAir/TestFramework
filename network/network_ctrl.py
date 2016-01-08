@@ -17,6 +17,7 @@ class NetworkCtrl:
         2. Encapsulates the Vlan inside the Namespace
         3. Provides a SSH-Connection via paramiko
         4. Provides a WebServer
+        5. Provides a Web_configuration_Assistent
     """
 
     def __init__(self, router: Router, link_iface_name='eth0'):
@@ -115,22 +116,48 @@ class NetworkCtrl:
         except Exception as e:
             Logger().error(str(e), 2)
 
-    def wca_setup_wizard(self, wizard_config):
+    def wca_setup_wizard(self, config):
         """
         Starts the WebConfigurationAssist and
-        sets the values provided by the wizard (in the WebConfiguration)
-        :param wizard_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact
+        sets the values provided by the wizard-mode (in the WebConfiguration)
+        :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
         """
         try:
-            from subprocess import Popen, PIPE
-            process = Popen(['ip', 'netns', 'exec', 'nsp21', 'ip', 'addr', 'add', '127.0.0.1/8', 'dev', 'lo'], stdout=PIPE, stderr=PIPE)
-            stdout, sterr = process.communicate()
-            Logger().error(sterr.decode('utf-8'))
-            process = Popen(['ip', 'netns', 'exec', 'nsp21', 'ip', 'link', 'set', 'dev', 'lo', 'up'], stdout=PIPE, stderr=PIPE)
-            stdout, sterr = process.communicate()
-            Logger().error(sterr.decode('utf-8'))
-            wca = WebConfigurationAssist()
-            wca.setup_wizard(wizard_config)
+            wca = WebConfigurationAssist(config, self.router)
+            wca.setup_wizard()
+            wca.exit()
+        except Exception as e:
+            Logger().error(str(e), 2)
+            self.exit()
+            raise e
+
+    def wca_setup_expert(self, config):
+        """
+        Starts the WebConfigurationAssist and
+        sets the values provided by the expert-mode(in the WebConfiguration)
+        :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
+        """
+        try:
+            wca = WebConfigurationAssist(config, self.router)
+            wca.setup_expert_private_wlan()
+            wca.setup_expert_remote_access()
+            wca.setup_expert_network()
+            wca.setup_expert_mesh_vpn()
+            wca.setup_expert_wlan()
+            wca.setup_expert_autoupdate()
+            wca.exit()
+        except Exception as e:
+            Logger().error(str(e), 2)
+            self.exit()
+            raise e
+
+    def wca_reset_expert_all(self):
+        """
+        Resets all configurations from the expert-mode
+        """
+        try:
+            wca = WebConfigurationAssist(router=self.router)
+            wca.reset_expert_all()
             wca.exit()
         except Exception as e:
             Logger().error(str(e), 2)
@@ -141,6 +168,6 @@ class NetworkCtrl:
         """
         Delete the VLAN resp. the Namespace with the VLAN
         """
-        Logger().info("Close NetworkCrtl for Router(" + str(self.router.id) + ") ...", 1)
+        Logger().info("Close Network Controller for Router(" + str(self.router.id) + ") ...", 1)
         self.vlan.delete_interface()
         self.namespace.remove()

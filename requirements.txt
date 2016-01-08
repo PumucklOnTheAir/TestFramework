@@ -7,3 +7,4 @@ pyroute2
 pylint
 recommonmark
 sphinx
+selenium

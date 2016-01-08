@@ -34,6 +34,9 @@ class Router(ProxyObject, NetworkIface):
         self._ip_mask = None
         self._ip_mask = ip_mask
 
+        self._namespace_name = None
+        self._namespace_name = "nsp" + str(self._vlan_iface_id)
+
         self._power_socket = None
         self._power_socket = power_socket
 
@@ -205,3 +208,13 @@ class Router(ProxyObject, NetworkIface):
         """
         assert isinstance(value, Firmware)
         self._firmware = value
+
+    @property
+    def namespace_name(self) -> str:
+        """
+        The namespace name of the router
+        :rtype: str
+        :return:
+        """
+        return self._namespace_name
+
