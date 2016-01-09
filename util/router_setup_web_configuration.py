@@ -6,7 +6,7 @@ from network.network_ctrl import NetworkCtrl
 
 # TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
 # TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
-class RouterWebInterfaceConfiguration:
+class RouterWebConfiguration:
 
     @staticmethod
     def setup(router: Router, webinterface_config):

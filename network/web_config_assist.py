@@ -1,6 +1,6 @@
-from selenium import webdriver
+# from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-from pyvirtualdisplay import Display
+# from pyvirtualdisplay import Display
 from log.logger import Logger
 from server.router import Router
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
@@ -25,7 +25,7 @@ class WebConfigurationAssist:
         """
         Starts the browser Phantomjs to configure the webpage of the router in the given namespace
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
-        :param namespace_name:
+        :param router: Router object
         """
         Logger().debug("Create WebConfigurationAssist ...", 2)
         # If a browser with a GUI is used (linke firefox), then on raspberry pi we need to create a 'virtual display'
@@ -48,8 +48,7 @@ class WebConfigurationAssist:
         Sets the values provided by the wizard (in the WebConfiguration)
         """
         Logger().debug("Setup 'wizard' ...", 3)
-        #self.browser.get(self.router.ip+"/cgi-bin/luci/gluon-config-mode/")
-        self.browser.get('http://'+self.router.ip+":8000/index.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/gluon-config-mode/')
 
         node_name_field_id = "cbid.wizard.1._hostname"
         mesh_vpn_field_id = "cbid.wizard.1._meshvpn"
@@ -114,8 +113,7 @@ class WebConfigurationAssist:
         """
         tmp = "Reset" if reset else "Setup"
         Logger().debug(tmp + " 'Private WLAN' ...", 3)
-        #self.browser.get(self.router.ip+"/cgi-bin/luci/admin/privatewifi/")
-        self.browser.get('http://'+self.router.ip+":8000/html_config_after_sysupgrade_expert_pwlan.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/privatewifi/')
 
         private_wlan_field_id = "cbid.wifi.1.enabled"
         safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
@@ -147,8 +145,7 @@ class WebConfigurationAssist:
         """
         tmp = "Reset" if reset else "Setup"
         Logger().debug(tmp + " 'Remote Access' ...", 3)
-        #self.browser.get(self.router.ip + "/cgi-bin/luci/admin/remote/")
-        self.browser.get('http://'+self.router.ip+":8000/html_config_after_sysupgrade_expert_remote.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/remote/')
 
         ssh_keys_field_id = "cbid.system._keys._data"
         ssh_password_field_id = "cbid.system._pass.pw1"
@@ -188,8 +185,7 @@ class WebConfigurationAssist:
         """
         tmp = "Reset" if reset else "Setup"
         Logger().debug(tmp + " 'Network' ...", 3)
-        #self.browser.get(self.router.ip + "/cgi-bin/luci/admin/network/")
-        self.browser.get('http://'+self.router.ip+":8000/html_config_after_sysupgrade_expert_network.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/network/')
 
         ipv4_automatic_field_id = "cbi-portconfig-1-ipv4-dhcp"
         ipv4_static_field_id = "cbi-portconfig-1-ipv4-static"
@@ -267,8 +263,7 @@ class WebConfigurationAssist:
         """
         tmp = "Reset" if reset else "Setup"
         Logger().debug(tmp + " 'Mesh VPN' ...", 3)
-        #self.browser.get(self.router.ip + "/cgi-bin/luci/mesh_vpn_fastd/")
-        self.browser.get('http://'+self.router.ip+":8000/html_config_after_sysupgrade_expert_meshvpn.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/mesh_vpn_fastd/')
 
         security_mode_field_id = "cbid.mesh_vpn.1.mode1"
         performance_mode_field_id = "cbid.mesh_vpn.1.mode2"
@@ -300,8 +295,7 @@ class WebConfigurationAssist:
         """
         tmp = "Reset" if reset else "Setup"
         Logger().debug(tmp + " 'WLAN' ...", 3)
-        #self.browser.get(self.router.ip + "/cgi-bin/luci/wifi_config/")
-        self.browser.get('http://'+self.router.ip+":8000/html_config_after_sysupgrade_expert_wlan.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/wifi_config/')
 
         client_network_field_id = "cbid.wifi.1.radio0_client_enabled"
         mesh_network_field_id = "cbid.wifi.1.radio0_mesh_enabled"
@@ -355,8 +349,7 @@ class WebConfigurationAssist:
         """
         tmp = "Reset" if reset else "Setup"
         Logger().debug(tmp + " 'AutoUpdate' ...", 3)
-        #self.browser.get(self.router.ip + "/cgi-bin/luci/autoupdater/")
-        self.browser.get('http://'+self.router.ip+":8000/html_config_after_sysupgrade_expert_autoupdate.xhtml")
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/autoupdater/')
 
         autoupdate_field_id = "cbid.autoupdater.settings.enabled"
         branch_stable_field_id = "cbi-autoupdater-settings-branch-stable"
@@ -423,6 +416,9 @@ class WebConfigurationAssist:
         self.setup_expert_autoupdate(reset=True)
 
     def exit(self):
+        """
+        Close the browser
+        """
         self.browser.close()
         # self.display.stop()
 

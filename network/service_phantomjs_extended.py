@@ -9,7 +9,7 @@ from selenium.webdriver.common import utils
 
 class ServicePhantomjsExtended(Service):
     """
-    Extend the NamespaceService class with a option to call PhantomJS inside a network namespace.
+    Extend the Service class with a option to call PhantomJS inside a network namespace.
     """
 
     def __init__(self, executable_path, port=0, pre_command=None, service_args=None, log_path=None):

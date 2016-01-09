@@ -187,7 +187,7 @@ class Server(ServerProxy):
                 RouterFlashFirmware.sysupgrade(router, n)
 
     @classmethod
-    def setup_webinterface_configuration(cls, router_ids: List[int], setup_all: bool):
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -195,28 +195,28 @@ class Server(ServerProxy):
         :param router_ids:
         :param setup_all: If True all Routers will be setuped via the webinterface
         """
-        from util.router_setup_webinterface import RouterWebInterfaceConfiguration
+        from util.router_setup_web_configuration import RouterWebConfiguration
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
                 # TODO die funktion get_webinterface_config muss noch geschrieben werden
-                RouterWebInterfaceConfiguration.setup(router, ConfigManager.get_webinterface_config()[i])
+                RouterWebConfiguration.setup(router, ConfigManager.get_webinterface_config()[i])
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
-                RouterWebInterfaceConfiguration.setup(router, ConfigManager.get_webinterface_config()[i])
+                RouterWebConfiguration.setup(router, ConfigManager.get_webinterface_config()[i])
 
     @classmethod
-    def reset_webinterface_configuration(cls, router_ids: List[int], reset_all: bool):
+    def reset_web_configuration(cls, router_ids: List[int], reset_all: bool):
         """
         Resets the Configuration of the webinterface and sets the default values of the configuration.
         :param router_ids:
         :param reset_all: If True all Routers will be reseted via the webinterface
         """
-        from util.router_setup_webinterface import RouterWebInterfaceConfiguration
+        from util.router_setup_web_configuration import RouterWebConfiguration
         if reset_all:
             for router in cls.get_routers():
-                RouterWebInterfaceConfiguration.reset(router)
+                RouterWebConfiguration.reset(router)
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                RouterWebInterfaceConfiguration.reset(router)
+                RouterWebConfiguration.reset(router)
