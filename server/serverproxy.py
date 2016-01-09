@@ -115,3 +115,13 @@ class ServerProxy(metaclass=ABCMeta):
         :param reset_all: If True all Routers will be reseted via the webinterface
         """
         pass
+
+    @abstractclassmethod
+    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+        """
+        Reboots the given Routers.
+        :param router_ids: List of unique numbers to identify a Router
+        :param reboot_all: Reboots all Routers
+        :param configmode: Reboots Router into configmode
+        """
+        pass

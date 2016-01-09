@@ -173,7 +173,7 @@ class Server(ServerProxy):
     def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool):
         """
         Upgrades the firmware on the given Router(s)
-        :param router_ids:
+        :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
@@ -192,7 +192,7 @@ class Server(ServerProxy):
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
         Router can be set via the 'web_config_assist_config.yaml', except for the sysupgrade which isn't implemented yet
-        :param router_ids:
+        :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
         """
         from util.router_setup_web_configuration import RouterWebConfiguration
@@ -209,7 +209,7 @@ class Server(ServerProxy):
     def reset_web_configuration(cls, router_ids: List[int], reset_all: bool):
         """
         Resets the Configuration of the webinterface and sets the default values of the configuration.
-        :param router_ids:
+        :param router_ids: List of unique numbers to identify a Router
         :param reset_all: If True all Routers will be reseted via the webinterface
         """
         from util.router_setup_web_configuration import RouterWebConfiguration
@@ -220,3 +220,26 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 RouterWebConfiguration.reset(router)
+
+    @classmethod
+    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+        """
+        Reboots the given Routers.
+        :param router_ids: List of unique numbers to identify a Router
+        :param reboot_all: Reboots all Routers
+        :param configmode: Reboots Router into configmode
+        """
+        from util.router_reboot import RouterReboot
+        if reboot_all:
+            for router in cls.get_routers():
+                if configmode:
+                    RouterReboot.configmode(router)
+                else:
+                    RouterReboot.normal(router)
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                if configmode:
+                    RouterReboot.configmode(router)
+                else:
+                    RouterReboot.normal(router)
