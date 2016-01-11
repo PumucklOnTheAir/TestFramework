@@ -33,9 +33,11 @@ Alternativ wen man den Testserver nur ausführen aber nicht als Service installi
 ### Ausführen
 Über `python cli.py -h`können alle Subkommandos aufgelistet werden. 
 
-`python cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf.
-z.B. `python cli.py status -a` zeigt die Übersicht über alle Router an
-     `python cli.py status -r [Router ID]` zeigt detaillierte Infos zu einem bestimmten Router an (ID über status -a einsehbar)
+`python cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf
+
+`python cli.py status -a` zeigt die Übersicht über alle Router an
+
+`python cli.py status -r [Router ID]` zeigt detaillierte Infos zu einem bestimmten Router an (ID über status -a einsehbar)
      
      
 
