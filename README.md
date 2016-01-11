@@ -41,8 +41,6 @@ Alternativ wen man den Testserver nur ausführen aber nicht als Service installi
      
      
 
-_Konventionen, Vorgehensweise und Dokumentation im Wiki_
-
-![Class Diagram](http://plantuml.com/plantuml/svg/3SSx3i8m303Ggy05ufsD4xG3UsLSAx68dSeVSNrusxkBqQoJo-TjP5xn073yjYuvwbt1JikIBHijXRsqw3CtUmr-YiFc7Kq2Sxa43GvGZ6G7cXXnbCxZ5EoEsgv_VW00?lol12)
+_Konventionen, Vorgehensweise und weitere Dokumentation im Wiki_
 
 
