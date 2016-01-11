@@ -52,7 +52,8 @@ class Server(ServerProxy):
 
         cls.__load_configuration()
 
-        cls.update_router_info(cls.get_routers()[0])  # TODO das ist doch nicht richtig? #64
+        # deprecated
+        # cls.update_router_info(cls.get_routers()[0])  # TODO das ist doch nicht richtig? #64
 
         Logger().info("Runtime Server started")
 
