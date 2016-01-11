@@ -151,19 +151,6 @@ class NetworkCtrl:
             self.exit()
             raise e
 
-    def wca_reset_expert_all(self):
-        """
-        Resets all configurations from the expert-mode
-        """
-        try:
-            wca = WebConfigurationAssist(router=self.router)
-            wca.reset_expert_all()
-            wca.exit()
-        except Exception as e:
-            Logger().error(str(e), 2)
-            self.exit()
-            raise e
-
     def exit(self):
         """
         Delete the VLAN resp. the Namespace with the VLAN

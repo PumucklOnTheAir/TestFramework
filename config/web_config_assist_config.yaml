@@ -1,6 +1,6 @@
 --- # default config for the Web_Config_Assistent
 # ----------------------------------------------------------------------------------------------------------------------
-- { # Router1
+- {# Router1
 
 # WIZARD-MODE:
 # This node will automatically update its firmware when a new version is available
@@ -28,6 +28,8 @@ contact: ops@darmstadt.freifunk.net,
 # This feature is completely independent of the mesh functionality. Please note that the private WLAN and meshing on
 # the WAN interface should not be enabled at the same time.
 private_wlan: False,
+ssid: ,
+ssid_key: ,
 
 # REMOTE-ACCESS:
 # You can provide your SSH keys here (one per line)
@@ -37,7 +39,16 @@ password: root,
 # NETWORK:
 # options: automatic, static, disabled
 ipv4: automatic,
+# if option is static
+ipv4_address: '',
+ipv4_netmask: '255.255.255.0',
+gateway_v4: '',
+# options: automatic, static, disabled
 ipv6: automatic,
+# if option is static
+ipv6_address: '',
+gateway_v6: '',
+
 # At the moment only one dns-server can be added. Later it should be typed like '8.8.8.8, 9.9.9.9'
 static_dns_server: ,
 mesh_wan: False,
@@ -88,7 +99,7 @@ branch: stable
 # Noch nicht impementiert
 }
 # ----------------------------------------------------------------------------------------------------------------------
-- { # Router2
+- {# Router2
 
 # WIZARD-MODE:
 # This node will automatically update its firmware when a new version is available
@@ -116,6 +127,8 @@ contact: ops@darmstadt.freifunk.net,
 # This feature is completely independent of the mesh functionality. Please note that the private WLAN and meshing on
 # the WAN interface should not be enabled at the same time.
 private_wlan: False,
+ssid: ,
+ssid_key: ,
 
 # REMOTE-ACCESS:
 # You can provide your SSH keys here (one per line)
@@ -125,7 +138,16 @@ password: root,
 # NETWORK:
 # options: automatic, static, disabled
 ipv4: automatic,
+# if option is static
+ipv4_address: '',
+ipv4_netmask: '255.255.255.0',
+gateway_v4: '',
+# options: automatic, static, disabled
 ipv6: automatic,
+# if option is static
+ipv6_address: '',
+gateway_v6: '',
+
 # At the moment only one dns-server can be added. Later it should be typed like '8.8.8.8, 9.9.9.9'
 static_dns_server: ,
 mesh_wan: False,
@@ -148,7 +170,7 @@ mesh_network: True,
 # Please note that the transmission power values include the antenna gain where available,
 # but there are many devices for which the gain is unavailable or inaccurate.
 #
-# options: 'default' or '0' to '15'
+# options: 'default' or 0-15
 # 0 = 0 dBm (1 mW)
 # 1 = 4 dBm (2 mW)
 # 2 = 5 dBm (3 mW)

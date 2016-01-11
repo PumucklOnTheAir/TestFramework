@@ -19,16 +19,6 @@ class RouterWebConfiguration:
         worker.start()
         worker.join()
 
-    @staticmethod
-    def reset(router: Router):
-        """
-        Instantiate a NetworkCtrl and reset the webinterface of the Router
-        :param router:
-        """
-        worker = ResetWorker(router)
-        worker.start()
-        worker.join()
-
 
 class SetupWorker(Thread):
 
@@ -49,31 +39,8 @@ class SetupWorker(Thread):
         """
         Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.wca_setup_wizard(self.webinterface_config)
         network_ctrl.wca_setup_expert(self.webinterface_config)
-        network_ctrl.exit()
-
-    def join(self):
-        Thread.join(self)
-
-
-class ResetWorker(Thread):
-
-    def __init__(self, router: Router):
-        """
-        Instantiate a NetworkCtrl and reset the webinterface of the Router
-        """
-        Thread.__init__(self)
-        self.router = router
-        self.daemon = True
-
-    def run(self):
-        """
-        Instantiate a NetworkCtrl and reset the webinterface of the Router
-        """
-        Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
-        network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.wca_reset_expert_all()
+        network_ctrl.wca_setup_wizard(self.webinterface_config)
         network_ctrl.exit()
 
     def join(self):

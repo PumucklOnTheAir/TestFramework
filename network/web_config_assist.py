@@ -1,9 +1,8 @@
-# from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
-# from pyvirtualdisplay import Display
 from log.logger import Logger
 from server.router import Router
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
+from enum import Enum
 
 
 class WebConfigurationAssist:
@@ -28,9 +27,6 @@ class WebConfigurationAssist:
         :param router: Router object
         """
         Logger().debug("Create WebConfigurationAssist ...", 2)
-        # If a browser with a GUI is used (linke firefox), then on raspberry pi we need to create a 'virtual display'
-        # self.display = Display(visible=0, size=(800, 600))
-        # self.display.start()
         self.config = config
         self.router = router
         try:
@@ -46,6 +42,21 @@ class WebConfigurationAssist:
     def setup_wizard(self):
         """
         Sets the values provided by the wizard (in the WebConfiguration)
+
+        Info:
+            Node name:          [text]
+
+            MeshVPN:            [checkbox]
+            Limit bandwidth:    [checkbox]
+
+            Node on the map:    [checkbox]
+                Latitude:           [text]
+                Longitude:          [text]
+                Altitude:           [text]
+
+            Contact info:       [text]
+
+            Submit:             [button]
         """
         Logger().debug("Setup 'wizard' ...", 3)
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/gluon-config-mode/')
@@ -60,16 +71,11 @@ class WebConfigurationAssist:
         contact_field_id = "cbid.wizard.1._contact"
         safe_restart_button_xpath = "//*[@class='cbi-button cbi-button-save']"
 
-        node_name_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(node_name_field_id))
-        mesh_vpn_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(mesh_vpn_field_id))
-        show_location_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(show_location_field_id))
-        contact_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(contact_field_id))
-        safe_restart_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_restart_button_xpath))
+        node_name_field_element = self._get_element_by_id(node_name_field_id)
+        mesh_vpn_field_element = self._get_element_by_id(mesh_vpn_field_id)
+        show_location_field_element = self._get_element_by_id(show_location_field_id)
+        contact_field_element = self._get_element_by_id(contact_field_id)
+        safe_restart_button_element = self._get_element_by_xpath(safe_restart_button_xpath)
 
         # The checkboxes are set to 'display = none' via css.
         # Because selenium can't see them we have to set the checkboxes to 'display = inline'
@@ -82,19 +88,15 @@ class WebConfigurationAssist:
         self._click_checkbox(mesh_vpn_field_element, self.config['mesh_vpn'])
 
         if self.config['mesh_vpn']:
-            limit_bandwidth_field_element = WebDriverWait(self.browser, 10).\
-                until(lambda driver: driver.find_element_by_id(limit_bandwidth_field_id))
+            limit_bandwidth_field_element = self._get_element_by_id(limit_bandwidth_field_id)
             self._click_checkbox(limit_bandwidth_field_element, self.config['limit_bandwidth'])
 
         self._click_checkbox(show_location_field_element, self.config['show_location'])
 
         if self.config['show_location']:
-            latitude_field_element = WebDriverWait(self.browser, 10).\
-                until(lambda driver: driver.find_element_by_id(latitude_field_id))
-            longitude_field_element = WebDriverWait(self.browser, 10).\
-                until(lambda driver: driver.find_element_by_id(longitude_field_id))
-            altitude_field_element = WebDriverWait(self.browser, 10).\
-                until(lambda driver: driver.find_element_by_id(altitude_field_id))
+            latitude_field_element = self._get_element_by_id(latitude_field_id)
+            longitude_field_element = self._get_element_by_id(longitude_field_id)
+            altitude_field_element = self._get_element_by_id(altitude_field_id)
             latitude_field_element.clear()
             latitude_field_element.send_keys(self.config['latitude'])
             longitude_field_element.clear()
@@ -106,137 +108,160 @@ class WebConfigurationAssist:
 
         safe_restart_button_element.click()
 
-    def setup_expert_private_wlan(self, reset: bool=False):
+    def setup_expert_private_wlan(self):
         """
         Extend your private network by bridging the WAN interface with a seperate WLAN
-        :param reset: The page contains a Reset-Button which will be clicked.
+
+        Info:
+            private WLAN:   [checkbox]
+                ssid:       [text]
+                ssid key:   [text]
+            submit:         [button]
         """
-        tmp = "Reset" if reset else "Setup"
-        Logger().debug(tmp + " 'Private WLAN' ...", 3)
+        Logger().debug("Setup 'Private WLAN' ...", 3)
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/privatewifi/')
 
         private_wlan_field_id = "cbid.wifi.1.enabled"
+        ssid_field_id = "cbid.wifi.1.ssid"
+        ssid_key_field_id = "cbid.wifi.1.key"
         safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
-        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
 
-        private_wlan_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(private_wlan_field_id))
-        safe_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
-        reset_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
+        private_wlan_field_element = self._get_element_by_id(private_wlan_field_id)
+        safe_button_element = self._get_element_by_xpath(safe_button_xpath)
 
         # The checkboxes are set to 'display = none' via css.
         # Because selenium can't see them we have to set the checkboxes to 'display = inline'
         self.browser.execute_script("arguments[0].style.display = 'inline';", private_wlan_field_element)
 
-        if reset:
-            reset_button_element.click()
-            return
-
         self._click_checkbox(private_wlan_field_element, self.config['private_wlan'])
+        if self.config['private_wlan']:
+            ssid_field_element = self._get_element_by_id(ssid_field_id)
+            ssid_key_field_element = self._get_element_by_id(ssid_key_field_id)
+            ssid_field_element.clear()
+            ssid_field_element.send_keys(self.config['ssid'])
+            ssid_key_field_element.clear()
+            ssid_key_field_element.send_keys(self.config['ssid_key'])
 
         safe_button_element.click()
 
-    def setup_expert_remote_access(self, reset: bool=False):
+    def setup_expert_remote_access(self):
         """
         Sets the SSH-Keys and a password, given by the config
-        :param reset: The page contains a Reset-Button which will be clicked.
+
+        Info:
+            ssh keys:   [text]
+
+            submit:     [button]
+
+            password:   [text]
+            confirm:    [text]
+
+            submit:     [button]
         """
-        tmp = "Reset" if reset else "Setup"
-        Logger().debug(tmp + " 'Remote Access' ...", 3)
+        Logger().debug("Setup 'Remote Access' ...", 3)
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/remote/')
 
         ssh_keys_field_id = "cbid.system._keys._data"
         ssh_password_field_id = "cbid.system._pass.pw1"
         ssh_password_confirm_field_id = "cbid.system._pass.pw2"
-        safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
-        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
+        safe_button_xpath1 = "//*[@class='cbi-button cbi-button-save']"
 
-        ssh_keys_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ssh_keys_field_id))
-        ssh_password_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ssh_password_field_id))
-        ssh_password_confirm_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ssh_password_confirm_field_id))
-        safe_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
-        reset_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
-
-        if reset:
-            reset_button_element.click()
-            return
+        ssh_keys_field_element = self._get_element_by_id(ssh_keys_field_id)
 
         if self.config['ssh_keys']:
             ssh_keys_field_element.send_keys(self.config['ssh_keys'])
+            safe_button_element1 = self._get_element_by_xpath(safe_button_xpath1)
+            safe_button_element1.click()
         if self.config['password']:
+            ssh_password_field_element = self._get_element_by_id(ssh_password_field_id)
+            ssh_password_confirm_field_element = self._get_element_by_id(ssh_password_confirm_field_id)
             ssh_password_field_element.clear()
             ssh_password_field_element.send_keys(self.config['password'])
             ssh_password_confirm_field_element.clear()
             ssh_password_confirm_field_element.send_keys(self.config['password'])
 
-        safe_button_element.click()
+            # Problem is that the two buttons on this page are identical and selenium doesn't work with a whole xpath
+            safe_button_element1 = self._get_element_by_xpath(safe_button_xpath1)
+            self.browser.execute_script("arguments[0].value = 'Submit1';", safe_button_element1)
+            safe_button_xpath2 = "//*[@value='Submit']"
+            safe_button_element2 = self._get_element_by_xpath(safe_button_xpath2)
 
-    def setup_expert_network(self, reset: bool=False):
+            safe_button_element2.click()
+
+    def setup_expert_network(self):
         """
         Sets the given network configurations
-        :param reset: The page contains a Reset-Button which will be clicked.
+
+        Info:
+            ipv4:       [selectbox]
+                none.   [option]
+                auto:   [option]
+                static: [option]
+                    ip:  [text]
+                    mask:[text]
+                    gw:  [text]
+            ipv6:       [selectbox]
+                none.   [option]
+                auto:   [option]
+                static: [option]
+                    ip:  [text]
+                    gw:  [text]
+            dns server: [text]
+            wan inface: [checkbox]
+            lan inface: [checkbox]
+
+            submit:     [button]
         """
-        tmp = "Reset" if reset else "Setup"
-        Logger().debug(tmp + " 'Network' ...", 3)
-        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/network/')
+        Logger().debug("Setup 'Network' ...", 3)
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/portconfig/')
 
         ipv4_automatic_field_id = "cbi-portconfig-1-ipv4-dhcp"
         ipv4_static_field_id = "cbi-portconfig-1-ipv4-static"
         ipv4_none_field_id = "cbi-portconfig-1-ipv4-none"
+        ipv4_ip_field_id = "cbid.portconfig.1.ipv4_addr"
+        ipv4_netmask_field_id = "cbid.portconfig.1.ipv4_netmask"
+        ipv4_gateway_field_id = "cbid.portconfig.1.ipv4_gateway"
         ipv6_automatic_field_id = "cbi-portconfig-1-ipv6-dhcpv6"
         ipv6_static_field_id = "cbi-portconfig-1-ipv6-static"
         ipv6_none_field_id = "cbi-portconfig-1-ipv6-none"
+        ipv6_ip_field_id = "cbid.portconfig.1.ipv6_addr"
+        ipv6_gateway_field_id = "cbid.portconfig.1.ipv6_gateway"
         mesh_wan_field_id = "cbid.portconfig.1.mesh_wan"
         mesh_lan_field_id = "cbid.portconfig.1.mesh_lan"
         safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
-        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
         # TODO: muss noch für mehere DNS-Server angepasst werden
         static_dns_server_field_id = "cbid.portconfig.1.dns.1"
 
-        ipv4_automatic_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ipv4_automatic_field_id))
-        ipv4_static_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ipv4_static_field_id))
-        ipv4_none_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ipv4_none_field_id))
-        ipv6_automatic_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ipv6_automatic_field_id))
-        ipv6_static_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ipv6_static_field_id))
-        ipv6_none_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(ipv6_none_field_id))
-        mesh_wan_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(mesh_wan_field_id))
-        mesh_lan_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(mesh_lan_field_id))
-        safe_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
-        reset_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
+        ipv4_automatic_field_element = self._get_element_by_id(ipv4_automatic_field_id)
+        ipv4_static_field_element = self._get_element_by_id(ipv4_static_field_id)
+        ipv4_none_field_element = self._get_element_by_id(ipv4_none_field_id)
+        ipv6_automatic_field_element = self._get_element_by_id(ipv6_automatic_field_id)
+        ipv6_static_field_element = self._get_element_by_id(ipv6_static_field_id)
+        ipv6_none_field_element = self._get_element_by_id(ipv6_none_field_id)
+        mesh_wan_field_element = self._get_element_by_id(mesh_wan_field_id)
+        mesh_lan_field_element = self._get_element_by_id(mesh_lan_field_id)
+        safe_button_element = self._get_element_by_xpath(safe_button_xpath)
         # TODO: muss noch für mehere DNS-Server angepasst werden
-        static_dns_server_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(static_dns_server_field_id))
+        static_dns_server_field_element = self._get_element_by_id(static_dns_server_field_id)
 
         # The checkboxes are set to 'display = none' via css.
         # Because selenium can't see them we have to set the checkboxes to 'display = inline'
         self.browser.execute_script("arguments[0].style.display = 'inline';", mesh_wan_field_element)
         self.browser.execute_script("arguments[0].style.display = 'inline';", mesh_lan_field_element)
 
-        if reset:
-            reset_button_element.click()
-            return
-
         if self.config['ipv4'] == "automatic":
             ipv4_automatic_field_element.click()
         elif self.config['ipv4'] == "static":
             ipv4_static_field_element.click()
+            ipv4_ip_field_element = self._get_element_by_id(ipv4_ip_field_id)
+            ipv4_netmask_field_element = self._get_element_by_id(ipv4_netmask_field_id)
+            ipv4_gateway_field_element = self._get_element_by_id(ipv4_gateway_field_id)
+            ipv4_ip_field_element.clear()
+            ipv4_ip_field_element.send_keys(self.config['ipv4_address'])
+            ipv4_netmask_field_element.clear()
+            ipv4_netmask_field_element.send_keys(self.config['ipv4_netmask'])
+            ipv4_gateway_field_element.clear()
+            ipv4_gateway_field_element.send_keys(self.config['gateway_v4'])
         else:
             ipv4_none_field_element.click()
 
@@ -244,6 +269,12 @@ class WebConfigurationAssist:
             ipv6_automatic_field_element.click()
         elif self.config['ipv6'] == "static":
             ipv6_static_field_element.click()
+            ipv6_ip_field_element = self._get_element_by_id(ipv6_ip_field_id)
+            ipv6_gateway_field_element = self._get_element_by_id(ipv6_gateway_field_id)
+            ipv6_ip_field_element.clear()
+            ipv6_ip_field_element.send_keys(self.config['ipv6_address'])
+            ipv6_gateway_field_element.clear()
+            ipv6_gateway_field_element.send_keys(self.config['gateway_v6'])
         else:
             ipv6_none_field_element.click()
 
@@ -253,54 +284,50 @@ class WebConfigurationAssist:
         # Enable meshing on the WAN/LAN interface
         self._click_checkbox(mesh_wan_field_element, self.config['mesh_wan'])
         self._click_checkbox(mesh_lan_field_element, self.config['mesh_lan'])
-
         safe_button_element.click()
 
-    def setup_expert_mesh_vpn(self, reset: bool=False):
+    def setup_expert_mesh_vpn(self):
         """
         Sets the given mesh-vpn configuration
-        :param reset: The page contains a Reset-Button which will be clicked.
+
+        Info:
+            security mode:  [radiobutton]
+            perform. mode:  [radiobutton]
+
+            submit:         [button]
         """
-        tmp = "Reset" if reset else "Setup"
-        Logger().debug(tmp + " 'Mesh VPN' ...", 3)
-        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/mesh_vpn_fastd/')
+        Logger().debug("Setup 'Mesh VPN' ...", 3)
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/mesh_vpn_fastd/')
 
         security_mode_field_id = "cbid.mesh_vpn.1.mode1"
         performance_mode_field_id = "cbid.mesh_vpn.1.mode2"
         safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
-        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
 
-        security_mode_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(security_mode_field_id))
-        performance_mode_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(performance_mode_field_id))
-        safe_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
-        reset_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
-
-        if reset:
-            reset_button_element.click()
-            return
+        security_mode_field_element = self._get_element_by_id(security_mode_field_id)
+        performance_mode_field_element = self._get_element_by_id(performance_mode_field_id)
+        safe_button_element = self._get_element_by_xpath(safe_button_xpath)
 
         self._click_checkbox(security_mode_field_element, self.config['security_mode'])
         self._click_checkbox(performance_mode_field_element, self.config['performance_mode'])
-
         safe_button_element.click()
 
-    def setup_expert_wlan(self, reset: bool=False):
+    def setup_expert_wlan(self):
         """
         Sets the given wlan configuration
-        :param reset: The page contains a Reset-Button which will be clicked.
+
+        Info:
+            client network: [checkbox]
+            mesh network:   [checkbox]
+            transmission p.:[selectbox]
+
+            submit:         [Submit]
         """
-        tmp = "Reset" if reset else "Setup"
-        Logger().debug(tmp + " 'WLAN' ...", 3)
-        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/wifi_config/')
+        Logger().debug("Setup 'WLAN' ...", 3)
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/wifi-config/')
 
         client_network_field_id = "cbid.wifi.1.radio0_client_enabled"
         mesh_network_field_id = "cbid.wifi.1.radio0_mesh_enabled"
         safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
-        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
         transmission_power_field_id = "cbi-wifi-1-radio0_txpower-"
         transmission_power_field_ids = list()
         for i in range(0, 19):
@@ -308,29 +335,18 @@ class WebConfigurationAssist:
                 continue
             transmission_power_field_ids.append(transmission_power_field_id + str(i))
         transmission_power_field_ids.append(transmission_power_field_id+"default")
-
-        client_network_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(client_network_field_id))
-        mesh_network_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(mesh_network_field_id))
-        safe_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
-        reset_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
+        client_network_field_element = self._get_element_by_id(client_network_field_id)
+        mesh_network_field_element = self._get_element_by_id(mesh_network_field_id)
+        safe_button_element = self._get_element_by_xpath(safe_button_xpath)
         transmission_power_field_elements = []
         for field_id in transmission_power_field_ids:
-            transmission_power_field_element = WebDriverWait(self.browser, 10).\
-                until(lambda driver: driver.find_element_by_id(field_id))
+            transmission_power_field_element = self._get_element_by_id(field_id)
             transmission_power_field_elements.append(transmission_power_field_element)
 
         # The checkboxes are set to 'display = none' via css.
         # Because selenium can't see them we have to set the checkboxes to 'display = inline'
         self.browser.execute_script("arguments[0].style.display = 'inline';", client_network_field_element)
         self.browser.execute_script("arguments[0].style.display = 'inline';", mesh_network_field_element)
-
-        if reset:
-            reset_button_element.click()
-            return
 
         self._click_checkbox(client_network_field_element, self.config['client_network'])
         self._click_checkbox(mesh_network_field_element, self.config['mesh_network'])
@@ -339,37 +355,35 @@ class WebConfigurationAssist:
             transmission_power_field_elements[-1].click()
         else:
             transmission_power_field_elements[int(self.config['transmission_power'])].click()
-
         safe_button_element.click()
 
-    def setup_expert_autoupdate(self, reset: bool=False):
+    def setup_expert_autoupdate(self):
         """
         Does a automatic update by the given configuration
-        :param reset: The page contains a Reset-Button which will be clicked.
+
+        Info:
+            auto update:    [checkbox]
+            branch:         [selectbox]
+                stable:     [option]
+                beta:       [option]
+                expmental:  [option]
+
+            submit:         [button]
         """
-        tmp = "Reset" if reset else "Setup"
-        Logger().debug(tmp + " 'AutoUpdate' ...", 3)
-        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/autoupdater/')
+        Logger().debug("Setup 'AutoUpdate' ...", 3)
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/autoupdater/')
 
         autoupdate_field_id = "cbid.autoupdater.settings.enabled"
         branch_stable_field_id = "cbi-autoupdater-settings-branch-stable"
-        branch_beta_field_if = "cbi-autoupdater-settings-branch-beta"
+        branch_beta_field_id = "cbi-autoupdater-settings-branch-beta"
         branch_experimental_field_id = "cbi-autoupdater-settings-branch-experimental"
         safe_button_xpath = "//*[@class='cbi-button cbi-button-save']"
-        reset_button_xpath = "//*[@class='cbi-button cbi-button-reset']"
 
-        autoupdate_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(autoupdate_field_id))
-        branch_stable_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(branch_stable_field_id))
-        branch_beta_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(branch_beta_field_if))
-        branch_experimental_field_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_id(branch_experimental_field_id))
-        safe_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(safe_button_xpath))
-        reset_button_element = WebDriverWait(self.browser, 10).\
-            until(lambda driver: driver.find_element_by_xpath(reset_button_xpath))
+        autoupdate_field_element = self._get_element_by_id(autoupdate_field_id)
+        branch_stable_field_element = self._get_element_by_id(branch_stable_field_id)
+        branch_beta_field_element = self._get_element_by_id(branch_beta_field_id)
+        branch_experimental_field_element = self._get_element_by_id(branch_experimental_field_id)
+        safe_button_element = self._get_element_by_xpath(safe_button_xpath)
 
         # The checkboxes are set to 'display = none' via css.
         # Because selenium can't see them we have to set the checkboxes to 'display = inline'
@@ -378,20 +392,7 @@ class WebConfigurationAssist:
         self.browser.execute_script("arguments[0].style.display = 'inline';", branch_beta_field_element)
         self.browser.execute_script("arguments[0].style.display = 'inline';", branch_experimental_field_element)
 
-        if reset:
-            reset_button_element.click()
-            return
-
         self._click_checkbox(autoupdate_field_element, self.config['auto_update'])
-
-        '''
-        if self.config['auto_update']:
-            if not autoupdate_field_element.is_selected():
-                autoupdate_field_element.click()
-        else:
-            if autoupdate_field_element.is_selected():
-                autoupdate_field_element.click()
-        '''
 
         if self.config['branch'] == "stable":
             branch_stable_field_element.click()
@@ -399,21 +400,10 @@ class WebConfigurationAssist:
             branch_beta_field_element.click()
         else:
             branch_experimental_field_element.click()
-
         safe_button_element.click()
 
     # def setup_expert_upgrade(self, config):
         # TODO
-
-    def reset_expert_all(self):
-        # TODO: Teste ob reset neustart verursacht
-        Logger().debug("Reset all Expert Configurations ...", 3)
-        self.setup_expert_private_wlan(reset=True)
-        self.setup_expert_remote_access(reset=True)
-        self.setup_expert_network(reset=True)
-        self.setup_expert_mesh_vpn(reset=True)
-        self.setup_expert_wlan(reset=True)
-        self.setup_expert_autoupdate(reset=True)
 
     def exit(self):
         """
@@ -435,3 +425,9 @@ class WebConfigurationAssist:
         else:
             if field_element.is_selected():
                 field_element.click()
+
+    def _get_element_by_id(self, field_id: str):
+        return WebDriverWait(self.browser, 10).until(lambda driver: driver.find_element_by_id(field_id))
+
+    def _get_element_by_xpath(self, xpath: str):
+        return WebDriverWait(self.browser, 10).until(lambda driver: driver.find_element_by_xpath(xpath))

@@ -198,28 +198,11 @@ class Server(ServerProxy):
         from util.router_setup_web_configuration import RouterWebConfiguration
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
-                # TODO die funktion get_webinterface_config muss noch geschrieben werden
                 RouterWebConfiguration.setup(router, ConfigManager.get_webinterface_config()[i])
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
                 RouterWebConfiguration.setup(router, ConfigManager.get_webinterface_config()[i])
-
-    @classmethod
-    def reset_web_configuration(cls, router_ids: List[int], reset_all: bool):
-        """
-        Resets the Configuration of the webinterface and sets the default values of the configuration.
-        :param router_ids: List of unique numbers to identify a Router
-        :param reset_all: If True all Routers will be reseted via the webinterface
-        """
-        from util.router_setup_web_configuration import RouterWebConfiguration
-        if reset_all:
-            for router in cls.get_routers():
-                RouterWebConfiguration.reset(router)
-        else:
-            for router_id in router_ids:
-                router = cls.get_router_by_id(router_id)
-                RouterWebConfiguration.reset(router)
 
     @classmethod
     def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
