@@ -14,8 +14,8 @@ class Mode(Enum):
 
 class Router(ProxyObject, NetworkIface):
 
-    def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
-                 usr_password: str, power_socket: int):
+    def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
+                 config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
 
         ProxyObject.__init__(self)
 
@@ -25,14 +25,20 @@ class Router(ProxyObject, NetworkIface):
         self._ip = None
         self._ip = ip
 
+        self._ip_mask = None
+        self._ip_mask = ip_mask
+
+        self._config_ip = None
+        self._config_ip = config_ip
+
+        self._config_ip_mask = None
+        self._config_ip_mask = config_ip_mask
+
         self._vlan_iface_id = None
         self._vlan_iface_id = vlan_iface_id
 
         self._vlan_iface_name = None
         self._vlan_iface_name = vlan_iface_name
-
-        self._ip_mask = None
-        self._ip_mask = ip_mask
 
         self._namespace_name = None
         self._namespace_name = "nsp" + str(self._vlan_iface_id)
@@ -66,6 +72,30 @@ class Router(ProxyObject, NetworkIface):
         return self._ip
 
     @property
+    def ip_mask(self) -> int:
+        """
+        IP mask
+        :return:
+        """
+        return self._ip_mask
+
+    @property
+    def config_ip(self) -> str:
+        """
+        IP number of the Router in config mode
+        :return: IP number as string
+        """
+        return self._config_ip
+
+    @property
+    def ip_mask(self) -> int:
+        """
+        IP mask of the ip in config mode
+        :return:
+        """
+        return self._config_ip_mask
+
+    @property
     def vlan_iface_id(self) -> int:
         """
         The VLAN ID from router
@@ -80,14 +110,6 @@ class Router(ProxyObject, NetworkIface):
         :return:
         """
         return self._vlan_iface_name
-
-    @property
-    def ip_mask(self) -> int:
-        """
-        IP mask
-        :return:
-        """
-        return self._ip_mask
 
     # Optional information
 
