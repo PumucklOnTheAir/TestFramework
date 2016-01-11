@@ -10,7 +10,7 @@ class Server(ServerProxy):
     This static class with class methods will be usually run as daemon on the main server.
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
-    and using his inherit public methods of *ServerProxy*.
+    and using his inherit public methods of :py:class:`ServerProxy`.
 
     Troubleshooting at server start:
 
@@ -128,9 +128,9 @@ class Server(ServerProxy):
     @classmethod
     def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Updates all the information about the Router
+        Updates all the information about the :py:class:`Router`
 
-        :param router_ids: List of unique numbers to identify a Router
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         from util.router_info import RouterInfo
@@ -161,9 +161,9 @@ class Server(ServerProxy):
     @classmethod
     def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copies the firmware to the Router given in the List(by a unique id) resp. to all Routers
+        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
 
-        :param router_ids: List of unique numbers to identify a Router
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         from util.router_flash_firmware import RouterFlashFirmware
@@ -178,7 +178,7 @@ class Server(ServerProxy):
     @classmethod
     def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
-        Upgrades the firmware on the given Router(s)
+        Upgrades the firmware on the given :py:class:`Router` s
 
         :param router_ids:
         :param upgrade_all: If all is True all Routers were upgraded

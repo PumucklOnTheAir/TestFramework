@@ -10,7 +10,7 @@ class ServerProxy(metaclass=ABCMeta):
     """""
     @abstractclassmethod
     def start_test(self, router_name, test_name) -> bool:
-        """Start an specific test on an router
+        """Start an specific test on an :py:class:`Router`
 
         :param router_name: The name of the router on which the test will run
         :param test_name: The name of the test to execute
@@ -63,9 +63,9 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def update_router_info(self, router_ids: List[int], update_all: bool) -> None:
         """
-        Updates all the information about the Router
+        Updates all the information about the :py:class:`Router`
 
-        :param router_ids: List of unique numbers to identify a Router
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         pass
@@ -73,7 +73,7 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def get_router_by_id(self, router_id: int) -> Router:
         """
-        Returns a Router with the given id.
+        Returns a :py:class:`Router` with the given id.
 
         :param router_id:
         :return: Router
@@ -83,9 +83,9 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def sysupdate_firmware(self, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+        Downloads and copys the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
 
-        :param router_ids: List of unique numbers to identify a Router
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         pass

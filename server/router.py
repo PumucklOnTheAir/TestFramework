@@ -57,7 +57,7 @@ class Router(ProxyObject, NetworkIface):
     @property
     def id(self) -> int:
         """
-        ID of the Router
+        ID of the :py:class:`Router`
 
         :return: ID number as in
         """
@@ -206,7 +206,7 @@ class Router(ProxyObject, NetworkIface):
     @property
     def firmware(self) -> Firmware:
         """
-        The firmware of the routers
+        The :py:class:`Firmware` of the router
 
         :rtype: Firmware
         :return:
@@ -216,7 +216,7 @@ class Router(ProxyObject, NetworkIface):
     @firmware.setter
     def firmware(self, value: Firmware):
         """
-        :type value: Firmware
+        :type value: :py:class:`Firmware`
         """
         assert isinstance(value, Firmware)
         self._firmware = value

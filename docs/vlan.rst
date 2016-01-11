@@ -15,16 +15,16 @@ Important python packages:
 
 Class VLAN
 ===========
-.. automodule:: network.vlan
+'.. automodule:: network.vlan
   :members:
 
 Class NetworkCtrl
 ==================
-.. automodule:: network.network_ctrl
+'.. automodule:: network.network_ctrl
   :members:
 
 Class Namespace
 ================
-.. automodule:: network.namespace
+'.. automodule:: network.namespace
   :members:
 

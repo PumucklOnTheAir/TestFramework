@@ -22,7 +22,7 @@ Then it is possible to import the description with following markup::
 
 
 How to generate the documentation
-=================
+===================================
 
 After installing installing all required modules (pip3 install -r requirements.txt) you generate the documentation by your own.
 Run *python3 -m sphinx . ./_build/html/* in the *docs/* directory. The documentation in HTML will be placed under *docs/_build/html/*
