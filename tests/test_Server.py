@@ -23,7 +23,7 @@ class ServerTestCase(unittest.TestCase):
     def serverStartWithParams():
         base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
         config_path = os.path.join(base_dir, 'config')  # Join Project Root with config
-        Server.start(debug_mode=True, config_path=config_path, vlan_activate=False)
+        Server.start(config_path=config_path)
 
     def test_get_routers(self):
         routers = Server.get_routers()
