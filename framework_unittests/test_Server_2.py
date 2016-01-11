@@ -27,7 +27,7 @@ class ServerTestCase2(unittest.TestCase):
 
     @staticmethod
     def serverStartWithParams():
-        Server.start(debug_mode=True, config_path="../tests/config", vlan_activate=False)
+        Server.start(debug_mode=True, config_path="../tests/config", vlan_activate=True)
 
     def setUp(self):
         self.ipc_client = IPC()

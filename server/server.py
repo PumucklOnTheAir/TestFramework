@@ -97,13 +97,11 @@ class Server(ServerProxy):
         router = cls.get_router_by_id(router_id)
         # TODO Testverwaltung - ermittlung des passenden Tests #36
         # cls.get_test_by_name
-        from firmware_tests.connection_test import ConnectionTest, VeryLongTest, RouterConnectionTest
+        from firmware_tests.connection_test import ConnectionTest, VeryLongTest
         if test_name == "ConnectionTest":
             demo_test = ConnectionTest  # Important: Param is a class and not an object
         elif test_name == "VeryLongTest":
             demo_test = VeryLongTest
-        elif test_name == "RouterConnectionTest":
-            demo_test = RouterConnectionTest
         else:
             Logger().error("Testname unknown")
             return False

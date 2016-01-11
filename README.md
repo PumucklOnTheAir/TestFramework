@@ -34,5 +34,5 @@ Alternativ wen man den Testserver nur ausführen aber nicht als Service installi
 ### Testen
 Eine Auswahl an Unittest fürs Framwork wird bei jedem Pull-Request auf Travis CI ausgeführt.
 Eine vollständiges Testens des Frameworks ist auf dem Raspberry Pi möglich mit folgendem Kommando im Repo Ordner:
-python -m unittest discover -s framework_unittests
+python3 -m unittest discover -s framework_unittests
 
