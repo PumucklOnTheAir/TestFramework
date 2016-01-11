@@ -31,7 +31,7 @@ source_parsers = {
 }
 
 # before start, clean up
-call(['rm', '-r', '_build/'])
+# call(['rm', '-r', '_build/'])
 
 # -- General configuration -----------------------------------------------------
 
