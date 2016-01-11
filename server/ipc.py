@@ -11,7 +11,7 @@ class IPC(BaseManager):
     _server_object = None  # docs.python.org/3.5/library/multiprocessing.html#multiprocessing.managers.BaseManager
 
     def __init__(self):
-        BaseManager.__init__(self, address=('127.0.0.1', 5000), authkey=b'abc42')
+        BaseManager.__init__(self, address=('localhost', 5000), authkey=b'abc42')
 
     def start_ipc_server(self, server, serve_forever: bool=False):
         """Start the ipc server to allow clients to connect

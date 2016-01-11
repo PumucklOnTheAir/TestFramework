@@ -11,6 +11,11 @@ class Server(ServerProxy):
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
     and using his inherit public methods of ServerProxy.
+
+    Troubleshooting:
+    The server returns an
+        "OSError: [Errno 48] Address already in use" if the server is already started
+        "OSError: [Errno 99] Cannot assign requested address" ?? try to restart the computer TODO #51
     """""
     DEBUG = False
     VLAN = True
@@ -40,7 +45,8 @@ class Server(ServerProxy):
 
         if cls.VLAN:
             from util.router_info import RouterInfo
-            RouterInfo.update(cls.get_routers())
+            # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
+            RouterInfo.update(cls.get_routers()[0])
 
         print("Runtime Server started")
 
@@ -115,3 +121,67 @@ class Server(ServerProxy):
         """
         # TODO vllt vom config?
         pass
+
+    @classmethod
+    def update_router_info(cls, router_ids: List[int], update_all: bool):
+        """
+        Updates all the informwations about the Router
+        :param router_ids: List of unique numbers to identify a Router
+        :param update_all: Is True if all Routers should be updated
+        """
+        from util.router_info import RouterInfo
+        if update_all:
+            for router in cls.get_routers():
+                RouterInfo.update(router)
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                RouterInfo.update(router)
+
+    @classmethod
+    def get_router_by_id(cls, router_id: int) -> Router:
+        """
+        Returns a Router with the given id.
+        :param router_id:
+        :return: Router
+        """
+        routers = cls.get_routers()
+        if routers[router_id].id == router_id:
+            return router_id
+        for router in routers:
+            if router.id == router_id:
+                return router
+        return None
+
+    @classmethod
+    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool):
+        """
+        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+        :param router_ids: List of unique numbers to identify a Router
+        :param update_all: Is True if all Routers should be updated
+        """
+        from util.router_flash_firmware import RouterFlashFirmware
+        if update_all:
+            for router in cls.get_routers():
+                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
+
+    @classmethod
+    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool):
+        """
+        Upgrades the firmware on the given Router(s)
+        :param router_ids:
+        :param upgrade_all: If all is True all Routers were upgraded
+        :param n: If n is True the upgrade discard the last firmware
+        """
+        from util.router_flash_firmware import RouterFlashFirmware
+        if upgrade_all:
+            for router in cls.get_routers():
+                RouterFlashFirmware.sysupgrade(router, n)
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                RouterFlashFirmware.sysupgrade(router, n)
