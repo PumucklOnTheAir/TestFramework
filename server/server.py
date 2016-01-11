@@ -6,16 +6,17 @@ from typing import List
 
 
 class Server(ServerProxy):
-    """" The great runtime server for all tests and more.
+    """ The great runtime server for all tests and more.
     This static class with class methods will be usually run as daemon on the main server.
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
-    and using his inherit public methods of ServerProxy.
+    and using his inherit public methods of *ServerProxy*.
 
-    Troubleshooting:
-    The server returns an
-        "OSError: [Errno 48] Address already in use" if the server is already started
-        "OSError: [Errno 99] Cannot assign requested address" ?? try to restart the computer TODO #51
+    Troubleshooting at server start:
+
+        *OSError: [Errno 48] Address already in use" server is already started*
+
+        *OSError: [Errno 99] Cannot assign requested address" try to restart the computer TODO #51*
     """""
     DEBUG = False
     VLAN = True
@@ -31,6 +32,7 @@ class Server(ServerProxy):
     def start(cls, debug_mode: bool = False, config_path: str = CONFIG_PATH, vlan_activate: bool=True) -> None:
         """
         Starts the runtime server with all components
+
         :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
         :param vlan_activate: Activates/Deactivates VLANs
@@ -55,7 +57,7 @@ class Server(ServerProxy):
         # at this point all code will be ignored
 
     @classmethod
-    def __load_configuration(cls):
+    def __load_configuration(cls) -> None:
         # (re)load the configuration only then no tests are running
         assert len(cls._runningTests) == 0
         cls._routers = ConfigManager.get_router_auto_list()
@@ -73,6 +75,7 @@ class Server(ServerProxy):
     @classmethod
     def start_test(cls, router_name, test_name) -> bool:
         """Start an specific test on an router
+
         :param router_name: The name of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
@@ -123,9 +126,10 @@ class Server(ServerProxy):
         pass
 
     @classmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool):
+    def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Updates all the informwations about the Router
+        Updates all the information about the Router
+
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
@@ -142,6 +146,7 @@ class Server(ServerProxy):
     def get_router_by_id(cls, router_id: int) -> Router:
         """
         Returns a Router with the given id.
+
         :param router_id:
         :return: Router
         """
@@ -154,9 +159,10 @@ class Server(ServerProxy):
         return None
 
     @classmethod
-    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool):
+    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+        Downloads and copies the firmware to the Router given in the List(by a unique id) resp. to all Routers
+
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
@@ -170,9 +176,10 @@ class Server(ServerProxy):
                 RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
 
     @classmethod
-    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool):
+    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given Router(s)
+
         :param router_ids:
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware

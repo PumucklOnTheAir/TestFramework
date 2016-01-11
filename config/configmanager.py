@@ -7,7 +7,7 @@ from server.router import *
 
 class ConfigManager:
     """
-    Manager who handles the config files
+    Manager who handles the config files for the TestServer.
     """
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
@@ -22,6 +22,7 @@ class ConfigManager:
     def read_file(path: str = "") -> []:
         """
         Read a config file from the path
+
         :param path: File path
         :return: Array with the output from the file
         """
@@ -42,6 +43,7 @@ class ConfigManager:
     def write_file(data: str = "", path: str = "") -> None:
         """
         Write a config file on the path
+
         :param data: String of data to write in the file
         :param path: File path
         :return: None
@@ -63,6 +65,7 @@ class ConfigManager:
     def get_router_auto_config() -> []:
         """
         Read the Router Auto Config file
+
         :return: Array with the output from the file
         """
         return ConfigManager.read_file(ConfigManager.ROUTER_AUTO_CONFIG_PATH)
@@ -71,6 +74,7 @@ class ConfigManager:
     def get_router_auto_list(count: int = 0) -> []:
         """
         Read the Router Manual Config file
+
         :param count: Count of the Router
         :return: List with a specific output from the file
         """
@@ -115,6 +119,7 @@ class ConfigManager:
     def get_router_manual_config() -> []:
         """
         Read the Router Manual Config file
+
         :return: Array with the output from the file
         """
         return ConfigManager.read_file(ConfigManager.ROUTER_MANUAL_CONFIG_PATH)
@@ -123,6 +128,7 @@ class ConfigManager:
     def get_router_manual_list() -> []:
         """
         Read the Router Manual Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_router_manual_config()
@@ -150,6 +156,7 @@ class ConfigManager:
     def get_server_config() -> []:
         """
         Read the Server Config file
+
         :return: Array with the output from the file
         """
         return ConfigManager.read_file(ConfigManager.SERVER_CONFIG_PATH)
@@ -158,6 +165,7 @@ class ConfigManager:
     def get_server_property_list() -> []:
         """
         Read the Server Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_server_config()
@@ -167,6 +175,7 @@ class ConfigManager:
     def get_test_config() -> []:
         """
         Read the Test Config file
+
         :return: Array with the output from the file
         """
         return ConfigManager.read_file(ConfigManager.TEST_CONFIG_PATH)
@@ -175,6 +184,7 @@ class ConfigManager:
     def get_test_list() -> []:
         """
         Read the Test Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_test_config()
@@ -184,6 +194,7 @@ class ConfigManager:
     def get_firmware_config() -> []:
         """
         Read the Firmware Config file
+
         :return: Array with the output from the file
         """
         return ConfigManager.read_file(ConfigManager.FIRMWARE_CONFIG_PATH)
@@ -192,6 +203,7 @@ class ConfigManager:
     def get_firmware_list() -> []:
         """
         Read the Firmware Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_firmware_config()
@@ -205,6 +217,7 @@ class ConfigManager:
     def get_firmware_property(prop: str = "") -> object:
         """
         Read the Firmware Config file and give the property back
+
         :param prop: Property from Firmware file
         :return: Value of the property from the file
         """

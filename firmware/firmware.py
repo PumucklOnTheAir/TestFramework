@@ -4,9 +4,14 @@ from log.logger import Logger
 
 
 class Firmware:
+    """
+    Represents a router firmware version.
+
+    """""
 
     def __init__(self, name: str, version: str, freifunk_verein: str, release_model: str, file: str, url: str):
         """
+
         :param name: including router_model_name, router_model_version, firmware_version, freifunk_verein
         :param version: version of the firmware (not version of router !!!)
         :param freifunk_verein: like 'ffda'
@@ -33,6 +38,7 @@ class Firmware:
     def check_hash(self, excep_hash: str) -> bool:
         """
         Checks whether the excepted Hash is equal the actual of the Firmware.
+
         :param excep_hash:
         :return:
         """
@@ -49,6 +55,7 @@ class Firmware:
     def calc_hash(self):
         """
         Calculate the Hash of the Firmware and sets it as a atribute.
+
         :return:
         """
         hasher = hashlib.sha512()

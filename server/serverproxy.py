@@ -11,6 +11,7 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def start_test(self, router_name, test_name) -> bool:
         """Start an specific test on an router
+
         :param router_name: The name of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
@@ -60,9 +61,10 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def update_router_info(self, router_ids: List[int], update_all: bool):
+    def update_router_info(self, router_ids: List[int], update_all: bool) -> None:
         """
-        Updates all the informwations about the Router
+        Updates all the information about the Router
+
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
@@ -72,24 +74,27 @@ class ServerProxy(metaclass=ABCMeta):
     def get_router_by_id(self, router_id: int) -> Router:
         """
         Returns a Router with the given id.
+
         :param router_id:
         :return: Router
         """
         pass
 
     @abstractclassmethod
-    def sysupdate_firmware(self, router_ids: List[int], update_all: bool):
+    def sysupdate_firmware(self, router_ids: List[int], update_all: bool) -> None:
         """
         Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
         pass
 
     @abstractclassmethod
-    def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool):
+    def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given Router(s)
+
         :param router_ids:
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
