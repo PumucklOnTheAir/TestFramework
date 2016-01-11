@@ -122,7 +122,7 @@ class Server(ServerProxy):
                     return False
                 else:
                     Logger().debug("Get next task from the queue", 3)
-                    job = router.waiting_tasks.get()
+                    job = router.waiting_tasks.pop(0)
 
         if router.running_task is None:
             Logger().debug("Starting test " + str(job), 1)

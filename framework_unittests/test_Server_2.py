@@ -18,7 +18,7 @@ class ServerTestCase2(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        time.sleep(2)
+        time.sleep(5)
         print("Shutdown server")
         ipc_client = IPC()
         ipc_client.connect()
@@ -42,18 +42,18 @@ class ServerTestCase2(unittest.TestCase):
     def test_little_self_check(self):
         started = self.server_proxy.start_test(21, "ConnectionTest")
         assert started
-        time.sleep(2)
+        time.sleep(5)
         reports = self.server_proxy.get_reports()
         assert len(reports) != 0
 
     def test_long_self_check(self):
         started = self.server_proxy.start_test(21, "VeryLongTest")
         assert started
-        time.sleep(2)
+        time.sleep(5)
 
         self.server_proxy.stop_all_tasks()
 
-        time.sleep(1)
+        time.sleep(2)
 
         routers = self.server_proxy.get_routers()
         for router in routers:

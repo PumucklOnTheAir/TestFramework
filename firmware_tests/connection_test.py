@@ -36,6 +36,7 @@ class VeryLongTest(FirmwareTest):
     def test_ping(self):
         hostname = self.router.ip
         response = os.system("ping -c 1 " + hostname)
+        print(hostname)
         assert response == 0
 
 
