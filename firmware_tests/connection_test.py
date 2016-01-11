@@ -1,5 +1,6 @@
 from server.test import FirmwareTest
 import time
+import os
 
 
 class ConnectionTest(FirmwareTest):
@@ -31,4 +32,10 @@ class VeryLongTest(FirmwareTest):
         time.sleep(5)
         assert not not lol
         assert not lol
+
+    def test_ping(self):
+        hostname = self.router.ip
+        response = os.system("ping -c 1 " + hostname)
+        assert response == 0
+
 

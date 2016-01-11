@@ -31,3 +31,8 @@ Es wird systemd und Python 3.4+ vorausgesetzt. Installation wurde lediglich unte
 
 Alternativ wen man den Testserver nur ausführen aber nicht als Service installiert haben möchte, kann man auch nur die Bibliothek installieren: `pip3 install -r requirements.txt`
 
+### Testen
+Eine Auswahl an Unittest fürs Framwork wird bei jedem Pull-Request auf Travis CI ausgeführt.
+Eine vollständiges Testens des Frameworks ist auf dem Raspberry Pi möglich mit folgendem Kommando im Repo Ordner:
+python -m unittest discover -s framework_unittests
+
