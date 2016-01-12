@@ -13,33 +13,81 @@ class Ubnt(PowerStrip):
                  usr_name: str, usr_password: str):
 
         # Static IP of Ubiquiti mPower 6
-        self.ip = "192.168.1.20"
-        self.ip = ip
+        self._ip = "192.168.1.20"
+        self._ip = ip
 
-        self.vlan_iface_id = None
-        self.vlan_iface_id = vlan_iface_id
+        self._vlan_iface_id = None
+        self._vlan_iface_id = vlan_iface_id
 
-        self.vlan_iface_name = None
-        self.vlan_iface_name = vlan_iface_name
+        self._vlan_iface_name = None
+        self._vlan_iface_name = vlan_iface_name
 
-        self.ip_mask = None
-        self.ip_mask = ip_mask
+        self._ip_mask = None
+        self._ip_mask = ip_mask
 
         # Default Ubiquiti username
-        self.usr_name = "ubnt"
-        self.usr_name = usr_name
+        self._usr_name = "ubnt"
+        self._usr_name = usr_name
 
         # Default Ubiquiti password
-        self.usr_password = "ubnt"
-        self.usr_password = usr_password
+        self._usr_password = "ubnt"
+        self._usr_password = usr_password
 
-        global network_ctrl
-        network_ctrl = NetworkCtrl(self)
+
+    @property
+    def ip(self) -> str:
+        """
+        IP number of the Router
+        :return: IP number as string
+        """
+        return self._ip
+
+    @property
+    def vlan_iface_id(self) -> int:
+        """
+        The VLAN ID from router
+        :return:
+        """
+        return self._vlan_iface_id
+
+    @property
+    def vlan_iface_name(self) -> str:
+        """
+        Used VLAN name from server for this router
+        :return:
+        """
+        return self._vlan_iface_name
+
+    @property
+    def ip_mask(self) -> int:
+        """
+        IP mask
+        :return:
+        """
+        return self._ip_mask
+
+    @property
+    def usr_name(self) -> str:
+        """
+        Username
+        :return:
+        """
+        return self._usr_name
+
+    @property
+    def usr_password(self) -> str:
+        """
+        Username
+        :return:
+        """
+        return self._usr_password
 
     def connect(self):
         """
         Connects with the power strip via network controller
         """
+        global network_ctrl
+        network_ctrl = NetworkCtrl(self)
         network_ctrl.connect_with_remote_system()
 
     def __command(self, cmd):
@@ -57,7 +105,7 @@ class Ubnt(PowerStrip):
         """
         cmd = "cat /dev/output" + str(port_id)
         output = self.__command(cmd)
-        return output
+        return int(output)
 
     def up(self, port_id):
         """

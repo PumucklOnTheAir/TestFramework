@@ -7,7 +7,7 @@ from util.ubnt import Ubnt
 class MyTestCase(unittest.TestCase):
     def test_create_power_strip(self):
         global ps
-        ps = Ubnt()
+        ps = Ubnt("vlan20", 20, "192.168.1.20", 24, "bananapi", "bananapi")
         assert isinstance(ps, Ubnt)
 
         assert ps.ip == "192.168.1.20"
