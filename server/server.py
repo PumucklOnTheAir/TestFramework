@@ -17,6 +17,7 @@ class Server(ServerProxy):
         "OSError: [Errno 48] Address already in use" if the server is already started
         "OSError: [Errno 99] Cannot assign requested address" ?? try to restart the computer TODO #51
     """""
+    VERSION = "0.1"
     DEBUG = False
     VLAN = True
     CONFIG_PATH = "../config"
@@ -185,3 +186,10 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 RouterFlashFirmware.sysupgrade(router, n)
+
+    @classmethod
+    def get_server_version(cls) -> str:
+        """
+        Returns the server version as a string
+        """
+        return cls.VERSION

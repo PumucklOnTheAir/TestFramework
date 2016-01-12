@@ -26,6 +26,8 @@ ExecStart=$DIR/start_server.py" >> "$file"
 echo "[Install]
 WantedBy=multi-user.target" >> "$file"
 
+ln test_server_alive.py /bin/fftserver_alive
+chmod 755 /bin/fftserver_alive
 
 # activate service
 systemctl reload fftserver
