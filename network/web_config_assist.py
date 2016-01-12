@@ -1,6 +1,7 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from log.logger import Logger
 from server.router import Router
+from network.remote_system import RemoteSystem
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
 
 
@@ -19,17 +20,17 @@ class WebConfigurationAssist:
           Therefore I added a parameter to the webdriver function from selenium.
     """
 
-    def __init__(self, config: dict=None, router: Router=None):
+    def __init__(self, config: dict=None, router: RemoteSystem=None):
         """
         Starts the browser Phantomjs to configure the webpage of the router in the given namespace
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
-        :param router: Router object
+        :param router: Remote object
         """
         Logger().debug("Create WebConfigurationAssist ...", 2)
         self.config = config
         self.router = router
         try:
-            pre_command = ['ip', 'netns', 'exec', router.namespace_name]
+            pre_command = ['ip', 'netns', 'exec', self.router.namespace_name]
             self.browser = WebdriverPhantomjsExtended(pre_command=pre_command)
             self.browser.get(self.router.ip)
             Logger().debug("[+] Browser started", 3)
@@ -58,7 +59,7 @@ class WebConfigurationAssist:
             Submit:             [button]
         """
         Logger().debug("Setup 'wizard' ...", 3)
-        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/gluon-config-mode/')
+        self.browser.get('http://' + self.router.ip() + '/cgi-bin/luci/gluon-config-mode/')
 
         node_name_field_id = "cbid.wizard.1._hostname"
         mesh_vpn_field_id = "cbid.wizard.1._meshvpn"

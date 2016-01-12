@@ -50,15 +50,15 @@ class Worker(Thread):
         Runs new thread and trys to send a command via ssh to reboot the Router.
         """
         network_ctrl = NetworkCtrl(self.router, 'enp0s25')
-        network_ctrl.connect_with_router()
+        network_ctrl.connect_with_remote_system()
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 Logger().info("[+] Router is already in configuration mode", 2)
                 return
             try:
-                network_ctrl.send_router_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
-                network_ctrl.send_router_command("uci commit")
-                network_ctrl.send_router_command("reboot")
+                network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
+                network_ctrl.send_command("uci commit")
+                network_ctrl.send_command("reboot")
                 self.router.mode = Mode.configuration
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into configuration mode", 2)
@@ -69,7 +69,7 @@ class Worker(Thread):
                 Logger().info("[+] Router is already in configuration mode", 2)
                 return
             try:
-                network_ctrl.send_router_command("reboot")
+                network_ctrl.send_command("reboot")
                 self.router.mode = Mode.normal
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)

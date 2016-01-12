@@ -75,11 +75,11 @@ class SysupgradeWorker(Thread):
         :return:
         """
         network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.connect_with_router()
+        network_ctrl.connect_with_remote_system()
         network_ctrl.router_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
-        network_ctrl.send_router_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
+        network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
         network_ctrl.exit()
 
     def join(self):

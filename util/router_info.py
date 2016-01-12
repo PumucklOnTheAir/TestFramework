@@ -56,15 +56,15 @@ class Worker(Thread):
         :return:
         """
         network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.connect_with_router()
+        network_ctrl.connect_with_remote_system()
         # Model
-        self.router.model = network_ctrl.send_router_command(
+        self.router.model = network_ctrl.send_command(
             'cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
         # MAC
-        self.router.mac = network_ctrl.send_router_command(
+        self.router.mac = network_ctrl.send_command(
             'uci show network.client.macaddr').split('=')[1][:-4]
         # SSID
-        self.router.ssid = network_ctrl.send_router_command(
+        self.router.ssid = network_ctrl.send_command(
             'uci show wireless.client_radio0.ssid').split('=')[1][:-4]
         network_ctrl.exit()
 
