@@ -112,5 +112,8 @@ class DummyServer(ServerProxy):
     def sysupgrade_firmware(cls, router_ids, upgrade_all, n) -> []:
         pass
 
+    @classmethod
+    def get_server_version(cls) -> str:
+        pass
 
 
