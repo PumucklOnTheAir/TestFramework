@@ -43,8 +43,10 @@ class Ubnt(PowerStrip):
         network_ctrl.connect_with_remote_system()
 
     def __command(self, cmd):
+        self.connect()
         output = network_ctrl.send_command(cmd)
         Logger().info("Command \'" + str(cmd) + "\' sent to power strip")
+        network_ctrl.exit()
         return output
 
     def port_status(self, port_id):

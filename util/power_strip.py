@@ -1,8 +1,9 @@
 from abc import abstractmethod
+from abc import abstractproperty
 from network.network_iface import NetworkIface
 
 
-class PowerStrip(metaclass=NetworkIface):
+class PowerStrip(NetworkIface):
     """
     This class provides the Interface for the basic functions to manage the power strip.
     """
@@ -40,3 +41,4 @@ class PowerStrip(metaclass=NetworkIface):
         :return: bool for failure or success
         """
         pass
+
