@@ -53,7 +53,7 @@ class Router(ProxyObject, RemoteSystem):
         self._power_socket = power_socket
 
         # Optional values
-        self._mode = Mode.unknown
+        self._mode = Mode.configuration
         self._model = None
         self._usr_name = usr_name
         self._usr_password = usr_password
@@ -76,10 +76,10 @@ class Router(ProxyObject, RemoteSystem):
         IP number of the Router. In dependency of the Mode
         :return: IP number as string
         """
-        if self._model == Mode.normal:
-            return self._ip
-        else:
+        if self._mode == Mode.configuration:
             return self._config_ip
+        else:
+            return self._ip
 
     @property
     def ip_mask(self) -> int:
@@ -87,10 +87,10 @@ class Router(ProxyObject, RemoteSystem):
         IP mask. In dependency of the Mode
         :return:
         """
-        if self._model == Mode.normal:
-            return self._ip
-        else:
+        if self._mode == Mode.configuration:
             return self._config_ip
+        else:
+            return self._ip
 
     @property
     def vlan_iface_id(self) -> int:

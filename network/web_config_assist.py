@@ -2,7 +2,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 from log.logger import Logger
 from server.router import Router
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
-from enum import Enum
 
 
 class WebConfigurationAssist:
@@ -114,8 +113,8 @@ class WebConfigurationAssist:
 
         Info:
             private WLAN:   [checkbox]
-                ssid:       [text]
-                ssid key:   [text]
+                ssid:           [text]
+                ssid key:       [text]
             submit:         [button]
         """
         Logger().debug("Setup 'Private WLAN' ...", 3)
@@ -194,18 +193,18 @@ class WebConfigurationAssist:
 
         Info:
             ipv4:       [selectbox]
-                none.   [option]
-                auto:   [option]
-                static: [option]
-                    ip:  [text]
-                    mask:[text]
-                    gw:  [text]
+                none.       [option]
+                auto:       [option]
+                static:     [option]
+                    ip:         [text]
+                    mask:       [text]
+                    gw:         [text]
             ipv6:       [selectbox]
-                none.   [option]
-                auto:   [option]
-                static: [option]
-                    ip:  [text]
-                    gw:  [text]
+                none.       [option]
+                auto:       [option]
+                static:     [option]
+                    ip:         [text]
+                    gw:         [text]
             dns server: [text]
             wan inface: [checkbox]
             lan inface: [checkbox]
@@ -364,9 +363,9 @@ class WebConfigurationAssist:
         Info:
             auto update:    [checkbox]
             branch:         [selectbox]
-                stable:     [option]
-                beta:       [option]
-                expmental:  [option]
+                stable:         [option]
+                beta:           [option]
+                expmental:      [option]
 
             submit:         [button]
         """

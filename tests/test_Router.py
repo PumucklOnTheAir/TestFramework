@@ -6,17 +6,17 @@ from server.router import Mode
 
 class MyTestCase(unittest.TestCase):
     def test_create_Router(self):
-        r1 = Router(0, "VLAN Name1", 42, "192.168.0.99", 43, "admin", "pwd", 1)
-        assert isinstance(r1, Router)
+        router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
+        assert isinstance(router, Router)
 
-        assert r1.ip == "192.168.0.99"
-        assert r1.ip_mask == 43
+        assert router.ip == "192.168.0.99"
+        assert router.ip_mask == 43
 
     def test_add_information(self):
-        r2 = Router(1, "VLAN Name2", 43, "192.168.0.99", 44, "admin2", "pwd2", 2)
+        router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
 
-        r2.ssid = "lol funk"
-        r2.wlan_mode = Mode.master
+        router.ssid = "lol funk"
+        router.wlan_mode = Mode.master
 
 
 if __name__ == '__main__':

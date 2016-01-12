@@ -17,7 +17,7 @@ class TestWebConfigurationAssistExpert(TestCase):
               'private_wlan': False,
               'ssid': '',
               'ssid_key': '',
-              'ssh_keys': '',
+              'ssh_keys': 'test_ssh',
               'password': 'root',
               'ipv4': 'automatic',
               'ipv4_address': '',
@@ -43,7 +43,7 @@ class TestWebConfigurationAssistExpert(TestCase):
         It sets the values of all the  from WebInterface of the Router.
         """
         # Create router
-        router = Router(1, "vlan1", 21, "192.168.1.1", 24, "root", "root", 1)
+        router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         assert isinstance(router, Router)

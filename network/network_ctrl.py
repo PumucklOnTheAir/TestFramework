@@ -3,11 +3,10 @@ import os
 import paramiko
 
 from log.logger import Logger
-from network.namespace import Namespace
-from network.vlan import Vlan
 from network.web_config_assist import WebConfigurationAssist
 from network.webserver import WebServer
 from server.server import Router
+from network.nv_assist import NVAssistent
 
 
 class NetworkCtrl:
@@ -30,12 +29,17 @@ class NetworkCtrl:
         Logger().info("Create Network Controller for Router(" + str(router.id) + ") ...", 1)
         self.router = router
 
+        # TODO: ausgelagert in NVAssisten. soll beides aber in Zukunft gelöscht/ausgelagert werden
+        '''
         self.vlan = Vlan(link_iface_name, router.vlan_iface_name, router.vlan_iface_id,
                          vlan_iface_ip=None, vlan_iface_ip_mask=None)
         self.vlan.create_interface()
 
         self.namespace = Namespace(self.router.namespace_name, self.vlan.ipdb)
         self.namespace.encapsulate_interface(self.vlan.vlan_iface_name)
+        '''
+        self.namespace = NVAssistent().create_namespace_vlan(self.router.namespace_name, link_iface_name,
+                                                             router.vlan_iface_name, router.vlan_iface_id)
 
         self.ssh = paramiko.SSHClient()
 
@@ -156,5 +160,5 @@ class NetworkCtrl:
         Delete the VLAN resp. the Namespace with the VLAN
         """
         Logger().info("Close Network Controller for Router(" + str(self.router.id) + ") ...", 1)
-        self.vlan.delete_interface()
+        #self.vlan.delete_interface()
         self.namespace.remove()
