@@ -1,2 +1,8 @@
---- # default for the server
-- default_Name: Test
+--- # config for the server
+- {
+Server_Name: TestServer,
+# set the level for what you want to log: NOTSET: 0, DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50
+Log_Level: 10,
+# set True or False
+Vlan_On: True
+}
