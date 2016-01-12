@@ -67,7 +67,7 @@ class NetworkCtrl:
         except Exception as e:
             Logger().error("[-] Couldn't send the command (" + command +
                            ") to the Router(" + str(self.router.id) + ")", 2)
-            Logger().error(str(e), 2)
+            raise e
 
     def send_data(self, local_file: str, remote_file: str):
         """
