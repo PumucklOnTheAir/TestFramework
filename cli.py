@@ -3,7 +3,7 @@ from cli.cli_util import CLIUtil
 from log.logger import Logger
 import argparse
 import time
-import random
+import sys
 
 
 def connect_to_server():
@@ -48,7 +48,7 @@ def print_router_info(router_list, rid):
         Logger().info("No such router found, check the list again")
     else:
         router = router[0]
-        info = [["ID", router.id]
+        info = [["ID", router.id],
                 ["Model", router.model],
                 ["MAC", router.mac],
                 ["IP", router.ip + "/" + str(router.ip_mask)],
@@ -61,80 +61,6 @@ def print_router_info(router_list, rid):
                 ["Firmware", router.firmware.name]]
 
         util.print_router(info)
-
-
-def update_running_test(test):
-    update = test
-    if update[2] < 100:
-        update[2] += 1
-    return update
-
-
-def get_test_progress():
-    try:
-        tests = server_proxy.get_running_tests()
-        if tests == ():
-            Logger().info("No running tests")
-        else:
-            print("\tCurrently running Test: " + str(tests[0][0]))
-            test = tests[1]
-            while test[1] <= 100:
-                print(util.return_progressbar(test[0], test[1], test[2]), end="\r")
-                test = update_running_test(test)
-                t = random.random()
-                time.sleep(t)
-            print("\n")
-
-    except KeyboardInterrupt:
-        Logger().info("Interrupted")
-
-
-def get_tests_progress():
-    tests = server_proxy.get_running_tests()
-    # initialize variables
-    working = True
-    lines = 0
-    i = 0
-
-    # no tests returned
-    if not tests:
-        Logger().info("No running tests")
-    else:
-        try:
-            while working:
-                time.sleep(0.75)
-                working = False
-                print("\tCurrently running tests: ")
-                for i in range(len(tests)):
-                    test = tests[i]
-                    test = update_running_test(test)
-                    print(util.return_progressbar(test[0], test[1], test[2]))
-                    if test[2] < 100:
-                        working = True
-                lines = i + 3
-                # go back to first line
-                if working:
-                    print("\033[" + str(lines) + "A")
-                else:
-                    Logger().info("All tests completed")
-
-        except KeyboardInterrupt:
-            print("\n" * lines)
-            Logger().info("Interrupted by user")
-
-
-def list_all_tests():
-    tests = server_proxy.get_tests()
-
-    if not tests:
-        Logger().info("No tests found")
-    else:
-        print("\tList of all Tests in Framework")
-        util.print_list(tests)
-    dummy_tests = [[1, "Configuration Test"], [2, "Dummy Test"],
-                   [355, "Gateway Test"], [15, "Some other test"]]
-    util.print_list(dummy_tests)
-
 
 def main():
     """Freifunk TestFramework Command Line Interface
@@ -154,16 +80,6 @@ def main():
                                action="store_true")
     parser_status.add_argument("-r", "--router", help="Return detailed info on router", nargs=1,
                                action="store", metavar="Router ID")
-    parser_status.add_argument("-t", "--test", help="Return currently running tests", action="store_true")
-    parser_status.add_argument("-l", "--list", help="List all available tests", action="store_true")
-
-    # subparser for actions
-    parser_action = subparsers.add_parser("run", help="Execute different actions on the server")
-    parser_action.add_argument("-vid", "--vlanid", metavar="VLan ID", type=int,
-                               default=0, action="store",
-                               help="Runs selected test on")
-    parser_action.add_argument("-tid", "--testid", metavar="Test ID", type=int,
-                               default=0, action="store")
 
     # subparser for sysupgrade
     parser_upgrade = subparsers.add_parser("sysupgrade", help="Upgrades the routers")
@@ -222,14 +138,8 @@ def main():
         elif args.router:
             routers = server_proxy.get_routers()
             print_router_info(routers, args.router[0])
-        elif args.test:
-            get_tests_progress()
-        elif args.list:
-            list_all_tests()
         else:
             Logger().info("Please specify. See status -h")
-    elif args.mode == "run":
-        Logger().info("Run run run")
     elif args.mode == "sysupgrade":
         if args.all:
             server_proxy.sysupgrade_firmware([], True, args.n)
