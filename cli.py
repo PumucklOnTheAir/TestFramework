@@ -181,6 +181,22 @@ def main():
     parser_update.add_argument("-a", "--all", action="store_true", default=False,
                                help="Apply to all routers")
 
+    # subparser for reboot
+    parser_reboot = subparsers.add_parser("reboot", help="Reboots one or multiple routers")
+    parser_reboot.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                               default=[], action="store", help="List of routers to be rebooted", nargs="+")
+    parser_reboot.add_argument("-a", "--all", action="store_true", default=False,
+                               help="Apply to all routers")
+    parser_reboot.add_argument("-c", "--config", action="store_true", default=False,
+                               help="Reboot to Configuration Mode")
+
+    # subparser for webconfig
+    parser_webconfig = subparsers.add_parser("webconfig", help="Sets up the web configuration")
+    parser_webconfig.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                  default=[], action="store", help="List of routers to be configured", nargs="+")
+    parser_webconfig.add_argument("-a", "--all", action="store_true", default=False,
+                                  help="Apply to all routers")
+
     args = parser.parse_args()
 
     global verbose
@@ -218,12 +234,27 @@ def main():
         if args.all:
             server_proxy.sysupgrade_firmware([], True, args.n)
         else:
-            server_proxy.sysupgrade_firmware(args.sysupgrade, False, args.n)
+            server_proxy.sysupgrade_firmware(args.routers, False, args.n)
     elif args.mode == "sysupdate":
         if args.all:
             server_proxy.sysupdate_firmware([], True)
         else:
-            server_proxy.sysupdate_firmware(args.sysupdate, False)
+            server_proxy.sysupdate_firmware(args.routers, False)
+    elif args.mode == "reboot":
+        if args.all:
+            if args.config:
+                server_proxy.reboot_router([], True, True)
+            else:
+                server_proxy.reboot_router([], True, False)
+        elif args.config:
+            server_proxy.reboot_router(args.routers, False, True)
+        else:
+            server_proxy.reboot_router(args.routers, False, False)
+    elif args.mode == "webconfig":
+        if args.all:
+            server_proxy.setup_web_configuration([], True)
+        else:
+            server_proxy.setup_web_configuration(args.routers, False)
     else:
         Logger().info("Check -h for help")
 
