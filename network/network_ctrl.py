@@ -34,7 +34,7 @@ class NetworkCtrl:
                          vlan_iface_ip=None, vlan_iface_ip_mask=None)
         self.vlan.create_interface()
 
-        self.namespace = Namespace("nsp"+str(router.vlan_iface_id), self.vlan.ipdb)
+        self.namespace = Namespace(self.router.namespace_name, self.vlan.ipdb)
         self.namespace.encapsulate_interface(self.vlan.vlan_iface_name)
 
         self.ssh = paramiko.SSHClient()
