@@ -303,7 +303,7 @@ class ConfigManager:
         """
         output = ConfigManager.get_power_strip_config()
 
-        if not len(output) == 7:
+        if not len(output) == 8:
             Logger().error("List must be length of 8 but has a length of {0}".format(len(output)))
             return
 
@@ -317,12 +317,13 @@ class ConfigManager:
             ip = output[4]
             username = output[5]
             password = output[6]
+            n_ports = output[7]
 
             power_strip_list = []
 
             for i in range(0, count):
                 u = Ubnt(name['default_Name'], id_power_strip, ip['default_IP'], mask['default_Mask'],
-                         username['default_Username'], password['default_Password'])
+                         username['default_Username'], password['default_Password'], n_ports['default_Ports'])
                 id_power_strip += 1
                 power_strip_list.append(u)
 

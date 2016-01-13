@@ -143,7 +143,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_power_strip_config()
-        self.assertEqual(len(data), 7, "power_strip_Yaml: Wrong size of the List")
+        self.assertEqual(len(data), 8, "power_strip_Yaml: Wrong size of the List")
 
     def test_power_strip_dict(self):
         """

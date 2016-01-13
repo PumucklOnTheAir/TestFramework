@@ -1,6 +1,4 @@
 import unittest
-import paramiko
-
 from util.ubnt import Ubnt
 
 
@@ -11,6 +9,11 @@ class MyTestCase(unittest.TestCase):
         assert isinstance(ps, Ubnt)
 
         assert ps.ip == "192.168.1.20"
+        assert ps.usr_name == "test"
+        assert ps.usr_password == "test"
+        assert ps.ip_mask == 24
+        assert ps.vlan_iface_name == "vlan20"
+        assert ps.vlan_iface_id == 20
 
     def test_power(self):
         """ssh = paramiko.SSHClient()

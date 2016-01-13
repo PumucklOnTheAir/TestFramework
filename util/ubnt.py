@@ -10,9 +10,9 @@ class Ubnt(PowerStrip):
     """
 
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
-                 usr_name: str, usr_password: str):
+                 usr_name: str, usr_password: str, n_ports: int):
 
-        # Static IP of Ubiquiti mPower 6
+        # Static IP of Ubiquiti mPower Pro (EU)
         self._ip = "192.168.1.20"
         self._ip = ip
 
@@ -32,6 +32,10 @@ class Ubnt(PowerStrip):
         # Default Ubiquiti password
         self._usr_password = "ubnt"
         self._usr_password = usr_password
+
+        # Number of ports on power strip
+        self._n_ports = 6
+        self._n_ports = n_ports
 
     @property
     def ip(self) -> str:
@@ -81,6 +85,14 @@ class Ubnt(PowerStrip):
         """
         return self._usr_password
 
+    @property
+    def n_ports(self) -> int:
+        """
+        Number of Ports
+        :return:
+        """
+        return self._n_ports
+
     def connect(self):
         """
         Connects with the power strip via network controller
@@ -96,15 +108,25 @@ class Ubnt(PowerStrip):
         network_ctrl.exit()
         return output
 
+    def port_exists(self, port_id):
+        if port_id == 0 or port_id > self.n_ports:
+            Logger().info("No such port")
+            return False
+        else:
+            return True
+
     def port_status(self, port_id):
         """
         Checks if power on port is on or off
         :param port_id: ID of power strip port
-        :return: 1 for on or 0 for off
+        :return: 1 for on or 0 for off, 2 for error
         """
-        cmd = "cat /dev/output" + str(port_id)
-        output = self.__command(cmd)
-        return int(output)
+        if self.port_exists(port_id):
+            cmd = "cat /dev/output" + str(port_id)
+            output = self.__command(cmd)
+            return int(output)
+        else:
+            return 2
 
     def up(self, port_id):
         """
@@ -112,13 +134,16 @@ class Ubnt(PowerStrip):
         :param port_id: ID of power strip port
         :return: bool for failure or success
         """
-        cmd = "echo 1 > /dev/output" + str(port_id)
-        self.__command(cmd)
-        if self.port_status(port_id) == 1:
-            Logger().info("Power turned on: port " + str(port_id))
-            return True
+        if self.port_exists(port_id):
+            cmd = "echo 1 > /dev/output" + str(port_id)
+            self.__command(cmd)
+            if self.port_status(port_id) == 1:
+                Logger().info("Power turned on: port " + str(port_id))
+                return True
+            else:
+                Logger().error("Could not turn on power on port " + str(port_id))
+                return False
         else:
-            Logger().error("Could not turn on power on port " + str(port_id))
             return False
 
     def down(self, port_id):
@@ -127,11 +152,14 @@ class Ubnt(PowerStrip):
         :param port_id: ID of power strip port
         :return: bool for failure or success
         """
-        cmd = "echo 0 > /dev/output" + str(port_id)
-        self.__command(cmd)
-        if self.port_status(port_id) == 0:
-            Logger().info("Power turned off: port " + str(port_id))
-            return True
+        if self.port_exists(port_id):
+            cmd = "echo 0 > /dev/output" + str(port_id)
+            self.__command(cmd)
+            if self.port_status(port_id) == 0:
+                Logger().info("Power turned off: port " + str(port_id))
+                return True
+            else:
+                Logger().error("Could not turn off power on port " + str(port_id))
+                return False
         else:
-            Logger().error("Could not turn off power on port " + str(port_id))
             return False
