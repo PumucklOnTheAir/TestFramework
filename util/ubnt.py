@@ -5,7 +5,7 @@ from network.network_ctrl import NetworkCtrl
 
 class Ubnt(PowerStrip):
     """This class implements an API for the Ubiquiti mPower 6-Port mFi Power Strip
-        running on Firmware version x.x.x
+        running on Firmware version 2.1.11
         Different ports can be turned on or off, each port corresponds to a router
     """
 
@@ -32,7 +32,6 @@ class Ubnt(PowerStrip):
         # Default Ubiquiti password
         self._usr_password = "ubnt"
         self._usr_password = usr_password
-
 
     @property
     def ip(self) -> str:
