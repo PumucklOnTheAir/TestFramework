@@ -1,4 +1,4 @@
-from config.configmanager import *
+from config.configmanager import ConfigManager
 import unittest
 
 
@@ -136,6 +136,22 @@ class MyTestCase(unittest.TestCase):
         """
         data = ConfigManager.get_firmware_list()
         self.assertEqual(len(data), 4, "firmware_Yaml: Wrong size of the List")
+
+    def test_power_strip_config(self):
+        """
+        Tests the power strip config
+        :return: Tests results
+        """
+        data = ConfigManager.get_power_strip_config()
+        self.assertEqual(len(data), 7, "power_strip_Yaml: Wrong size of the List")
+
+    def test_power_strip_dict(self):
+        """
+        Tests the power strip config
+        :return: Tests results
+        """
+        data = ConfigManager.get_power_strip_list()
+        self.assertEqual(len(data), 1, "power_strip_Yaml: Wrong size of the List")
 
     if __name__ == '__main__':
         unittest.main()

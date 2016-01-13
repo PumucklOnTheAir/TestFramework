@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from abc import abstractproperty
 from network.network_iface import NetworkIface
 
 
@@ -41,4 +40,3 @@ class PowerStrip(NetworkIface):
         :return: bool for failure or success
         """
         pass
-

@@ -1,7 +1,6 @@
 from .serverproxy import ServerProxy
 from .ipc import IPC
-from .router import Router
-from config.configmanager import ConfigManager
+from config.configmanager import *
 from typing import List
 import os
 
@@ -33,9 +32,7 @@ class Server(ServerProxy):
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
         Starts the runtime server with all components
-        :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
-        :param vlan_activate: Activates/Deactivates VLANs
         """
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
