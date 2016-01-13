@@ -31,7 +31,7 @@ before_script:
 # script: python -m unittest discover -s tests
 script:
   - python -m pytest --cov=./ tests/test_IPC.py
-  - cpython -m pytest --cov=./ tests/test_Router.py
+  - python -m pytest --cov=./ tests/test_Router.py
   - python -m pytest --cov=./ tests/test_Server.py
   - python -m pytest --cov=./ tests/test_Server_2.py
   - python -m pytest --cov=./ tests/test_Yaml.py
