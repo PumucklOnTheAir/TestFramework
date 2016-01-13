@@ -95,3 +95,10 @@ class ServerProxy(metaclass=ABCMeta):
         :param n: If n is True the upgrade discard the last firmware
         """
         pass
+
+    @abstractclassmethod
+    def get_server_version(self) -> str:
+        """
+        Returns the server version as a string
+        """
+        pass
