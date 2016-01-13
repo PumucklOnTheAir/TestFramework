@@ -3,7 +3,6 @@ from cli.cli_util import CLIUtil
 from log.logger import Logger
 import argparse
 import time
-import sys
 
 
 def connect_to_server():
