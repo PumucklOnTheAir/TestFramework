@@ -14,6 +14,7 @@ class Vlan:
         Creats a virtual interface on a existing interface (like eth0).
         It uses IPDB: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
+
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
         :param vlan_iface_id: the id of the vlan
         :param vlan_iface_ip: ip of the virtual interface
@@ -28,6 +29,7 @@ class Vlan:
     def create_interface(self, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
         """
          Creats a virtual interface on a existing interface (like eth0)
+
         :param vlan_iface_ip: ip of the virtual interface
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
@@ -91,6 +93,7 @@ class Vlan:
     def _get_ipv4_from_dictionary(self, iface) -> str:
         """
         Gets the ip and network-mask from the ipdb
+
         :param iface: the interface from ipdb
         :return: ip with network-mask
         """

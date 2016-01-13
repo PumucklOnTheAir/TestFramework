@@ -23,6 +23,7 @@ class NetworkCtrl:
         Creats a VLAN and a Namespace for the specific Router and 'eth0' as the link-interface.
         The VLAN will be encapsulate in the Namespace.
         Also the a SSHClient will be created.
+
         :param router:
         """
         Logger().info("Create Network Controller for Router(" + str(router.id) + ") ...", 1)
@@ -58,6 +59,7 @@ class NetworkCtrl:
     def send_router_command(self, command) -> str:
         """
         Sends the given command via SSH to the Router.
+
         :param command: like "ping 8.8.8.8"
         :return: The output of the command given by the Router
         """
@@ -74,6 +76,7 @@ class NetworkCtrl:
     def router_wget(self, file: str, remote_path: str):
         """
         The Router downloads the file from the PI and stores it at remote_file
+
         :param file: like /root/TestFramework/firmware/.../<firmware>.bin
         :param remote_path: like /tmp/
         """
@@ -86,6 +89,7 @@ class NetworkCtrl:
     def send_data(self, local_file: str, remote_file: str):
         """
         Sends Data via sftp to the Router
+
         :param local_file: Path to the local file
         :param remote_file: Path on the Router, where the file should be saved
         """
