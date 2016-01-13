@@ -101,18 +101,9 @@ class ServerProxy(metaclass=ABCMeta):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
-        Router can be set via the 'web_config_assist_config.yaml', except for the sysupgrade which isn't implemented yet
+        Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
-        """
-        pass
-
-    @abstractclassmethod
-    def reset_web_configuration(self, router_ids: List[int], reset_all: bool):
-        """
-        Resets the Configuration of the webinterface and sets the default values of the configuration.
-        :param router_ids: List of unique numbers to identify a Router
-        :param reset_all: If True all Routers will be reseted via the webinterface
         """
         pass
 

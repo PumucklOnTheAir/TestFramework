@@ -48,7 +48,7 @@ class TestWebConfigurationAssistExpert(TestCase):
         router.mac = "e8:de:27:b7:7c:e2"
         assert isinstance(router, Router)
         # Create NetworkCrtl
-        network_ctrl = NetworkCtrl(router, 'enp0s25')
+        network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
 
         self.assertRaises(Exception, network_ctrl.wca_setup_expert(self.CONFIG))

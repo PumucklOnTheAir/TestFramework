@@ -17,6 +17,7 @@ class ConfigManager:
     SERVER_CONFIG_FILE = 'server_config.yaml'
     TEST_CONFIG_FILE = 'test_config.yaml'
     FIRMWARE_CONFIG_FILE = 'firmware_config.yaml'
+    WEB_INTERFACE_CONFIG_FILE = 'web_interface_config.yaml'
 
     @classmethod
     def set_config_path(cls, config_path: str = "") -> None:
@@ -287,3 +288,34 @@ class ConfigManager:
                     return x[prop]
 
         return None
+
+    @staticmethod
+    def get_web_interface_config() -> []:
+        """
+        Read the web interface Config file
+        :return: Array with the output from the file
+        """
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.WEB_INTERFACE_CONFIG_FILE)
+        return ConfigManager.read_file(path)
+
+    @staticmethod
+    def get_web_interface_dict() -> []:
+        """
+        Read the web interface Config file
+        :return: Dictionary with a specific output from the file
+        """
+        output = ConfigManager.get_web_interface_config()
+        return output
+
+    @staticmethod
+    def get_web_interface_list() -> []:
+        """
+        Read the web interface Config file
+        :return: List with a specific output from the file
+        """
+        output = ConfigManager.get_web_interface_config()
+        web_list = []
+        for x in output:
+            for v in x.values():
+                web_list.append(v)
+        return web_list

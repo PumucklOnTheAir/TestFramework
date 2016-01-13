@@ -54,7 +54,9 @@ class NetworkCtrl:
         Logger().info("Connect with RemoteSystem ...", 1)
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.ssh.connect(self.remote_system.ip, port=22, username=self.remote_system.usr_name, password=self.remote_system.usr_password)
+            self.ssh.connect(str(self.remote_system.ip), port=22,
+                             username=str(self.remote_system.usr_name),
+                             password=str(self.remote_system.usr_password))
             Logger().debug("[+] Successfully connected", 2)
         except Exception as e:
             Logger().error("[-] Couldn't connect", 2)
@@ -88,8 +90,8 @@ class NetworkCtrl:
             sftp.put(local_file, remote_file)
             sftp.close()
             '''
-            command = 'sshpass  -p' + self.remote_system.usr_password + ' scp ' + local_file + ' ' + \
-                      self.remote_system.usr_name + '@' + self.remote_system.ip + ':' + remote_file
+            command = 'sshpass  -p' + str(self.remote_system.usr_password) + ' scp ' + local_file + ' ' + \
+                      str(self.remote_system.usr_name) + '@' + str(self.remote_system.ip) + ':' + remote_file
             os.system(command)
 
             # TODO: Paramiko_scp have to installed
@@ -98,10 +100,10 @@ class NetworkCtrl:
             scp.put(local_file, remote_file)
             '''
             Logger().debug("[+] Sent data '" + local_file + "' to RemoteSystem '" +
-                           self.remote_system.usr_name + "@" + self.remote_system.ip + ":" + remote_file + "'", 2)
+                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'", 2)
         except Exception as e:
             Logger().error("[-] Couldn't send '" + local_file + "' to RemoteSystem '" +
-                           self.remote_system.usr_name + "@" + self.remote_system.ip + ":" + remote_file + "'", 2)
+                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
     def router_wget(self, file: str, remote_path: str):
@@ -113,11 +115,11 @@ class NetworkCtrl:
         try:
             webserver = WebServer()
             webserver.start()
-            self.send_command('wget -N http://' +
-                              self.namespace.get_ip_of_encapsulate_interface() + ':' +
+            # Proves first if file already exists
+            self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
+                              ' || wget http://' + self.namespace.get_ip_of_encapsulate_interface() + ':' +
                               str(WebServer.PORT_WEBSERVER) +
-                              file.replace(WebServer.BASE_DIR, '') +
-                                     ' -P ' + remote_path)
+                              file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
             webserver.join()
         except Exception as e:
             Logger().error(str(e), 2)
@@ -129,6 +131,7 @@ class NetworkCtrl:
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
         """
         try:
+            # remote_sytem has to be a router object
             wca = WebConfigurationAssist(config, self.remote_system)
             wca.setup_wizard()
             wca.exit()
@@ -144,6 +147,7 @@ class NetworkCtrl:
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
         """
         try:
+            # remote_sytem has to be a router object
             wca = WebConfigurationAssist(config, self.remote_system)
             wca.setup_expert_private_wlan()
             wca.setup_expert_remote_access()

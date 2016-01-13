@@ -9,7 +9,7 @@ class WebConfigurationAssist:
     """
     After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
     Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the Router
-    can be set via the 'web_config_assist_config.yaml', except for the sysupgrade which isn't implemented yet.
+    can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet.
 
     Info:
         - To use this class with firefox the following has to be installed: 'sudo apt-get install iceweasel xvfb'.
@@ -20,7 +20,7 @@ class WebConfigurationAssist:
           Therefore I added a parameter to the webdriver function from selenium.
     """
 
-    def __init__(self, config: dict=None, router: RemoteSystem=None):
+    def __init__(self, config, router):
         """
         Starts the browser Phantomjs to configure the webpage of the router in the given namespace
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}

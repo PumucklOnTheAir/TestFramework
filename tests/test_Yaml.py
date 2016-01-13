@@ -137,5 +137,30 @@ class MyTestCase(unittest.TestCase):
         data = ConfigManager.get_firmware_list()
         self.assertEqual(len(data), 4, "firmware_Yaml: Wrong size of the List")
 
+    # web interface
+    def test_web_interface_config(self):
+        """
+        Tests the web interface config
+        :return: Tests results
+        """
+        data = ConfigManager.get_web_interface_config()
+        self.assertEqual(len(data), 2, "web_interface_Yaml: Wrong size of the List")
+
+    def test_web_interface_dict(self):
+        """
+        Tests the web interface config
+        :return: Tests results
+        """
+        data = ConfigManager.get_web_interface_dict()
+        self.assertEqual(len(data), 2, "web_interface_Yaml: Wrong size of the List")
+
+    def test_web_interface_list(self):
+        """
+        Tests the web interface config
+        :return: Tests results
+        """
+        data = ConfigManager.get_web_interface_list()
+        self.assertEqual(len(data), 60, "web_interface_Yaml: Wrong size of the List")
+
     if __name__ == '__main__':
         unittest.main()

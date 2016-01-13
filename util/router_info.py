@@ -55,7 +55,7 @@ class Worker(Thread):
         Runs new thread and gets the information from the router via ssh
         :return:
         """
-        network_ctrl = NetworkCtrl(self.router)
+        network_ctrl = NetworkCtrl(self.router, 'enp0s25')
         network_ctrl.connect_with_remote_system()
         # Model
         self.router.model = network_ctrl.send_command(
