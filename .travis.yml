@@ -36,5 +36,5 @@ script:
   - python -m pytest --cov=./ tests/test_Server_2.py
   - python -m pytest --cov=./ tests/test_Yaml.py
   - python -m pytest --cov=./ tests/test_Logger.py
-  - python -m pytest --cov=./ tests/test_firmware_handler.py
+  - python run -m unittest tests/test_firmware_handler.py
 
