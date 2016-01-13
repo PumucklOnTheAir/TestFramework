@@ -67,7 +67,7 @@ class Worker(Thread):
             Logger().info("[+] Router was set into configuration mode", 2)
         else:
             if self.router.mode == Mode.normal:
-                Logger().info("[+] Router is already in configuration mode", 2)
+                Logger().info("[+] Router is already in normal mode", 2)
                 network_ctrl.exit()
                 return
             try:

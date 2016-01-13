@@ -76,10 +76,10 @@ class SysupgradeWorker(Thread):
         """
         network_ctrl = NetworkCtrl(self.router, 'enp0s25')
         network_ctrl.connect_with_remote_system()
-        network_ctrl.router_wget(self.router.firmware.file, '/tmp/')
+        network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
-        #network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
+        network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
         network_ctrl.exit()
 
     def join(self):

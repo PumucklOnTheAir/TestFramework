@@ -106,7 +106,7 @@ class NetworkCtrl:
                            str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
-    def router_wget(self, file: str, remote_path: str):
+    def remote_system_wget(self, file: str, remote_path: str):
         """
         The Router downloads the file from the PI and stores it at remote_file
         :param file: like /root/TestFramework/firmware/.../<firmware>.bin

@@ -27,7 +27,7 @@ class WebServer(Thread):
 
     def join(self):
         Logger().info("Stop WebServer ...", 1)
-        time.sleep(5)
+        time.sleep(2)
         try:
             self.httpd.shutdown()
             Logger().debug("[+] WebServer successfully stoped", 2)

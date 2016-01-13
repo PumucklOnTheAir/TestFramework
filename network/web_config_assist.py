@@ -59,7 +59,7 @@ class WebConfigurationAssist:
             Submit:             [button]
         """
         Logger().debug("Setup 'wizard' ...", 3)
-        self.browser.get('http://' + self.router.ip() + '/cgi-bin/luci/gluon-config-mode/')
+        self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/gluon-config-mode/')
 
         node_name_field_id = "cbid.wizard.1._hostname"
         mesh_vpn_field_id = "cbid.wizard.1._meshvpn"
