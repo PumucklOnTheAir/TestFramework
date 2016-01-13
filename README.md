@@ -29,3 +29,18 @@ Es wird systemd und Python 3.4+ vorausgesetzt. Installation wurde lediglich unte
 
 Alternativ wen man den Testserver nur ausführen aber nicht als Service installiert haben möchte, kann man auch nur die Bibliothek installieren: `pip3 install -r requirements.txt`
 
+
+### Ausführen
+Über `python cli.py -h`können alle Subkommandos aufgelistet werden. 
+
+`python cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf
+
+`python cli.py status -a` zeigt die Übersicht über alle Router an
+
+`python cli.py status -r [Router ID]` zeigt detaillierte Infos zu einem bestimmten Router an (ID über status -a einsehbar)
+     
+     
+
+_Konventionen, Vorgehensweise und weitere Dokumentation im Wiki_
+
+
