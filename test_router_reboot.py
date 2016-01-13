@@ -23,3 +23,4 @@ class TestRouterReboot(TestCase):
         assert isinstance(router, Router)
         RouterReboot().normal(router)
     '''
+TestRouterReboot().test_reboot_into_config()

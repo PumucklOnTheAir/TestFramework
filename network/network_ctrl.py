@@ -54,7 +54,7 @@ class NetworkCtrl:
         Logger().info("Connect with RemoteSystem ...", 1)
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-            self.ssh.connect(self.remote_system.ip(), port=22, username=self.remote_system.usr_name(), password=self.remote_system.usr_password())
+            self.ssh.connect(self.remote_system.ip, port=22, username=self.remote_system.usr_name, password=self.remote_system.usr_password)
             Logger().debug("[+] Successfully connected", 2)
         except Exception as e:
             Logger().error("[-] Couldn't connect", 2)
@@ -88,8 +88,8 @@ class NetworkCtrl:
             sftp.put(local_file, remote_file)
             sftp.close()
             '''
-            command = 'sshpass  -p' + self.remote_system.usr_password() + ' scp ' + local_file + ' ' + \
-                      self.remote_system.usr_name() + '@' + self.remote_system.ip() + ':' + remote_file
+            command = 'sshpass  -p' + self.remote_system.usr_password + ' scp ' + local_file + ' ' + \
+                      self.remote_system.usr_name + '@' + self.remote_system.ip + ':' + remote_file
             os.system(command)
 
             # TODO: Paramiko_scp have to installed
@@ -98,10 +98,10 @@ class NetworkCtrl:
             scp.put(local_file, remote_file)
             '''
             Logger().debug("[+] Sent data '" + local_file + "' to RemoteSystem '" +
-                           self.remote_system.usr_name() + "@" + self.remote_system.ip() + ":" + remote_file + "'", 2)
+                           self.remote_system.usr_name + "@" + self.remote_system.ip + ":" + remote_file + "'", 2)
         except Exception as e:
             Logger().error("[-] Couldn't send '" + local_file + "' to RemoteSystem '" +
-                           self.remote_system.usr_name() + "@" + self.remote_system.ip() + ":" + remote_file + "'", 2)
+                           self.remote_system.usr_name + "@" + self.remote_system.ip + ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
     def router_wget(self, file: str, remote_path: str):

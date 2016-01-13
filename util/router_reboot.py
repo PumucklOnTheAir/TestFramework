@@ -54,6 +54,7 @@ class Worker(Thread):
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 Logger().info("[+] Router is already in configuration mode", 2)
+                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
@@ -67,14 +68,15 @@ class Worker(Thread):
         else:
             if self.router.mode == Mode.normal:
                 Logger().info("[+] Router is already in configuration mode", 2)
+                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("reboot")
                 self.router.mode = Mode.normal
+                Logger().info("[+] Router was set into normal mode", 2)
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
-            Logger().info("[+] Router was set into normal mode", 2)
 
         network_ctrl.exit()
 

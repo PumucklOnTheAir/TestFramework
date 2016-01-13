@@ -40,7 +40,6 @@ class ServicePhantomjsExtended(Service):
             self.process = subprocess.Popen(self.pre_command + self.service_args, stdin=subprocess.PIPE,
                                             close_fds=platform.system() != 'Windows',
                                             stdout=self._log, stderr=self._log)
-
         except Exception as e:
             raise WebDriverException("Unable to start phantomjs with ghostdriver: %s" % e)
         count = 0

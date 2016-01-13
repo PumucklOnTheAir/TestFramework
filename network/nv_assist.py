@@ -25,18 +25,6 @@ class NVAssistent:
         return vlan
 
     @staticmethod
-    def create_namespace_vlan(namespace_name: str, vlan: Vlan):
-        """
-        Creats a Namespace and encapsulate the given VLAN inside.
-        :param namespace_name: Namespace name
-        :param vlan: vlan object
-        :return: Namespace object
-        """
-        namespace = Namespace(namespace_name, vlan.ipdb)
-        namespace.encapsulate_interface(vlan.vlan_iface_name)
-        return namespace
-
-    @staticmethod
     def create_namespace_vlan(namespace_name: str, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int,
                               vlan_iface_ip=None, vlan_iface_ip_mask=None):
         """
