@@ -7,3 +7,5 @@ pyroute2
 pylint
 recommonmark
 sphinx
+pytest-cov
+codecov
