@@ -34,7 +34,7 @@ script:
   - coverage run -m unittest tests/test_Router.py
   - coverage run -m unittest tests/test_Server.py
  # - python -m unittest tests/test_Server_2.py
-  - py.test --cov=./ tests/test_Yaml.py
+  - py.test --cov=./ run -m unittest tests/test_Yaml.py
   - coverage run -m unittest tests/test_Logger.py
   - coverage run -m unittest tests/test_firmware_handler.py
 
