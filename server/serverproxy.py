@@ -54,9 +54,9 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def stop(self) -> []:
+    def stop(self) -> None:
         """
-        :return: Shutdown the server
+        Shutdown the server
         """
         pass
 
