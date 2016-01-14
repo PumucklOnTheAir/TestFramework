@@ -8,8 +8,11 @@ class NVAssistent:
     2. Creats Namespaces and encapsulte a given VLAN
     """
 
-    @staticmethod
-    def create_vlan(link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int,
+    def __init__(self):
+        self._vlan = None
+        self._namespace = None
+
+    def create_vlan(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int,
                     vlan_iface_ip=None, vlan_iface_ip_mask=None):
         """
         Creats a VLAN.
@@ -20,12 +23,10 @@ class NVAssistent:
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         :return: VLAN object
         """
-        vlan = Vlan(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
-        vlan.create_interface()
-        return vlan
+        self.vlan = Vlan(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
+        self.vlan.create_interface()
 
-    @staticmethod
-    def create_namespace_vlan(namespace_name: str, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int,
+    def create_namespace_vlan(self, namespace_name: str, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int,
                               vlan_iface_ip=None, vlan_iface_ip_mask=None):
         """
         Creats a Namespace and a VLAN. Encapsulate the VLAN inside the Namespace.
@@ -37,8 +38,45 @@ class NVAssistent:
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         :return: Namespace object
         """
-        vlan = Vlan(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
-        vlan.create_interface()
-        namespace = Namespace(namespace_name, vlan.ipdb)
-        namespace.encapsulate_interface(vlan.vlan_iface_name)
-        return namespace
+        self.vlan = Vlan(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
+        self.vlan.create_interface()
+        self.namespace = Namespace(namespace_name, self.vlan.ipdb)
+        self.namespace.encapsulate_interface(self.vlan.vlan_iface_name)
+
+    def delete_vlan(self):
+        self.vlan.delete_interface()
+
+    def delete_namespace(self):
+        self.namespace.remove()
+
+    @property
+    def vlan(self) -> Vlan:
+        """
+        The VLAN of the RemoteSystem
+        :return: Vlan
+        """
+        return self._vlan
+
+    @vlan.setter
+    def vlan(self, value: Vlan):
+        """
+        :type value: Vlan
+        """
+        assert isinstance(value, Vlan)
+        self._vlan = value
+
+    @property
+    def namespace(self) -> Namespace:
+        """
+        The Namespace of the RemoteSystem
+        :return: Vlan
+        """
+        return self._namespace
+
+    @namespace.setter
+    def namespace(self, value: Namespace):
+        """
+        :type value: Namespace
+        """
+        assert isinstance(value, Namespace)
+        self._namespace = value
