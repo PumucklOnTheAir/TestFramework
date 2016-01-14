@@ -112,5 +112,11 @@ class DummyServer(ServerProxy):
     def sysupgrade_firmware(cls, router_ids, upgrade_all, n) -> []:
         pass
 
+    @classmethod
+    def setup_web_configuration(self, router_ids, setup_all: bool):
+        pass
 
+    @classmethod
+    def reboot_router(cls, router_ids, reboot_all: bool, configmode: bool):
+        pass
 
