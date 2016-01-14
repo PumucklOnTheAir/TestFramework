@@ -1,4 +1,4 @@
-Travis-CI Build Status auf dem Master: [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)
+Travis-CI Build Status auf dem Master: [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework)
 
 Code Coverage: [![codecov.io](https://codecov.io/github/PumucklOnTheAir/TestFramework/coverage.svg?branch=master)](https://codecov.io/github/PumucklOnTheAir/TestFramework?branch=master)
 
