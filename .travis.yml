@@ -35,10 +35,9 @@ script:
   - codecov
   - python -m pytest --cov=./ tests/test_Server.py
   - codecov
-  - python -m pytest --cov=./ tests/test_Server_2.py
-  - codecov
   - python -m pytest --ff -n 2 --cov=./  tests/test_IPC.py tests/test_Router.py tests/test_Yaml.py tests/test_Logger.py tests/test_firmware_handler.py
-
+  - codecov
+  - python -m pytest --cov=./ tests/test_Server_2.py
 
  # - python -m pytest --cov=./ tests/test_Router.py
 #  - python -m pytest --cov=./ tests/test_Server.py
