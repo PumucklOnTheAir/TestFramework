@@ -10,11 +10,14 @@ class Ubnt(PowerStrip):
     """
 
     def __init__(self, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
-                 usr_name: str, usr_password: str, n_ports: int):
+                 usr_name: str, usr_password: str, n_ports: int, pid: int):
 
         # Static IP of Ubiquiti mPower Pro (EU)
         self._ip = "192.168.1.20"
         self._ip = ip
+
+        self._id = 101
+        self._id = pid
 
         self._vlan_iface_id = None
         self._vlan_iface_id = vlan_iface_id
@@ -44,6 +47,14 @@ class Ubnt(PowerStrip):
         :return: IP number as string
         """
         return self._ip
+
+    @property
+    def id(self) -> int:
+        """
+        ID of power strip
+        :return: ID as int
+        """
+        return self._id
 
     @property
     def vlan_iface_id(self) -> int:

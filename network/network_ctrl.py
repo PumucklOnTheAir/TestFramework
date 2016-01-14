@@ -6,7 +6,7 @@ from log.logger import Logger
 from network.namespace import Namespace
 from network.vlan import Vlan
 from network.webserver import WebServer
-from server.server import Router
+import server.router
 
 
 class NetworkCtrl:
@@ -18,7 +18,7 @@ class NetworkCtrl:
         4. Provides a WebServer
     """
 
-    def __init__(self, router: Router):
+    def __init__(self, router: server.router.Router):
         """
         Creats a VLAN and a Namespace for the specific Router and 'eth0' as the link-interface.
         The VLAN will be encapsulate in the Namespace.
