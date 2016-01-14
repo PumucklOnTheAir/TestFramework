@@ -12,3 +12,7 @@ docs/_build/
 .coverage
 
 .coverage.*
+
+log/logger.log
+
+firmware/firmwares/*
