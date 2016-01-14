@@ -9,4 +9,5 @@ recommonmark
 sphinx
 pytest-cov
 pytest-cache
+pytest-xdist
 codecov
