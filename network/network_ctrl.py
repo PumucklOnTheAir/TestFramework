@@ -1,11 +1,8 @@
 import os
-
 import paramiko
-
 from log.logger import Logger
 from network.web_config_assist import WebConfigurationAssist
 from network.webserver import WebServer
-from server.server import Router
 from network.nv_assist import NVAssistent
 from network.remote_system import RemoteSystem
 
@@ -22,7 +19,7 @@ class NetworkCtrl:
 
     def __init__(self, remote_system: RemoteSystem, link_iface_name='eth0'):
         """
-        Creats a VLAN and a Namespace for the specific Router and 'eth0' as the link-interface.
+        Creats a VLAN and a Namespace for the specific RemoteSystem(Router,PowerStrip) and 'eth0' as the link-interface.
         The VLAN will be encapsulate in the Namespace.
         Also the a SSHClient will be created.
         :param remote_system: Could e a Router or a powerstrip object
@@ -40,15 +37,15 @@ class NetworkCtrl:
         self.namespace.encapsulate_interface(self.vlan.vlan_iface_name)
         '''
 
-        self.namespace = NVAssistent().create_namespace_vlan(str(self.remote_system.namespace_name), link_iface_name,
-                                                             str(self.remote_system.vlan_iface_name),
-                                                             int(self.remote_system.vlan_iface_id))
+        self.nv_assisten = NVAssistent().create_namespace_vlan(str(self.remote_system.namespace_name), link_iface_name,
+                                                               str(self.remote_system.vlan_iface_name),
+                                                               int(self.remote_system.vlan_iface_id))
 
         self.ssh = paramiko.SSHClient()
 
     def connect_with_remote_system(self):
         """
-        Connects to the Router via SSH(Paramiko).
+        Connects to the remote_system via SSH(Paramiko).
         Ignores a missing signatur.
         """
         Logger().info("Connect with RemoteSystem ...", 1)
@@ -64,9 +61,9 @@ class NetworkCtrl:
 
     def send_command(self, command) -> str:
         """
-        Sends the given command via SSH to the Router.
+        Sends the given command via SSH to the RemoteSystem.
         :param command: like "ping 8.8.8.8"
-        :return: The output of the command given by the Router
+        :return: The output of the command given by the RemoteSystem
         """
         try:
             stdin, stdout, stderr = self.ssh.exec_command(command)
@@ -79,7 +76,7 @@ class NetworkCtrl:
 
     def send_data(self, local_file: str, remote_file: str):
         """
-        Sends Data via sftp to the Router
+        Sends Data via sftp to the RemoteSystem
         :param local_file: Path to the local file
         :param remote_file: Path on the Router, where the file should be saved
         """
@@ -100,15 +97,17 @@ class NetworkCtrl:
             scp.put(local_file, remote_file)
             '''
             Logger().debug("[+] Sent data '" + local_file + "' to RemoteSystem '" +
-                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'", 2)
+                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) +
+                           ":" + remote_file + "'", 2)
         except Exception as e:
             Logger().error("[-] Couldn't send '" + local_file + "' to RemoteSystem '" +
-                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'", 2)
+                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) +
+                           ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
     def remote_system_wget(self, file: str, remote_path: str):
         """
-        The Router downloads the file from the PI and stores it at remote_file
+        The RemoteSystem downloads the file from the PI and stores it at remote_file
         :param file: like /root/TestFramework/firmware/.../<firmware>.bin
         :param remote_path: like /tmp/
         """
@@ -117,7 +116,7 @@ class NetworkCtrl:
             webserver.start()
             # Proves first if file already exists
             self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
-                              ' || wget http://' + self.namespace.get_ip_of_encapsulate_interface() + ':' +
+                              ' || wget http://' + self.nv_assisten.namespace.get_ip_of_encapsulate_interface() + ':' +
                               str(WebServer.PORT_WEBSERVER) +
                               file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
             webserver.join()
@@ -161,10 +160,20 @@ class NetworkCtrl:
             self.exit()
             raise e
 
+    def test_connection(self) -> bool:
+        """
+        Sends a 'Ping' to the RemoteSystem
+        :return:
+        """
+        output = os.system("ping -c 1 " + str(self.remote_system.ip))
+        if not output:
+            return True
+        else:
+            return False
+
     def exit(self):
         """
         Delete the VLAN resp. the Namespace with the VLAN
         """
         Logger().info("Close Network Controller ...", 1)
-        #self.vlan.delete_interface()
-        self.namespace.remove()
+        self.nv_assisten.delete_namspace()
