@@ -53,7 +53,7 @@ class Router(ProxyObject, RemoteSystem):
         self._power_socket = power_socket
 
         # Optional values
-        self._mode = Mode.configuration
+        self._mode = Mode.unknown
         self._model = None
         self._usr_name = usr_name
         self._usr_password = usr_password

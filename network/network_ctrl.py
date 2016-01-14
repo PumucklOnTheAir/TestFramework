@@ -37,7 +37,8 @@ class NetworkCtrl:
         self.namespace.encapsulate_interface(self.vlan.vlan_iface_name)
         '''
 
-        self.nv_assisten = NVAssistent().create_namespace_vlan(str(self.remote_system.namespace_name), link_iface_name,
+        self.nv_assisten = NVAssistent()
+        self.nv_assisten.create_namespace_vlan(str(self.remote_system.namespace_name), link_iface_name,
                                                                str(self.remote_system.vlan_iface_name),
                                                                int(self.remote_system.vlan_iface_id))
 
@@ -176,4 +177,4 @@ class NetworkCtrl:
         Delete the VLAN resp. the Namespace with the VLAN
         """
         Logger().info("Close Network Controller ...", 1)
-        self.nv_assisten.delete_namspace()
+        self.nv_assisten.delete_namespace()
