@@ -2,7 +2,7 @@ from abc import ABCMeta
 
 
 class ProxyObject(metaclass=ABCMeta):
-    """" This class is needed to share objects over IPC.
+    """ This class is needed to share objects over IPC.
         ProxyObject saves on the server his id which marks the memory point on the server.
         The remote client get this object by copy so the reference is lost for the server.
         Then the server get this object back, he can reconstruct reference to the origin object.
@@ -12,6 +12,6 @@ class ProxyObject(metaclass=ABCMeta):
     def __init__(self):
         self.__id = id(self)
 
-    def get_id(self):
+    def get_id(self) -> int:
         """Get the ID from ProxyObject for reconstruction on the server"""
         return self.__id
