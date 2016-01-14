@@ -55,7 +55,7 @@ class Firmware:
         with open(self.file, 'rb') as afile:
             buf = afile.read()
             hasher.update(buf)
-        self.hash = hasher.hexdigest()
+        self._hash = hasher.hexdigest()
 
     @property
     def name(self) -> str:
@@ -114,8 +114,3 @@ class Firmware:
     @property
     def hash(self) -> str:
         return self._hash
-
-    @hash.setter
-    def hash(self, value: str):
-        assert isinstance(value, str)
-        self._hash = value
