@@ -8,4 +8,5 @@ pylint
 recommonmark
 sphinx
 pytest-cov
+pytest-cache
 codecov
