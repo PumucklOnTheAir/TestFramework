@@ -2,8 +2,8 @@
 Virtual Local Area Network
 ###########################
 
-The TestFramework depends heavily by the possibilities of VLANs.
-Every router has is own VLAN with his VLAN ID to separate it from others routers.
+The TestFramework depends heavily on the possibilities of VLANs.
+Each router has its own VLAN with its VLAN ID to separate it from others routers.
 For this functionality you need a network switch with VLAN capabilities.
 
 Important python packages:
