@@ -2,7 +2,7 @@
 Configuration
 ##############
 
-The TestServer can be configured with .yaml-files which are laying in the subdirectory */config*.
+The TestServer can be configured with .yaml-files which can be found in the subdirectory */config*.
 
 
 ConfigManager
