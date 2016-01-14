@@ -2,7 +2,7 @@
 Models
 #######
 
-The TestFramework doesn't based on the MVC paradigma but it is trying to encapsulate the data in his own classes.
+The TestFramework isn't based on the MVC paradigma but it is trying to encapsulate the data in its own classes.
 
 Router
 ======

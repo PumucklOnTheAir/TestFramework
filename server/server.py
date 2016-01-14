@@ -11,7 +11,7 @@ class Server(ServerProxy):
     This static class with class methods will be usually run as daemon on the main server.
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
-    and using his inherit public methods of :py:class:`ServerProxy`.
+    and using its inherit public methods of :py:class:`ServerProxy`.
 
     Troubleshooting at server start:
 

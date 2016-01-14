@@ -7,7 +7,7 @@ from server.router import *
 
 class ConfigManager:
     """
-    Manager who handles the config files for the TestServer.
+    Manager which handles the config files for the TestServer.
     """
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root

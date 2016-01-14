@@ -18,7 +18,7 @@ class Mode(Enum):
 
 class Router(ProxyObject, NetworkIface):
     """
-    This model represents a Freifunk router with his properties.
+    This model represents a Freifunk router with its properties.
 
     """""
 

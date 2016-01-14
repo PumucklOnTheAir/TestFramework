@@ -6,7 +6,7 @@ from server.router import Router
 class ServerProxy(metaclass=ABCMeta):
     """A proxy model for inter-process communication between the server runtime and clients like CLI and WebServer.
     Read the method description carefully! The behaviour may be different as expected.
-    Normally the method will be execute remote on the server and the return value is given by copy and not reference!
+    Normally the method will be executed remotely on the server and the return value is given by copy and not by reference!
     """""
     @abstractclassmethod
     def start_test(self, router_name, test_name) -> bool:
