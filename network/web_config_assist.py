@@ -1,7 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from log.logger import Logger
-from server.router import Router, Mode
-from network.remote_system import RemoteSystem
+from server.router import Mode
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
 
 

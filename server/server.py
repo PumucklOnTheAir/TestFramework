@@ -4,7 +4,6 @@ from .router import Router
 from config.configmanager import ConfigManager
 from typing import List
 import os
-from log.logger import Logger
 
 
 class Server(ServerProxy):
