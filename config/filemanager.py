@@ -4,8 +4,8 @@ from log.logger import Logger
 
 class FileManager:
     """
-    Manager who handles the read and write access of files.
-    Using mainly by the *ConfigManager*.
+    Manager which handles the read and write access of files.
+    Used mainly by the *ConfigManager*.
     """
 
     @staticmethod
