@@ -7,17 +7,19 @@ import os
 
 
 class Server(ServerProxy):
-    """" The great runtime server for all tests and more.
+    """ The great runtime server for all tests and more.
     This static class with class methods will be usually run as daemon on the main server.
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
-    and using his inherit public methods of ServerProxy.
+    and using its inherit public methods of :py:class:`ServerProxy`.
 
-    Troubleshooting:
-    The server returns an
-        "OSError: [Errno 48] Address already in use" if the server is already started
-        "OSError: [Errno 99] Cannot assign requested address" ?? try to restart the computer TODO #51
+    Troubleshooting at server start:
+
+        *OSError: [Errno 48] Address already in use" server is already started*
+
+        *OSError: [Errno 99] Cannot assign requested address" try to restart the computer TODO #51*
     """""
+    VERSION = "0.1"
     DEBUG = False
     VLAN = True
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
@@ -33,6 +35,7 @@ class Server(ServerProxy):
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
         Starts the runtime server with all components
+
         :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
         :param vlan_activate: Activates/Deactivates VLANs
@@ -67,7 +70,7 @@ class Server(ServerProxy):
         # at this point all code will be ignored
 
     @classmethod
-    def __load_configuration(cls):
+    def __load_configuration(cls) -> None:
         # (re)load the configuration only then no tests are running
         assert len(cls._runningTests) == 0
         cls._routers = ConfigManager.get_router_auto_list()
@@ -85,6 +88,7 @@ class Server(ServerProxy):
     @classmethod
     def start_test(cls, router_name, test_name) -> bool:
         """Start an specific test on an router
+
         :param router_name: The name of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
@@ -135,10 +139,11 @@ class Server(ServerProxy):
         pass
 
     @classmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool):
+    def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Updates all the informwations about the Router
-        :param router_ids: List of unique numbers to identify a Router
+        Updates all the information about the :py:class:`Router`
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         from util.router_info import RouterInfo
@@ -154,6 +159,7 @@ class Server(ServerProxy):
     def get_router_by_id(cls, router_id: int) -> Router:
         """
         Returns a Router with the given id.
+
         :param router_id:
         :return: Router
         """
@@ -166,10 +172,11 @@ class Server(ServerProxy):
         return None
 
     @classmethod
-    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool):
+    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
-        :param router_ids: List of unique numbers to identify a Router
+        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         from util.router_flash_firmware import RouterFlashFirmware
@@ -182,9 +189,10 @@ class Server(ServerProxy):
                 RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_dict()[0])
 
     @classmethod
-    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool):
+    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
-        Upgrades the firmware on the given Router(s)
+        Upgrades the firmware on the given :py:class:`Router` s
+
         :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
@@ -238,3 +246,10 @@ class Server(ServerProxy):
                     RouterReboot.configmode(router)
                 else:
                     RouterReboot.normal(router)
+
+    @classmethod
+    def get_server_version(cls) -> str:
+        """
+        Returns the server version as a string
+        """
+        return cls.VERSION

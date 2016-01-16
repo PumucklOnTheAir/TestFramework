@@ -11,12 +11,10 @@ class WlanMode(Enum):
     monitor = 4
     unknown = 5
 
-
 class Mode(Enum):
     normal = 1
     configuration = 2
     unknown = 3
-
 
 class Router(ProxyObject, RemoteSystem):
 
@@ -65,7 +63,8 @@ class Router(ProxyObject, RemoteSystem):
     @property
     def id(self) -> int:
         """
-        ID of the Router
+        ID of the :py:class:`Router`
+
         :return: ID number as in
         """
         return self._id
@@ -73,8 +72,7 @@ class Router(ProxyObject, RemoteSystem):
     @property
     def ip(self) -> str:
         """
-        IP number of the Router. In dependency of the Mode
-        :return: IP number as string
+        :return: IP number of the Router. In dependency of the Mode
         """
         if self._mode == Mode.configuration:
             return self._config_ip
@@ -85,6 +83,7 @@ class Router(ProxyObject, RemoteSystem):
     def ip_mask(self) -> int:
         """
         IP mask. In dependency of the Mode
+
         :return:
         """
         if self._mode == Mode.configuration:
@@ -92,11 +91,11 @@ class Router(ProxyObject, RemoteSystem):
         else:
             return self._ip
 
+
     @property
     def vlan_iface_id(self) -> int:
         """
-        The VLAN ID from router
-        :return:
+        :return The VLAN ID from router:
         """
         return self._vlan_iface_id
 
@@ -104,6 +103,7 @@ class Router(ProxyObject, RemoteSystem):
     def vlan_iface_name(self) -> str:
         """
         Used VLAN name from server for this router
+
         :return:
         """
         return self._vlan_iface_name
@@ -114,6 +114,7 @@ class Router(ProxyObject, RemoteSystem):
     def usr_name(self) -> str:
         """
         Username of the admin account on the router
+
         :rtype: str
         :return:
         """
@@ -123,6 +124,7 @@ class Router(ProxyObject, RemoteSystem):
     def usr_password(self) -> str:
         """
         Password of the admin account on the router
+
         :rtype: str
         :return:
         """
@@ -132,6 +134,7 @@ class Router(ProxyObject, RemoteSystem):
     def mac(self) -> str:
         """
         The mac address of the routers
+
         :rtype: str
         :return:
         """
@@ -149,6 +152,7 @@ class Router(ProxyObject, RemoteSystem):
     def ssid(self) -> str:
         """
         The SSID of the router
+
         :rtype: str
         :return:
         """
@@ -166,6 +170,7 @@ class Router(ProxyObject, RemoteSystem):
     def wlan_mode(self) -> Mode:
         """
         The WLAN mode of the router. Value could be outdated.
+
         :return:
         """
         return self._wlan_mode
@@ -181,8 +186,7 @@ class Router(ProxyObject, RemoteSystem):
     @property
     def model(self) -> str:
         """
-        The model and version of the router. Value could be outdated.
-        :return:
+        :return The model and version of the router. Value could be outdated.:
         """
         return self._model
 
@@ -198,6 +202,7 @@ class Router(ProxyObject, RemoteSystem):
     def power_socket(self) -> int:
         """
         The power socket of the routers
+
         :rtype: int
         :return:
         """
@@ -214,7 +219,8 @@ class Router(ProxyObject, RemoteSystem):
     @property
     def firmware(self) -> Firmware:
         """
-        The firmware of the routers
+        The :py:class:`Firmware` of the router
+
         :rtype: Firmware
         :return:
         """
@@ -223,7 +229,7 @@ class Router(ProxyObject, RemoteSystem):
     @firmware.setter
     def firmware(self, value: Firmware):
         """
-        :type value: Firmware
+        :type value: :py:class:`Firmware`
         """
         assert isinstance(value, Firmware)
         self._firmware = value

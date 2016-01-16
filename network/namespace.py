@@ -11,6 +11,7 @@ class Namespace:
     def __init__(self, nsp_name: str, ipdb: IPDB):
         """
         Creats a namespace for a specific vlan_iface
+
         :param nsp_name:
         :param vlan_iface_name:
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
@@ -83,6 +84,7 @@ class Namespace:
     def _get_ipv4_from_dictionary(self, iface) -> str:
         """
         Gets the ip and network-mask from the ipdb
+
         :param iface: the interface from ipdb
         :return: ip with network-mask
         """

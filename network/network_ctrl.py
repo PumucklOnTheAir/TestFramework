@@ -22,6 +22,7 @@ class NetworkCtrl:
         Creats a VLAN and a Namespace for the specific RemoteSystem(Router,PowerStrip) and 'eth0' as the link-interface.
         The VLAN will be encapsulate in the Namespace.
         Also the a SSHClient will be created.
+
         :param remote_system: Could e a Router or a powerstrip object
         """
         Logger().info("Create Network Controller ...", 1)
@@ -63,6 +64,7 @@ class NetworkCtrl:
     def send_command(self, command) -> str:
         """
         Sends the given command via SSH to the RemoteSystem.
+
         :param command: like "ping 8.8.8.8"
         :return: The output of the command given by the RemoteSystem
         """
@@ -78,6 +80,7 @@ class NetworkCtrl:
     def send_data(self, local_file: str, remote_file: str):
         """
         Sends Data via sftp to the RemoteSystem
+
         :param local_file: Path to the local file
         :param remote_file: Path on the Router, where the file should be saved
         """

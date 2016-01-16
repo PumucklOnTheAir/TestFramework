@@ -5,6 +5,7 @@ python:
 cache:
   directories:
     - $HOME/.cache/pip
+    - .cache/
 
 before_cache:
   - rm -f $HOME/.cache/pip/log/debug.log
@@ -13,6 +14,12 @@ notifications:
   email: false
 
 sudo: false
+
+before_install:
+  - pip install codecov
+
+after_success:
+  - codecov
 
 install:
   #- pip install .
@@ -24,11 +31,7 @@ before_script:
   #run tests
 # script: python -m unittest discover -s tests
 script:
-  - python -m unittest tests/test_IPC.py
-  - python -m unittest tests/test_Router.py
-  - python -m unittest tests/test_Server.py
- # - python -m unittest tests/test_Server_2.py
-  - python -m unittest tests/test_Yaml.py
-  - python -m unittest tests/test_Logger.py
-  - python -m unittest tests/test_firmware_handler.py
+  - python -m pytest --cov-append --cov=./ tests/test_Server_2.py
+  - python -m pytest --cov-append --cov=./ tests/test_Server.py
+  - python -m pytest --ff -n 2 --cov-append --cov=./  tests/test_IPC.py tests/test_Router.py tests/test_Yaml.py tests/test_Logger.py tests/test_firmware_handler.py
 

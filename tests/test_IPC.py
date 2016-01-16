@@ -113,7 +113,11 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
-    def setup_web_configuration(self, router_ids, setup_all: bool):
+    def setup_web_configuration(cls, router_ids, setup_all: bool):
+        pass
+
+    @classmethod
+    def get_server_version(cls) -> str:
         pass
 
     @classmethod

@@ -6,11 +6,13 @@ from server.router import Router
 class ServerProxy(metaclass=ABCMeta):
     """A proxy model for inter-process communication between the server runtime and clients like CLI and WebServer.
     Read the method description carefully! The behaviour may be different as expected.
-    Normally the method will be execute remote on the server and the return value is given by copy and not reference!
+    Normally the method will be executed remotely on the server and
+    the return value is given by copy and not by reference!
     """""
     @abstractclassmethod
     def start_test(self, router_name, test_name) -> bool:
-        """Start an specific test on an router
+        """Start an specific test on an :py:class:`Router`
+
         :param router_name: The name of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
@@ -53,16 +55,17 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def stop(self) -> []:
+    def stop(self) -> None:
         """
-        :return: Shutdown the server
+        Shutdown the server
         """
         pass
 
     @abstractclassmethod
-    def update_router_info(self, router_ids: List[int], update_all: bool):
+    def update_router_info(self, router_ids: List[int], update_all: bool) -> None:
         """
         Updates all the informwations about the Router
+
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
@@ -72,6 +75,7 @@ class ServerProxy(metaclass=ABCMeta):
     def get_router_by_id(self, router_id: int) -> Router:
         """
         Returns a Router with the given id.
+
         :param router_id:
         :return: Router
         """
@@ -81,6 +85,7 @@ class ServerProxy(metaclass=ABCMeta):
     def sysupdate_firmware(self, router_ids: List[int], update_all: bool):
         """
         Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
+
         :param router_ids: List of unique numbers to identify a Router
         :param update_all: Is True if all Routers should be updated
         """
@@ -90,6 +95,7 @@ class ServerProxy(metaclass=ABCMeta):
     def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool):
         """
         Upgrades the firmware on the given Router(s)
+
         :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
@@ -97,7 +103,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def setup_web_configuration(self, router_ids: List[int], setup_all: bool):
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -114,5 +120,12 @@ class ServerProxy(metaclass=ABCMeta):
         :param router_ids: List of unique numbers to identify a Router
         :param reboot_all: Reboots all Routers
         :param configmode: Reboots Router into configmode
+        """
+        pass
+
+    @abstractclassmethod
+    def get_server_version(self) -> str:
+        """
+        Returns the server version as a string
         """
         pass
