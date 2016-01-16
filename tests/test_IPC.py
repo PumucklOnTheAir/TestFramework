@@ -117,10 +117,10 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
-    def get_server_version(cls) -> str:
+    def reboot_router(cls, router_ids, reboot_all: bool, configmode: bool):
         pass
 
     @classmethod
-    def reboot_router(cls, router_ids, reboot_all: bool, configmode: bool):
+    def get_server_version(cls) -> str:
         pass
 

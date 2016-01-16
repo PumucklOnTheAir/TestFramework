@@ -87,9 +87,9 @@ class Router(ProxyObject, RemoteSystem):
         :return:
         """
         if self._mode == Mode.configuration:
-            return self._config_ip
+            return self._config_ip_mask
         else:
-            return self._ip
+            return self._ip_mask
 
 
     @property

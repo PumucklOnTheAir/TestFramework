@@ -36,9 +36,7 @@ class Server(ServerProxy):
         """
         Starts the runtime server with all components
 
-        :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
-        :param vlan_activate: Activates/Deactivates VLANs
         """
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
