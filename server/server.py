@@ -73,7 +73,11 @@ class Server(ServerProxy):
 
         cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
 
-        cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
+        try:
+            cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
+        except (KeyboardInterrupt, SystemExit):
+            Logger().info("Received an interrupt signal")
+            cls.stop()
 
         # at this point following code will be ignored
 
@@ -180,6 +184,7 @@ class Server(ServerProxy):
 
         # prepare all test cases
         for test_case in test_suite:
+            Logger().debug("Next TestCase " + str(test_case), 3)
             test_case.prepare(router)
 
         result = TestResult()

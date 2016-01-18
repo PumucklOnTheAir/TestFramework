@@ -28,9 +28,9 @@ class ServerTestCase2(unittest.TestCase):
 
     @staticmethod
     def serverStartWithParams():
-        base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-        config_path = os.path.join(base_dir, 'framework_unittests/configs/config_no_vlan')
-        Server.start(config_path=config_path)
+        # base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+        # config_path = os.path.join(base_dir, 'framework_unittests/configs/config_no_vlan')
+        Server.start()
 
     def setUp(self):
         self.ipc_client = IPC()
