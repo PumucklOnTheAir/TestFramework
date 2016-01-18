@@ -38,7 +38,7 @@ class SetupWorker(Thread):
         Instantiate a NetworkCtrl and setup the webinterface of the Router
         """
         Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
-        network_ctrl = NetworkCtrl(self.router, 'enp0s25')
+        network_ctrl = NetworkCtrl(self.router, 'eth0')
         network_ctrl.wca_setup_expert(self.webinterface_config)
         network_ctrl.wca_setup_wizard(self.webinterface_config)
         network_ctrl.exit()

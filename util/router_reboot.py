@@ -49,7 +49,7 @@ class Worker(Thread):
         """
         Runs new thread and trys to send a command via ssh to reboot the Router.
         """
-        network_ctrl = NetworkCtrl(self.router, 'enp0s25')
+        network_ctrl = NetworkCtrl(self.router, 'eth0')
         network_ctrl.connect_with_remote_system()
         if self.configmode:
             if self.router.mode == Mode.configuration:

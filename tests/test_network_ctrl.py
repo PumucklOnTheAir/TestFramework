@@ -16,7 +16,7 @@ class TestNetworkCtrl(TestCase):
         router.mode = Mode.configuration
         assert isinstance(router, Router)
         # Create NetworkCrtl
-        network_ctrl = NetworkCtrl(router, 'enp0s25')
+        network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
         # network_ctrl.connect_with_router()
         network_ctrl.exit()
@@ -30,7 +30,7 @@ class TestNetworkCtrl(TestCase):
         router.mode = Mode.configuration
         assert isinstance(router, Router)
         # Create NetworkCrtl
-        network_ctrl = NetworkCtrl(router, 'enp0s25')
+        network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
         # Test if the command 'uname' could be send via ssh
         self.assertRaises(Exception, network_ctrl.connect_with_remote_system())
@@ -47,7 +47,7 @@ class TestNetworkCtrl(TestCase):
         router.mode = Mode.configuration
         assert isinstance(router, Router)
         # Create NetworkCrtl
-        network_ctrl = NetworkCtrl(router, 'enp0s25')
+        network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
         self.assertRaises(Exception, network_ctrl.connect_with_remote_system())
         # Create test file 'test_wget.txt'

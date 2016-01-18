@@ -74,7 +74,7 @@ class SysupgradeWorker(Thread):
         and does a Sysupgrade.
         :return:
         """
-        network_ctrl = NetworkCtrl(self.router, 'enp0s25')
+        network_ctrl = NetworkCtrl(self.router, 'eth0')
         network_ctrl.connect_with_remote_system()
         network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware

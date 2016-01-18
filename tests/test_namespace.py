@@ -11,7 +11,7 @@ class TestNamespace(TestCase):
     def test_create_namespace(self):
         Logger().debug("TestNamespace: test_create_namespace ...")
         # Create VLAN
-        vlan = Vlan('enp0s25', 'vlan1', 10, '192.168.1.10', 24)
+        vlan = Vlan('eth0', 'vlan1', 10, '192.168.1.10', 24)
         assert isinstance(vlan, Vlan)
         vlan.create_interface("192.168.1.11", 24)
 

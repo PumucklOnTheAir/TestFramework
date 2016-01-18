@@ -23,7 +23,7 @@ class TestWebConfigurationAssistExpert(TestCase):
         config = ConfigManager().get_web_interface_dict()[0]
         self.assertEqual(len(config), 30, "Wrong size of the Config-Directory")
         # Create NetworkCrtl
-        network_ctrl = NetworkCtrl(router, 'enp0s25')
+        network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
 
         self.assertRaises(Exception, network_ctrl.wca_setup_wizard(config))
