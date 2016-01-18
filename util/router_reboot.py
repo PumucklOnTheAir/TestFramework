@@ -13,6 +13,7 @@ class RouterReboot:
     def configmode(router: Router):
         """
         Reboots the Router into the configuration mode
+
         :param router: Router objects
         """
         Logger().info("Reboot the Router(" + str(router.id) + ") into Configmode ...", 1)
@@ -24,6 +25,7 @@ class RouterReboot:
     def normal(router: Router):
         """
         Reboots the router
+
         :param router: Router objects
         """
         Logger().info("Reboot the Router(" + str(router.id) + ") ...", 1)
@@ -37,6 +39,7 @@ class Worker(Thread):
     def __init__(self, router: Router, configmode: bool):
         """
         Init the new thread which is rebooting the Router
+
         :param router: Router Object
         :param configmode: if the Router should reboot in the configuration mode
         """
