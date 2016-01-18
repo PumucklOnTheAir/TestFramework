@@ -40,8 +40,8 @@ class NetworkCtrl:
 
         self.nv_assisten = NVAssistent()
         self.nv_assisten.create_namespace_vlan(str(self.remote_system.namespace_name), link_iface_name,
-                                                               str(self.remote_system.vlan_iface_name),
-                                                               int(self.remote_system.vlan_iface_id))
+                                               str(self.remote_system.vlan_iface_name),
+                                               int(self.remote_system.vlan_iface_id))
 
         self.ssh = paramiko.SSHClient()
 

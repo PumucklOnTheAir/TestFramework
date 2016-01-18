@@ -82,7 +82,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def sysupdate_firmware(self, router_ids: List[int], update_all: bool):
+    def sysupdate_firmware(self, router_ids: List[int], update_all: bool) -> None:
         """
         Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
 
@@ -92,7 +92,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool):
+    def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given Router(s)
 

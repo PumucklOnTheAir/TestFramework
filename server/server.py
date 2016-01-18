@@ -18,7 +18,7 @@ class Server(ServerProxy):
         *OSError: [Errno 48] Address already in use" server is already started*
 
         *OSError: [Errno 99] Cannot assign requested address" try to restart the computer TODO #51*
-    """
+    """""
     VERSION = "0.1"
     DEBUG = False
     VLAN = True

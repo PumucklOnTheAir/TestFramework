@@ -1,6 +1,6 @@
 
 
-class IPAddress():
+class IPAddress:
     def __init__(self, ip: str):
         self._ip = ip
 

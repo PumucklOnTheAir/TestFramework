@@ -13,12 +13,19 @@ class WlanMode(Enum):
 
 
 class Mode(Enum):
+    """
+    The Router can be in two modes: normal and configuration.
+    If the mode changes also the ip-address changes.
+    """""
     normal = 1
     configuration = 2
     unknown = 3
 
 
 class Router(ProxyObject, RemoteSystem):
+    """
+    This class represent a Freifunk-Router
+    """""
 
     def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
                  config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
