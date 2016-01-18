@@ -22,6 +22,7 @@ class WebConfigurationAssist:
     def __init__(self, config, router):
         """
         Starts the browser Phantomjs to configure the webpage of the router in the given namespace
+        
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
         :param router: Remote object
         """
@@ -416,6 +417,7 @@ class WebConfigurationAssist:
     def _click_checkbox(field_element, condition):
         """
         Clicks on the given object if it isn't and it should or otherwise.
+        
         :param field_element: checkbox-object
         :param condition: the value that the checkbox should have
         """
