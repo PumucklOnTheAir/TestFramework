@@ -182,7 +182,7 @@ class Server(ServerProxy):
         from unittest.result import TestResult
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
 
-        cls.__activate_vlan(router)
+        nv_assi = cls.__activate_vlan(router)
 
         # prepare all test cases
         for test_case in test_suite:
@@ -197,6 +197,8 @@ class Server(ServerProxy):
         # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
         result._original_stdout = None
         result._original_stderr = None
+
+        cls.__deactivate_vlan(nv_assi)
 
         return result
 
@@ -219,6 +221,7 @@ class Server(ServerProxy):
         Logger().debug("Task done " + str(task), 1)
         Logger().debug("At " + str(task.router), 2)
         task.router.running_task = None
+        # TODO task steckerleiste has now router
         exception = task.exception()
         if exception is not None:
             Logger().error("Task raised an exception: " + str(exception), 1)
@@ -229,13 +232,20 @@ class Server(ServerProxy):
         cls.__start_task(task.router, None)
 
     @classmethod
-    def __activate_vlan(cls, router: Router):
+    def __activate_vlan(cls, router: Router):  # -> NVAssistent:
         if cls.VLAN:
-            from network.network_ctrl import NetworkCtrl  # TODO auslagern...
-            NetworkCtrl(router)
+            from network.nv_assist import NVAssistent  # TODO auslagern...
+            #NetworkCtrl(router)
+            nv_assi = NVAssistent()
+            nv_assi.create_namespace_vlan(router.namespace_name, "eth0", router.vlan_iface_name, router.vlan_iface_id)
+            return nv_assi
         else:
             Logger().debug("Ignoring activate VLAN", 2)
             Logger().debug("Var VLAN is false", 3)
+
+    @classmethod
+    def __deactivate_vlan(cls, nv_assi): # "NVAssistent"
+        nv_assi.delete_namespace()
 
     @classmethod
     def get_routers(cls) -> List[Router]:
