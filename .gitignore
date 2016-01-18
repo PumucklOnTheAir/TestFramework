@@ -18,3 +18,6 @@ firmware/firmwares/
 
 log/logger.log
 
+/framework_unittests/ghostdriver.log
+/framework_unittests/test_wget.txt
+firmware/firmwares/*

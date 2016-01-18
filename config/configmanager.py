@@ -17,6 +17,7 @@ class ConfigManager:
     SERVER_CONFIG_FILE = 'server_config.yaml'
     TEST_CONFIG_FILE = 'test_config.yaml'
     FIRMWARE_CONFIG_FILE = 'firmware_config.yaml'
+    WEB_INTERFACE_CONFIG_FILE = 'web_interface_config.yaml'
 
     @classmethod
     def set_config_path(cls, config_path: str = "") -> None:
@@ -91,8 +92,8 @@ class ConfigManager:
         """
         output = ConfigManager.get_router_auto_config()
 
-        if not len(output) == 8:
-            Logger().error("List must be length of 8 but has a length of {0}".format(len(output)))
+        if not len(output) == 10:
+            Logger().error("List must be length of 10 but has a length of {0}".format(len(output)))
             return
 
         try:
@@ -100,10 +101,12 @@ class ConfigManager:
             name = output[1]
             identifier = output[2]
             ip = output[3]
-            mask = output[4]
-            username = output[5]
-            password = output[6]
-            power_socket = output[7]
+            ip_mask = output[4]
+            config_ip = output[5]
+            config_ip_mask = output[6]
+            username = output[7]
+            password = output[8]
+            power_socket = output[9]
 
             i = identifier['default_Start_Id']
             socket_id = power_socket['powerSocket_Start_Id']
@@ -115,7 +118,8 @@ class ConfigManager:
                 count = count
 
             for x in range(0, count):
-                v = Router(x, name['default_Name'] + "{0}".format(i), i, ip['default_IP'], mask['default_Mask'],
+                v = Router(x, name['default_Name'] + "{0}".format(i), i, ip['default_IP'], ip_mask['default_IP_Mask'],
+                           config_ip['default_CONFIG_IP'], config_ip_mask['default_CONFIG_IP_MASK'],
                            username['default_Username'], password['default_Password'], socket_id)
                 router_list.append(v)
                 i += 1
@@ -150,12 +154,13 @@ class ConfigManager:
         for i in range(0, len(output)):
             router_info = output[i]
 
-            if not len(router_info) == 7:
-                Logger().error("List must be length of 7 but has a length of {0}".format(len(output)))
+            if not len(router_info) == 9:
+                Logger().error("List must be length of 9 but has a length of {0}".format(len(output)))
                 return
 
             try:
-                v = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['Mask'],
+                v = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['IP_Mask'],
+                           router_info['CONFIG_IP'], router_info['CONFIG_IP_MASK'],
                            router_info['Username'], router_info['Password'], router_info['PowerSocket'])
                 router_list.append(v)
 
@@ -301,3 +306,34 @@ class ConfigManager:
                     return x[prop]
 
         return None
+
+    @staticmethod
+    def get_web_interface_config() -> []:
+        """
+        Read the web interface Config file
+        :return: Array with the output from the file
+        """
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.WEB_INTERFACE_CONFIG_FILE)
+        return ConfigManager.read_file(path)
+
+    @staticmethod
+    def get_web_interface_dict() -> []:
+        """
+        Read the web interface Config file
+        :return: Dictionary with a specific output from the file
+        """
+        output = ConfigManager.get_web_interface_config()
+        return output
+
+    @staticmethod
+    def get_web_interface_list() -> []:
+        """
+        Read the web interface Config file
+        :return: List with a specific output from the file
+        """
+        output = ConfigManager.get_web_interface_config()
+        web_list = []
+        for x in output:
+            for v in x.values():
+                web_list.append(v)
+        return web_list

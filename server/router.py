@@ -1,19 +1,14 @@
 from .proxyobject import ProxyObject
 from enum import Enum
-
 from firmware.firmware import Firmware
-from network.network_iface import NetworkIface
+from network.remote_system import RemoteSystem
 
 from abc import ABCMeta, abstractmethod
 from log.logger import Logger
 from threading import Thread
 
 
-class Mode(Enum):
-    """
-    Operation mode of the wifi router
-
-    """""
+class WlanMode(Enum):
     master = 1
     managed = 2
     ad_hoc = 3
@@ -21,41 +16,51 @@ class Mode(Enum):
     unknown = 5
 
 
-class Router(ProxyObject, NetworkIface):
+class Mode(Enum):
     """
-    This model represents a Freifunk router with its properties.
+    The Router can be in two modes: normal and configuration.
+    If the mode changes also the ip-address changes.
+    """""
+    normal = 1
+    configuration = 2
+    unknown = 3
 
+
+class Router(ProxyObject, RemoteSystem):
+    """
+    This class represent a Freifunk-Router
     """""
 
-    def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
-                 usr_password: str, power_socket: int):
+    def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
+                 config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
 
         ProxyObject.__init__(self)
 
-        self._id = None
         self._id = id
 
-        self._ip = None
         self._ip = ip
 
-        self._vlan_iface_id = None
-        self._vlan_iface_id = vlan_iface_id
-
-        self._vlan_iface_name = None
-        self._vlan_iface_name = vlan_iface_name
-
-        self._ip_mask = None
         self._ip_mask = ip_mask
 
-        self._power_socket = None
+        self._config_ip = config_ip
+
+        self._config_ip_mask = config_ip_mask
+
+        self._vlan_iface_id = vlan_iface_id
+
+        self._vlan_iface_name = vlan_iface_name
+
+        self._namespace_name = "nsp" + str(self._vlan_iface_id)
+
         self._power_socket = power_socket
 
         # Optional values
+        self._mode = Mode.unknown
         self._model = None
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
-        self._wlan_mode = Mode.unknown
+        self._wlan_mode = WlanMode.unknown
         self._ssid = ''
         self._firmware = Firmware.get_default_firmware()
 
@@ -79,17 +84,24 @@ class Router(ProxyObject, NetworkIface):
     @property
     def ip(self) -> str:
         """
-        :return: IP of the router as string
+        :return: IP number of the Router. In dependency of the Mode
         """
-        return self._ip
+        if self._mode == Mode.configuration:
+            return self._config_ip
+        else:
+            return self._ip
 
     @property
-    def id(self) -> int:
+    def ip_mask(self) -> int:
         """
-        The ID from router. Is the same as the VLAN ID.
+        IP mask. In dependency of the Mode
+
         :return:
         """
-        return self._vlan_iface_id
+        if self._mode == Mode.configuration:
+            return self._config_ip_mask
+        else:
+            return self._ip_mask
 
     @property
     def vlan_iface_id(self) -> int:
@@ -106,15 +118,6 @@ class Router(ProxyObject, NetworkIface):
         :return:
         """
         return self._vlan_iface_name
-
-    @property
-    def ip_mask(self) -> int:
-        """
-        IP mask
-
-        :return:
-        """
-        return self._ip_mask
 
     # Optional information
 
@@ -188,7 +191,7 @@ class Router(ProxyObject, NetworkIface):
         """
         :type value: str
         """
-        assert isinstance(value, Mode)
+        assert isinstance(value, WlanMode)
         self._wlan_mode = value
 
     @property
@@ -241,6 +244,34 @@ class Router(ProxyObject, NetworkIface):
         """
         assert isinstance(value, Firmware)
         self._firmware = value
+
+    @property
+    def namespace_name(self) -> str:
+        """
+        The namespace name of the router
+
+        :rtype: str
+        :return:
+        """
+        return self._namespace_name
+
+    @property
+    def mode(self) -> Mode:
+        """
+        The Mode of the routers
+
+        :rtype: Mode
+        :return:
+        """
+        return self._mode
+
+    @mode.setter
+    def mode(self, value: Mode):
+        """
+        :type value: Mode
+        """
+        assert isinstance(value, Mode)
+        self._mode = value
 
 
 class RouterTask(metaclass=ABCMeta):
