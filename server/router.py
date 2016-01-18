@@ -32,31 +32,22 @@ class Router(ProxyObject, RemoteSystem):
 
         ProxyObject.__init__(self)
 
-        self._id = None
         self._id = id
 
-        self._ip = None
         self._ip = ip
 
-        self._ip_mask = None
         self._ip_mask = ip_mask
 
-        self._config_ip = None
         self._config_ip = config_ip
 
-        self._config_ip_mask = None
         self._config_ip_mask = config_ip_mask
 
-        self._vlan_iface_id = None
         self._vlan_iface_id = vlan_iface_id
 
-        self._vlan_iface_name = None
         self._vlan_iface_name = vlan_iface_name
 
-        self._namespace_name = None
         self._namespace_name = "nsp" + str(self._vlan_iface_id)
 
-        self._power_socket = None
         self._power_socket = power_socket
 
         # Optional values
@@ -246,6 +237,7 @@ class Router(ProxyObject, RemoteSystem):
     def namespace_name(self) -> str:
         """
         The namespace name of the router
+        
         :rtype: str
         :return:
         """
@@ -255,6 +247,7 @@ class Router(ProxyObject, RemoteSystem):
     def mode(self) -> Mode:
         """
         The Mode of the routers
+        
         :rtype: Mode
         :return:
         """
