@@ -113,6 +113,10 @@ class Server(ServerProxy):
         :return: True if start was successful
         """
         router = cls.get_router_by_id(router_id)
+        if router is None:
+            Logger().error("Router ID unknown")
+            return False
+
         # TODO Testverwaltung - ermittlung des passenden Tests #36
         # cls.get_test_by_name
         from firmware_tests.connection_test import ConnectionTest, VeryLongTest
@@ -306,10 +310,9 @@ class Server(ServerProxy):
         :return: Router
         """
         Logger().debug("get_router_by_id with id: " + str(router_id), 1)
-        routers = cls.get_routers()
         # if routers[router_id].id == router_id:
         #     return router_id # IndexError
-        for router in routers:
+        for router in cls._routers:
             if router.id == router_id:
                 Logger().debug("return Router: " + str(router), 2)
                 return router

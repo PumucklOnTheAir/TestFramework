@@ -43,14 +43,14 @@ class ServerTestCase2(unittest.TestCase):
         assert isinstance(routers[0], Router)
 
     def test_little_self_check(self):
-        started = self.server_proxy.start_test(21, "ConnectionTest")
+        started = self.server_proxy.start_test(0, "ConnectionTest")
         assert started
         time.sleep(5)
         reports = self.server_proxy.get_reports()
         assert len(reports) != 0
 
     def test_long_self_check(self):
-        started = self.server_proxy.start_test(21, "VeryLongTest")
+        started = self.server_proxy.start_test(0, "VeryLongTest")
         assert started
         time.sleep(5)
 
