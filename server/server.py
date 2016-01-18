@@ -244,7 +244,7 @@ class Server(ServerProxy):
             Logger().debug("Var VLAN is false", 3)
 
     @classmethod
-    def __deactivate_vlan(cls, nv_assi): # "NVAssistent"
+    def __deactivate_vlan(cls, nv_assi):  # "NVAssistent"
         nv_assi.delete_namespace()
 
     @classmethod

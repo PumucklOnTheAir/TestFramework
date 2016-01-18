@@ -35,7 +35,13 @@ class VeryLongTest(FirmwareTest):
 
     def test_ping_static(self):
         response = os.system("ping -c 1 " + "p8h.de")
-        assert response == 0
+        assert response == 0  # not working because no normal eth0 stack available
+        # from subprocess import Popen, PIPE
+        # process = Popen(["ip", "a"], stdout=PIPE, stderr=PIPE)
+        # stdout, sterr = process.communicate()
+        # print(str(stdout.decode('utf-8')))
+        # response = os.system("ping -c 1 " + "p8h.de")
+        # assert response == #0
 
     def test_ping_router(self):
         hostname = self.router.ip
