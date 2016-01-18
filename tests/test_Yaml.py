@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_router_auto_config()
-        self.assertEqual(len(data), 8, "test_Yaml: Wrong size of the List")
+        self.assertEqual(len(data), 10, "test_Yaml: Wrong size of the List")
 
     def test_config_router_auto_with_length(self):
         """

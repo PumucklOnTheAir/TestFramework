@@ -181,7 +181,7 @@ class Router(ProxyObject, RemoteSystem):
         """
         :type value: str
         """
-        assert isinstance(value, Mode)
+        assert isinstance(value, WlanMode)
         self._wlan_mode = value
 
     @property
