@@ -16,6 +16,7 @@ class NVAssistent:
                     vlan_iface_ip=None, vlan_iface_ip_mask=None):
         """
         Creats a VLAN.
+        
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
         :param vlan_iface_name: name of the vlan
         :param vlan_iface_id: the id of the vlan
@@ -30,6 +31,7 @@ class NVAssistent:
                               vlan_iface_ip=None, vlan_iface_ip_mask=None):
         """
         Creats a Namespace and a VLAN. Encapsulate the VLAN inside the Namespace.
+        
         :param namespace_name: Namespace name
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
         :param vlan_iface_name: name of the vlan
@@ -53,6 +55,7 @@ class NVAssistent:
     def vlan(self) -> Vlan:
         """
         The VLAN of the RemoteSystem
+        
         :return: Vlan
         """
         return self._vlan
@@ -69,6 +72,7 @@ class NVAssistent:
     def namespace(self) -> Namespace:
         """
         The Namespace of the RemoteSystem
+        
         :return: Vlan
         """
         return self._namespace
