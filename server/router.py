@@ -237,7 +237,7 @@ class Router(ProxyObject, RemoteSystem):
     def namespace_name(self) -> str:
         """
         The namespace name of the router
-        
+
         :rtype: str
         :return:
         """
@@ -247,7 +247,7 @@ class Router(ProxyObject, RemoteSystem):
     def mode(self) -> Mode:
         """
         The Mode of the routers
-        
+
         :rtype: Mode
         :return:
         """

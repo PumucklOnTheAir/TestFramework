@@ -12,7 +12,7 @@ class RouterWebConfiguration:
     def setup(router: Router, webinterface_config):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
-        
+
         :param router:
         :param webinterface_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, ...}
         """

@@ -210,7 +210,7 @@ class Server(ServerProxy):
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
         Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet
-        
+
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
         """
@@ -227,7 +227,7 @@ class Server(ServerProxy):
     def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
         """
         Reboots the given Routers.
-        
+
         :param router_ids: List of unique numbers to identify a Router
         :param reboot_all: Reboots all Routers
         :param configmode: Reboots Router into configmode
