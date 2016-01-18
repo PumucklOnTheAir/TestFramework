@@ -11,10 +11,12 @@ class WlanMode(Enum):
     monitor = 4
     unknown = 5
 
+
 class Mode(Enum):
     normal = 1
     configuration = 2
     unknown = 3
+
 
 class Router(ProxyObject, RemoteSystem):
 
@@ -90,7 +92,6 @@ class Router(ProxyObject, RemoteSystem):
             return self._config_ip_mask
         else:
             return self._ip_mask
-
 
     @property
     def vlan_iface_id(self) -> int:
