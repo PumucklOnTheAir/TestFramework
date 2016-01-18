@@ -54,7 +54,7 @@ class Worker(Thread):
     def run(self):
         """
         Runs new thread and gets the information from the router via ssh
-        
+
         :return:
         """
         network_ctrl = NetworkCtrl(self.router, 'eth0')
