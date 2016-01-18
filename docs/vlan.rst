@@ -20,7 +20,7 @@ Class VLAN
 
 Class NetworkCtrl
 ==================
-'.. automodule:: network.network_ctrl
+.. automodule:: network.network_ctrl
   :members:
 
 Class Namespace
