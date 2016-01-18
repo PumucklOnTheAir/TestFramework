@@ -13,6 +13,7 @@ class RouterInfo:
     def update(router: Router):
         """
         Starts a thread for a router and stores new information
+
         :param router: Router objects
         """
         # TODO: wird anstelle des threadings benutzt. Führt allerdings zu abstürtzen beim icp-server
@@ -53,6 +54,7 @@ class Worker(Thread):
     def run(self):
         """
         Runs new thread and gets the information from the router via ssh
+        
         :return:
         """
         network_ctrl = NetworkCtrl(self.router, 'eth0')
