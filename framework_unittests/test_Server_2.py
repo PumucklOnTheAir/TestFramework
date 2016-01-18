@@ -4,6 +4,7 @@ from server.router import Router
 from multiprocessing import Process
 from server.ipc import IPC
 import time
+import os
 
 
 class ServerTestCase2(unittest.TestCase):
@@ -27,7 +28,8 @@ class ServerTestCase2(unittest.TestCase):
 
     @staticmethod
     def serverStartWithParams():
-        Server.start(debug_mode=True, config_path="../tests/config", vlan_activate=True)
+        base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+        config_path = os.path.join(base_dir, 'tests/configs/config_no_vlan')  # Join Project Root with config
 
     def setUp(self):
         self.ipc_client = IPC()

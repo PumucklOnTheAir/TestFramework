@@ -3,7 +3,8 @@ from .serverproxy import ServerProxy
 
 
 class IPC(BaseManager):
-    """Inter-process communication server and client.
+    """
+    Inter-process communication for server and client.
     This class is used to exchange data between the test server runtime and
     clients like user interfaces such as CLI and WebServer.
     """""
@@ -15,6 +16,7 @@ class IPC(BaseManager):
 
     def start_ipc_server(self, server, serve_forever: bool=False):
         """Start the ipc server to allow clients to connect
+
         :param server: The running test server to represent
         :param serve_forever: The true, the statement is
             blocking until the shutdown() method was called

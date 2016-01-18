@@ -1,8 +1,6 @@
-[![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework)
-[![codecov.io](https://codecov.io/github/PumucklOnTheAir/TestFramework/coverage.svg?branch=master)](https://codecov.io/github/PumucklOnTheAir/TestFramework?branch=master)
-[![codecov.io](https://readthedocs.org/projects/freifunk-testframework/badge)](https://freifunk-testframework.readthedocs.org)
+[![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework)[![Documentation Status](https://readthedocs.org/projects/freifunk-testframework/badge/?version=master)](http://freifunk-testframework.readthedocs.org/en/master/?badge=master)[![codecov.io](https://codecov.io/github/PumucklOnTheAir/TestFramework/coverage.svg?branch=master)](https://codecov.io/github/PumucklOnTheAir/TestFramework?branch=master)[![Code Climate](https://codeclimate.com/github/PumucklOnTheAir/TestFramework/badges/gpa.svg)](https://codeclimate.com/github/PumucklOnTheAir/TestFramework)[![Issue Count](https://codeclimate.com/github/PumucklOnTheAir/TestFramework/badges/issue_count.svg)](https://codeclimate.com/github/PumucklOnTheAir/TestFramework)
 
-Aufgaben:
+Issues:
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=ready&title=Ready)](http://waffle.io/PumucklOnTheAir/TestFramework)
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=In%20Progress&title=In%20Progress)](http://waffle.io/PumucklOnTheAir/TestFramework)
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=review&title=Review)](http://waffle.io/PumucklOnTheAir/TestFramework)
@@ -36,3 +34,15 @@ Eine Auswahl an Unittest fürs Framwork wird bei jedem Pull-Request auf Travis C
 Eine vollständiges Testens des Frameworks ist auf dem Raspberry Pi möglich mit folgendem Kommando im Repo Ordner:
 python3 -m unittest discover -s framework_unittests
 
+### Ausführen
+Über `python cli.py -h`können alle Subkommandos aufgelistet werden.
+
+`python cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf
+
+`python cli.py status -a` zeigt die Übersicht über alle Router an
+
+`python cli.py status -r [Router ID]` zeigt detaillierte Infos zu einem bestimmten Router an (ID über status -a einsehbar)
+
+
+
+_Konventionen, Vorgehensweise und weitere Dokumentation im Wiki_

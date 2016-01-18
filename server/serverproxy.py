@@ -6,11 +6,12 @@ from server.router import Router
 class ServerProxy(metaclass=ABCMeta):
     """A proxy model for inter-process communication between the server runtime and clients like CLI and WebServer.
     Read the method description carefully! The behaviour may be different as expected.
-    Normally the method will be execute remote on the server and the return value is given by copy and not reference!
+    Normally the method will be executed remotely on the server and the return value is given by copy and not by reference!
     """""
     @abstractclassmethod
     def start_test(self, router_id, test_name) -> bool:
         """Start an specific test on an router
+            
         :param router_id: The (vlan)ID of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful
@@ -53,9 +54,9 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def stop(self) -> []:
+    def stop(self) -> None:
         """
-        :return: Shutdown the server
+        Shutdown the server
         """
         pass
 
@@ -64,10 +65,11 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def update_router_info(self, router_ids: List[int], update_all: bool):
+    def update_router_info(self, router_ids: List[int], update_all: bool) -> None:
         """
-        Updates all the informwations about the Router
-        :param router_ids: List of unique numbers to identify a Router
+        Updates all the information about the :py:class:`Router`
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         pass
@@ -75,27 +77,37 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def get_router_by_id(self, router_id: int) -> Router:
         """
-        Returns a Router with the given id.
+        Returns a :py:class:`Router` with the given id.
+
         :param router_id:
         :return: Router
         """
         pass
 
     @abstractclassmethod
-    def sysupdate_firmware(self, router_ids: List[int], update_all: bool):
+    def sysupdate_firmware(self, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copys the firmware to the Router given in the List(by a unique id) resp. to all Routers
-        :param router_ids: List of unique numbers to identify a Router
+        Downloads and copys the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
         pass
 
     @abstractclassmethod
-    def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool):
+    def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given Router(s)
+
         :param router_ids:
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
+        """
+        pass
+
+    @abstractclassmethod
+    def get_server_version(self) -> str:
+        """
+        Returns the server version as a string
         """
         pass

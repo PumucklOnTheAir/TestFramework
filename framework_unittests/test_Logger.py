@@ -1,19 +1,20 @@
 import unittest
-
 from log.logger import *
 
 
 class MyTestCase(unittest.TestCase):
-    def test_something(self):
 
+    def test_something(self):
+        """
+        Tests the logger and all log levels
+        :return: Tests results
+        """
         l = Logger()
 
-        l.logger.debug("Debug color blue")
-
-        l.info("Hello from l {0}".format(Logger()))
+        l.info("Hello from logger Nr. 1 with same instance as logger Nr. 2: {0}".format(Logger()))
 
         l1 = Logger()
-        l1.info("Hello from l1 {0}".format(Logger()))
+        l1.info("Hello from logger Nr. 2 with same instance as logger Nr. 1: {0}".format(Logger()))
 
         Logger().info("Hello from Logger() {0}".format(Logger()))
         Logger().debug("Debug from Logger() {0}".format(Logger()))

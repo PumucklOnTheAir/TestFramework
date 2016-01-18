@@ -116,5 +116,8 @@ class DummyServer(ServerProxy):
     def stop_all_tasks(cls):
         pass
 
+    @classmethod
+    def get_server_version(cls) -> str:
+        pass
 
 

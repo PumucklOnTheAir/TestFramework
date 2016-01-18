@@ -12,3 +12,9 @@ docs/_build/
 *.log
 
 firmware/firmwares/
+.coverage
+
+.coverage.*
+
+log/logger.log
+

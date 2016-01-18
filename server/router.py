@@ -10,6 +10,10 @@ from threading import Thread
 
 
 class Mode(Enum):
+    """
+    Operation mode of the wifi router
+
+    """""
     master = 1
     managed = 2
     ad_hoc = 3
@@ -18,6 +22,10 @@ class Mode(Enum):
 
 
 class Router(ProxyObject, NetworkIface):
+    """
+    This model represents a Freifunk router with its properties.
+
+    """""
 
     def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int, usr_name: str,
                  usr_password: str, power_socket: int):
@@ -51,6 +59,7 @@ class Router(ProxyObject, NetworkIface):
         self._ssid = ''
         self._firmware = Firmware.get_default_firmware()
 
+
         # test/task handling
         self.running_task = None
         self.waiting_tasks = []
@@ -59,10 +68,18 @@ class Router(ProxyObject, NetworkIface):
         return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
 
     @property
+    def id(self) -> int:
+        """
+        ID of the :py:class:`Router`
+
+        :return: ID number as in
+        """
+        return self._id
+
+    @property
     def ip(self) -> str:
         """
-        IP number of the Router
-        :return: IP number as string
+        :return: IP of the router as string
         """
         return self._ip
 
@@ -77,8 +94,7 @@ class Router(ProxyObject, NetworkIface):
     @property
     def vlan_iface_id(self) -> int:
         """
-        The VLAN ID from router
-        :return:
+        :return The VLAN ID from router:
         """
         return self._vlan_iface_id
 
@@ -86,6 +102,7 @@ class Router(ProxyObject, NetworkIface):
     def vlan_iface_name(self) -> str:
         """
         Used VLAN name from server for this router
+
         :return:
         """
         return self._vlan_iface_name
@@ -94,6 +111,7 @@ class Router(ProxyObject, NetworkIface):
     def ip_mask(self) -> int:
         """
         IP mask
+
         :return:
         """
         return self._ip_mask
@@ -104,6 +122,7 @@ class Router(ProxyObject, NetworkIface):
     def usr_name(self) -> str:
         """
         Username of the admin account on the router
+
         :rtype: str
         :return:
         """
@@ -113,6 +132,7 @@ class Router(ProxyObject, NetworkIface):
     def usr_password(self) -> str:
         """
         Password of the admin account on the router
+
         :rtype: str
         :return:
         """
@@ -122,6 +142,7 @@ class Router(ProxyObject, NetworkIface):
     def mac(self) -> str:
         """
         The mac address of the routers
+
         :rtype: str
         :return:
         """
@@ -139,6 +160,7 @@ class Router(ProxyObject, NetworkIface):
     def ssid(self) -> str:
         """
         The SSID of the router
+
         :rtype: str
         :return:
         """
@@ -156,6 +178,7 @@ class Router(ProxyObject, NetworkIface):
     def wlan_mode(self) -> Mode:
         """
         The WLAN mode of the router. Value could be outdated.
+
         :return:
         """
         return self._wlan_mode
@@ -171,8 +194,7 @@ class Router(ProxyObject, NetworkIface):
     @property
     def model(self) -> str:
         """
-        The model and version of the router. Value could be outdated.
-        :return:
+        :return The model and version of the router. Value could be outdated.:
         """
         return self._model
 
@@ -188,6 +210,7 @@ class Router(ProxyObject, NetworkIface):
     def power_socket(self) -> int:
         """
         The power socket of the routers
+
         :rtype: int
         :return:
         """
@@ -204,7 +227,8 @@ class Router(ProxyObject, NetworkIface):
     @property
     def firmware(self) -> Firmware:
         """
-        The firmware of the routers
+        The :py:class:`Firmware` of the router
+
         :rtype: Firmware
         :return:
         """
@@ -213,7 +237,7 @@ class Router(ProxyObject, NetworkIface):
     @firmware.setter
     def firmware(self, value: Firmware):
         """
-        :type value: Firmware
+        :type value: :py:class:`Firmware`
         """
         assert isinstance(value, Firmware)
         self._firmware = value
