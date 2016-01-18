@@ -30,6 +30,7 @@ class ServerTestCase2(unittest.TestCase):
     def serverStartWithParams():
         base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
         config_path = os.path.join(base_dir, 'tests/configs/config_no_vlan')  # Join Project Root with config
+        Server.start(config_path=config_path)
 
     def setUp(self):
         self.ipc_client = IPC()

@@ -27,9 +27,9 @@ install:
 
 # script: python -m unittest discover -s framework_unittests
 script:
-  - python -m pytest --cov-append --cov=./ tests/test_Server_2.py
-  - python -m pytest --cov-append --cov=./ tests/test_Server.py
-  - python -m pytest --ff -n 2 --cov-append --cov=./  tests/test_IPC.py tests/test_Router.py tests/test_Yaml.py tests/test_Logger.py tests/test_firmware_handler.py
+  - python -m pytest --cov-append --cov=./ framework_unittests/test_Server_2.py
+  - python -m pytest --cov-append --cov=./ framework_unittests/test_Server.py
+  - python -m pytest --ff -n 2 --cov-append --cov=./  framework_unittests/test_IPC.py framework_unittests/test_Router.py framework_unittests/test_Yaml.py framework_unittests/test_Logger.py framework_unittests/test_firmware_handler.py
 
 notifications:
   webhooks:

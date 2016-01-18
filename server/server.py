@@ -8,11 +8,9 @@ from concurrent.futures import ProcessPoolExecutor
 # from util.router_info import RouterInfo # TODO can not import properly the RouterInfo #64
 from log.logger import Logger
 from concurrent.futures import Future
-
+import os
 # type alias
 FirmwareTestClass = type(FirmwareTest)
-import os
-
 
 
 class Server(ServerProxy):
