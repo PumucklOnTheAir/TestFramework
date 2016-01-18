@@ -6,7 +6,8 @@ from server.router import Router
 class ServerProxy(metaclass=ABCMeta):
     """A proxy model for inter-process communication between the server runtime and clients like CLI and WebServer.
     Read the method description carefully! The behaviour may be different as expected.
-    Normally the method will be executed remotely on the server and the return value is given by copy and not by reference!
+    Normally the method will be executed remotely on the server and
+    the return value is given by copy and not by reference!
     """""
     @abstractclassmethod
     def start_test(self, router_name, test_name) -> bool:
@@ -95,9 +96,32 @@ class ServerProxy(metaclass=ABCMeta):
         """
         Upgrades the firmware on the given Router(s)
 
-        :param router_ids:
+        :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
+        """
+        pass
+
+    @abstractclassmethod
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
+        """
+        After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
+        Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
+        Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param setup_all: If True all Routers will be setuped via the webinterface
+        """
+        pass
+
+    @abstractclassmethod
+    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+        """
+        Reboots the given Routers.
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param reboot_all: Reboots all Routers
+        :param configmode: Reboots Router into configmode
         """
         pass
 

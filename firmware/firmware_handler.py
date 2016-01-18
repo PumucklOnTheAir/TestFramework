@@ -37,13 +37,12 @@ class FirmwareHandler:
         Logger().info("Configure download of Firmware for Router(" + router_model + ")", 1)
         self.import_firmwares(release_model)
 
-        firmware = self.get_stored_firmware(router_model)
-        if firmware is not None:
-            return firmware
-
         if download_all:
             self.firmwares = self.download_all_firmwares(release_model)
         else:
+            firmware = self.get_stored_firmware(router_model)
+            if firmware is not None:
+                return firmware
             firmware = self.download_firmware(router_model, release_model)
             if firmware is not None:
                 self.firmwares.append(firmware)

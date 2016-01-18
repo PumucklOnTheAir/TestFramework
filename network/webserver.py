@@ -23,11 +23,11 @@ class WebServer(Thread):
             self.httpd.serve_forever()
         except Exception as e:
             Logger().debug("[-] WebServer couldn't get started", 2)
-            Logger().error(str(e), 1)
+            raise e
 
     def join(self):
         Logger().info("Stop WebServer ...", 1)
-        time.sleep(5)
+        time.sleep(2)
         try:
             self.httpd.shutdown()
             Logger().debug("[+] WebServer successfully stoped", 2)

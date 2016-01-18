@@ -36,9 +36,7 @@ class Server(ServerProxy):
         """
         Starts the runtime server with all components
 
-        :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
-        :param vlan_activate: Activates/Deactivates VLANs
         """
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
@@ -182,18 +180,18 @@ class Server(ServerProxy):
         from util.router_flash_firmware import RouterFlashFirmware
         if update_all:
             for router in cls.get_routers():
-                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
+                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_dict()[0])
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
+                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_dict()[0])
 
     @classmethod
     def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given :py:class:`Router` s
 
-        :param router_ids:
+        :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
@@ -205,6 +203,49 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 RouterFlashFirmware.sysupgrade(router, n)
+
+    @classmethod
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
+        """
+        After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
+        Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
+        Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param setup_all: If True all Routers will be setuped via the webinterface
+        """
+        from util.router_setup_web_configuration import RouterWebConfiguration
+        if setup_all:
+            for i, router in enumerate(cls.get_routers()):
+                RouterWebConfiguration.setup(router, ConfigManager.get_web_interface_config()[i])
+        else:
+            for i, router_id in enumerate(router_ids):
+                router = cls.get_router_by_id(router_id)
+                RouterWebConfiguration.setup(router, ConfigManager.get_web_interface_config()[i])
+
+    @classmethod
+    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+        """
+        Reboots the given Routers.
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param reboot_all: Reboots all Routers
+        :param configmode: Reboots Router into configmode
+        """
+        from util.router_reboot import RouterReboot
+        if reboot_all:
+            for router in cls.get_routers():
+                if configmode:
+                    RouterReboot.configmode(router)
+                else:
+                    RouterReboot.normal(router)
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                if configmode:
+                    RouterReboot.configmode(router)
+                else:
+                    RouterReboot.normal(router)
 
     @classmethod
     def get_server_version(cls) -> str:

@@ -15,4 +15,6 @@ docs/_build/
 
 log/logger.log
 
+/tests/ghostdriver.log
+/tests/test_wget.txt
 firmware/firmwares/*

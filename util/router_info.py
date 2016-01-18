@@ -13,6 +13,7 @@ class RouterInfo:
     def update(router: Router):
         """
         Starts a thread for a router and stores new information
+
         :param router: Router objects
         """
         # TODO: wird anstelle des threadings benutzt. Führt allerdings zu abstürtzen beim icp-server
@@ -53,18 +54,19 @@ class Worker(Thread):
     def run(self):
         """
         Runs new thread and gets the information from the router via ssh
+
         :return:
         """
-        network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.connect_with_router()
+        network_ctrl = NetworkCtrl(self.router, 'eth0')
+        network_ctrl.connect_with_remote_system()
         # Model
-        self.router.model = network_ctrl.send_router_command(
+        self.router.model = network_ctrl.send_command(
             'cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
         # MAC
-        self.router.mac = network_ctrl.send_router_command(
+        self.router.mac = network_ctrl.send_command(
             'uci show network.client.macaddr').split('=')[1][:-4]
         # SSID
-        self.router.ssid = network_ctrl.send_router_command(
+        self.router.ssid = network_ctrl.send_command(
             'uci show wireless.client_radio0.ssid').split('=')[1][:-4]
         network_ctrl.exit()
 
