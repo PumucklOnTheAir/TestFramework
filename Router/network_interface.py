@@ -1,5 +1,5 @@
-from Router.ipv4 import IPv4
-from Router.ipv6 import IPv6
+from router.ipv4 import IPv4
+from router.ipv6 import IPv6
 
 
 class NetworkInterface:

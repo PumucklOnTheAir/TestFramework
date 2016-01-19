@@ -1,4 +1,4 @@
-from Router.ip_address import IPAddress
+from router.ip_address import IPAddress
 
 
 class IPv4(IPAddress):
