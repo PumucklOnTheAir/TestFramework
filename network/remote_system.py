@@ -58,14 +58,14 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         self.remote_system = None
         self.data = None
 
-    def prepare2(self, remote_sys: RemoteSystem, data: {} = None) -> None:
+    def prepare(self, remote_sys: RemoteSystem, data: {} = None) -> None:
         """
         Prepares the system job before the run method will started
 
         :param remote_sys: the RemoteSystem which are connected to this job
         :param data: Arbitrary data as an dictionary
         """
-        Logger().debug("Job prepare", 3)
+        Logger().debug("Prepare job", 5)
         self.remote_system = remote_sys
         self.data = data
 
@@ -96,6 +96,7 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         The run method which will execute in the proper VLAN.
         As default you get a RemoteSystem with self.remote_system
         and optional the data from pre_process method with self.data
+
         :return Result data as dictionary for the post_process method:
         """
         pass

@@ -171,7 +171,7 @@ class Server(ServerProxy):
     def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
         Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
-        job.prepare2(remote_sys, data)
+        job.prepare(remote_sys, data)
 
         nv_assi = cls.__activate_vlan(remote_sys)
         job.run()
@@ -194,7 +194,7 @@ class Server(ServerProxy):
         # prepare all test cases
         for test_case in test_suite:
             Logger().debug("TestCase " + str(test_case), 4)
-            test_case.prepare2(router)  # TODO ist das nötig?
+            test_case.prepare(router)  # TODO ist das nötig?
 
         result = TestResult()
 

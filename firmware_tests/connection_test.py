@@ -21,7 +21,7 @@ class ConnectionTest(FirmwareTest):
 
     def test_self_router(self):
         # print(str(self.router))
-        assert self.router.id == 0
+        assert self.remote_system.id == 0
 
 
 class VeryLongTest(FirmwareTest):
@@ -34,7 +34,7 @@ class VeryLongTest(FirmwareTest):
         # assert not lol
 
     def test_ping_static(self):
-        response = os.system("ping -c 1 " + "p8h.de")
+        response = os.system("ping -t 2 -c 1 " + "p8h.de")
         assert response == 0  # not working because no normal eth0 stack available
         # from subprocess import Popen, PIPE
         # process = Popen(["ip", "a"], stdout=PIPE, stderr=PIPE)
@@ -44,8 +44,8 @@ class VeryLongTest(FirmwareTest):
         # assert response == #0
 
     def test_ping_router(self):
-        hostname = self.router.ip
-        response = os.system("ping -c 1 " + hostname)
+        hostname = self.remote_system.ip
+        response = os.system("ping -t 2 -c 1 " + hostname)
         print(hostname)
         assert response == 0
 
