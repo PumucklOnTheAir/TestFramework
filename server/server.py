@@ -171,7 +171,7 @@ class Server(ServerProxy):
     def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
         Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
-        job.prepare(remote_sys, data)
+        job.prepare2(remote_sys, data)
 
         nv_assi = cls.__activate_vlan(remote_sys)
         job.run()

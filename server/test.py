@@ -1,8 +1,9 @@
 from abc import ABCMeta
 from unittest import TestCase
+from network.remote_system import RemoteSystem
 from network.remote_system import RemoteSystemJob
 from unittest.result import TestResult
-from util.abstraction import inheritdocstring
+#RemoteSystemJob
 
 
 class FirmwareTest(TestCase, RemoteSystemJob, metaclass=ABCMeta):

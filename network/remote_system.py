@@ -58,7 +58,7 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         self.remote_system = None
         self.data = None
 
-    def prepare(self, remote_sys: RemoteSystem, data: {} = None) -> None:
+    def prepare2(self, remote_sys: RemoteSystem, data: {} = None) -> None:
         """
         Prepares the system job before the run method will started
 
