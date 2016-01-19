@@ -199,8 +199,12 @@ class Server(ServerProxy):
         result = TestResult()
 
         nv_assi = cls.__activate_vlan(router)
-        result = test_suite.run(result)  # TODO if debug set, run as debug()
-        cls.__deactivate_vlan(nv_assi)
+        try:
+            result = test_suite.run(result)  # TODO if debug set, run as debug()
+        except Exception as e:
+            Logger().error(str(e), 3)
+        finally:
+            cls.__deactivate_vlan(nv_assi)
 
         Logger().debug("Result from test " + str(result), 3)
 

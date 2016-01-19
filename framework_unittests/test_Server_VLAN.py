@@ -42,7 +42,13 @@ class ServerTestCase2(unittest.TestCase):
     def test_little_self_check(self):
         started = self.server_proxy.start_test(0, "ConnectionTest")
         assert started
-        time.sleep(5)
+
+        wait = True
+        while wait:
+            time.sleep(2)
+            if len(self.server_proxy.get_reports()) > 0:
+                wait = False
+
         reports = self.server_proxy.get_reports()
         assert len(reports) != 0
 

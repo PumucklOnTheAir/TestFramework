@@ -5,33 +5,9 @@ import os
 
 class ConnectionTest(FirmwareTest):
 
-    def test_buzz1(self):
-        # print("buzz1")
-        lol = True
-        assert lol
-        assert not not lol
-        # assert not lol
-
-    def test_foo2(self):
-        # print("foo2")
-        lol = True
-        assert lol
-        assert not not lol
-        # assert not lol
-
     def test_self_router(self):
         # print(str(self.router))
         assert self.remote_system.id == 0
-
-
-class VeryLongTest(FirmwareTest):
-
-    def test_very_long_test(self):
-        lol = True
-        assert lol
-        # time.sleep(1)
-        assert not not lol
-        # assert not lol
 
     def test_ping_static(self):
         response = os.system("ping -t 2 -c 1 " + "p8h.de")
@@ -48,5 +24,30 @@ class VeryLongTest(FirmwareTest):
         response = os.system("ping -t 2 -c 1 " + hostname)
         print(hostname)
         assert response == 0
+
+
+class VeryLongTest(FirmwareTest):
+
+    def test_very_long_test(self):
+        lol = True
+        assert lol
+        # time.sleep(1)
+        assert not not lol
+        # assert not lol
+
+    def test_buzz1(self):
+        # print("buzz1")
+        lol = True
+        assert lol
+        assert not not lol
+        # assert not lol
+
+    def test_foo2(self):
+        # print("foo2")
+        lol = True
+        assert lol
+        assert not not lol
+        # assert not lol
+
 
 
