@@ -3,10 +3,6 @@ from enum import Enum
 from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
 
-from abc import ABCMeta, abstractmethod
-from log.logger import Logger
-from threading import Thread
-
 
 class WlanMode(Enum):
     master = 1
@@ -35,6 +31,7 @@ class Router(ProxyObject, RemoteSystem):
                  config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
 
         ProxyObject.__init__(self)
+        RemoteSystem.__init__(self)
 
         self._id = id
 
@@ -63,11 +60,6 @@ class Router(ProxyObject, RemoteSystem):
         self._wlan_mode = WlanMode.unknown
         self._ssid = ''
         self._firmware = Firmware.get_default_firmware()
-
-
-        # test/task handling
-        self.running_task = None
-        self.waiting_tasks = []
 
     def __str__(self):
         return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
@@ -273,18 +265,3 @@ class Router(ProxyObject, RemoteSystem):
         assert isinstance(value, Mode)
         self._mode = value
 
-
-class RouterTask(metaclass=ABCMeta):
-    def __init__(self):
-        self.router = None
-
-    def prepare(self, router: Router):
-        Logger().debug("TestCase prepare", 3)
-        self.router = router
-
-
-class RouterJob(RouterTask, Thread, metaclass=ABCMeta):
-
-    @abstractmethod
-    def post_process(self, data):
-        pass

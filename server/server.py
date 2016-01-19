@@ -1,6 +1,6 @@
 from .serverproxy import ServerProxy
 from .ipc import IPC
-from .router import Router, RouterTask, RouterJob
+from .router import Router
 from config.configmanager import ConfigManager
 from typing import List
 from .test import FirmwareTest
@@ -8,7 +8,9 @@ from concurrent.futures import ProcessPoolExecutor
 # from util.router_info import RouterInfo # TODO can not import properly the RouterInfo #64
 from log.logger import Logger
 from concurrent.futures import Future
+from unittest.result import TestResult
 import os
+from network.remote_system import RemoteSystem, RemoteSystemJob
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 
@@ -131,66 +133,75 @@ class Server(ServerProxy):
         return cls.__start_task(router, demo_test)
 
     @classmethod
-    def __start_task(cls, router: Router, job: RouterTask) -> bool:
+    def __start_task(cls, remote_sys: RemoteSystem, job: RemoteSystemJob) -> bool:
         if job is None:  # no job given? look up for the next job in the queue
             Logger().debug("Task object is none", 1)
-            if len(router.waiting_tasks) == 0:
+            if len(remote_sys.waiting_tasks) == 0:
                 Logger().debug("No tasks in the queue to run.", 2)
                 return False
             else:
-                if router.running_task is not None:
+                if remote_sys.running_task is not None:
                     Logger().debug("Router working. Next task has to wait..", 3)
                     return False
                 else:
                     Logger().debug("Get next task from the queue", 3)
-                    job = router.waiting_tasks.pop(0)
+                    job = remote_sys.waiting_tasks.pop(0)
 
-        if router.running_task is None:
+        if remote_sys.running_task is None:
             Logger().debug("Starting test " + str(job), 1)
-            router.running_task = job
+            remote_sys.running_task = job
             if isinstance(job, FirmwareTestClass):
                 # Task is a test
-                task = cls.executor.submit(cls._execute_test, job, router)
+                task = cls.executor.submit(cls._execute_test, job, remote_sys)
                 task.add_done_callback(cls._test_done)
             else:
                 # task is a regular job
-                task = cls.executor.submit(cls._execute_task, job, router)
+                data = job.pre_process(cls)
+                task = cls.executor.submit(cls._execute_task, job, remote_sys, data)
                 task.add_done_callback(cls._task_done)
-            task.router = router
+            task.remote_sys = remote_sys
 
             return True
         else:
             Logger().debug("Put test in the wait queue. " + str(job), 1)
-            router.waiting_tasks.append(job)
+            remote_sys.waiting_tasks.append(job)
             return False
 
     @classmethod
-    def _execute_task(cls, job: RouterJob, router: Router):
+    def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
-        Logger().debug("Execute task " + str(job) + " on " + str(router), 2)
-        cls.__activate_vlan(router)
+        Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
+        job.prepare(remote_sys, data)
+
+        nv_assi = cls.__activate_vlan(remote_sys)
         job.run()
-        return job.join()  # TODO timeout setzen
+        result = job.join(60*5)  # TimeOut: 5 minutes
+        cls.__deactivate_vlan(nv_assi)
+
+        return result
 
     @classmethod
-    def _execute_test(cls, test: FirmwareTestClass, router: Router):  # -> TestResult:
+    def _execute_test(cls, test: FirmwareTestClass, router: Router) -> TestResult:
+        if not isinstance(router, Router):
+            raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
         Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
         Logger().debug("Execute test cases.. ", 3)
 
         from unittest import defaultTestLoader
-        from unittest.result import TestResult
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
-
-        nv_assi = cls.__activate_vlan(router)
 
         # prepare all test cases
         for test_case in test_suite:
-            Logger().debug("Next TestCase " + str(test_case), 3)
-            test_case.prepare(router)
+            Logger().debug("TestCase " + str(test_case), 4)
+            test_case.prepare(router)  # TODO ist das nötig?
 
         result = TestResult()
+
+        nv_assi = cls.__activate_vlan(router)
         result = test_suite.run(result)  # TODO if debug set, run as debug()
+        cls.__deactivate_vlan(nv_assi)
+
         Logger().debug("Result from test " + str(result), 3)
 
         # I'm sry for this dirty hack, but if you don't do this you get an
@@ -198,15 +209,20 @@ class Server(ServerProxy):
         result._original_stdout = None
         result._original_stderr = None
 
-        cls.__deactivate_vlan(nv_assi)
-
         return result
 
     @classmethod
-    def _test_done(cls, task: Future):
+    def _test_done(cls, task: Future) -> None:
+        """
+        Callback function for tests.
+        Needed to start the next test/task in the queue.
+        Adds the test result to the reports.
+
+        :param task: the Future which runs the test
+        """
         Logger().debug("Test done " + str(task), 1)
-        Logger().debug("From " + str(task.router), 2)
-        task.router.running_task = None
+        Logger().debug("From " + str(task.remote_sys), 2)
+        task.remote_sys.running_task = None
         exception = task.exception()
         if exception is not None:
             Logger().error("Test case raised an exception: " + str(exception), 1)
@@ -214,38 +230,58 @@ class Server(ServerProxy):
             cls._reports.append(task.result())
 
         # start next test in the queue
-        cls.__start_task(task.router, None)
+        cls.__start_task(task.remote_sys, None)
 
     @classmethod
-    def _task_done(cls, task: Future):
+    def _task_done(cls, task: Future) -> None:
+        """
+        Callback function for tests.
+        Needed to start the next test/task in the queue.
+        Calls the post process of the Remote
+
+        :param task: the Future which runs the test
+        """
         Logger().debug("Task done " + str(task), 1)
-        Logger().debug("At " + str(task.router), 2)
-        task.router.running_task = None
-        # TODO task steckerleiste has now router
+        Logger().debug("At " + str(task.remote_sys), 2)
+        task.remote_sys.running_task = None
+        # TODO task steckerleiste has no router
         exception = task.exception()
         if exception is not None:
             Logger().error("Task raised an exception: " + str(exception), 1)
         else:
-            task.router.running_task.post_process(task.result())
+            task.remote_sys.running_task.post_process(task.result())
 
         # start next test in the queue
-        cls.__start_task(task.router, None)
+        cls.__start_task(task.remote_sys, None)
 
     @classmethod
-    def __activate_vlan(cls, router: Router):  # -> NVAssistent:
+    def __activate_vlan(cls, remote_sys: RemoteSystem):  # -> NVAssistent:
+        """
+        Activates vlan for the current process
+
+        :param remote_sys: The RemoteSystem which you want to connect over vlan
+        :return: NVAssistent
+        """
         if cls.VLAN:
             from network.nv_assist import NVAssistent  # TODO auslagern...
-            #NetworkCtrl(router)
             nv_assi = NVAssistent()
-            nv_assi.create_namespace_vlan(router.namespace_name, "eth0", router.vlan_iface_name, router.vlan_iface_id)
+            nv_assi.create_namespace_vlan(remote_sys.namespace_name, "eth0", remote_sys.vlan_iface_name, remote_sys.vlan_iface_id)
             return nv_assi
         else:
             Logger().debug("Ignoring activate VLAN", 2)
             Logger().debug("Var VLAN is false", 3)
 
     @classmethod
-    def __deactivate_vlan(cls, nv_assi):  # "NVAssistent"
-        nv_assi.delete_namespace()
+    def __deactivate_vlan(cls, nv_assi):
+        """
+        Deactivates vlan after you activate it with cls.__activate_vlan
+
+        :param nv_assi: the NVAssistent which handles the vlan
+        :return:
+        """
+        if cls.VLAN:
+            Logger().debug("Ignoring deactivate VLAN", 2)
+            nv_assi.delete_namespace()
 
     @classmethod
     def get_routers(cls) -> List[Router]:
@@ -264,7 +300,7 @@ class Server(ServerProxy):
         """
         :return: List of running test on the test server. List is a copy of the original list.
         """
-        # TODO exist now in router
+        # FIXME exist now in router
         return cls._running_tasks.copy()
 
     @classmethod

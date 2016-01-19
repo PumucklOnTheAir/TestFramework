@@ -1,7 +1,19 @@
 from abc import ABCMeta
 from unittest import TestCase
-from .router import RouterTask
+from network.remote_system import RemoteSystemJob
+from unittest.result import TestResult
+from util.abstraction import inheritdocstring
 
 
-class FirmwareTest(TestCase, RouterTask, metaclass=ABCMeta):
-    pass
+class FirmwareTest(TestCase, RemoteSystemJob, metaclass=ABCMeta):
+
+    def run(self, result=None) -> TestResult:
+        return TestCase.run(result)
+
+    def pre_process(self, server):
+        pass
+
+    def post_process(self, data) -> None:
+        pass
+
+
