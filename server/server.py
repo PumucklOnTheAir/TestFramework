@@ -194,7 +194,7 @@ class Server(ServerProxy):
         # prepare all test cases
         for test_case in test_suite:
             Logger().debug("TestCase " + str(test_case), 4)
-            test_case.prepare(router)  # TODO ist das nötig?
+            test_case.prepare2(router)  # TODO ist das nötig?
 
         result = TestResult()
 
