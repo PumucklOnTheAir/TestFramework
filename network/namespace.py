@@ -1,29 +1,36 @@
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
 from pyroute2 import netns
-import re, sys
+import re
+import sys
 import traceback
 from log.logger import Logger
+import os
+import time
 
 
 class Namespace:
+    """
+    A network namespace is logically another copy of the network stack,
+    with its own routes, firewall rules, and network devices.
 
-    def __init__(self, nsp_name: str, ipdb: IPDB):
+    By default a process inherits its network namespace from its parent.
+    Initially all the processes share the same default network namespace
+    from the init process.
+    """""
+
+    def __init__(self, ipdb: IPDB, nsp_name: str):
         """
         Creats a namespace for a specific vlan_iface
 
         :param nsp_name:
-        :param vlan_iface_name:
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
         """
         Logger().debug("Create Namespace ...", 2)
-        self.nsp_name = nsp_name
-        self.id = id
-        self.vlan_iface_name = ""
-        self.vlan_iface_ip = "0.0.0.0"
-        self.ipdb = ipdb
+        self.ipdb = ipdb if ipdb else IPDB()
         self.ipdb_netns = None
+        self.nsp_name = nsp_name
         try:
             self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
             netns.setns(nsp_name)
@@ -46,51 +53,97 @@ class Namespace:
             if self.ipdb_netns is None:
                 netns.remove(self.nsp_name)
             else:
-                self.ipdb_netns.interfaces[self.vlan_iface_name].nl.remove()
+                for iface_name in self.ipdb_netns.interfaces:
+                    self.ipdb_netns.interfaces[iface_name].nl.remove()
                 self.ipdb_netns.release()
             Logger().debug("[+] Namespace(" + self.nsp_name + ") successfully deleted", 3)
         except Exception as e:
-            if re.match("\[Errno 2\]*",str(e)):
+            if re.match("\[Errno 2\]*", str(e)):
                 Logger().debug("[+] Namespace(" + self.nsp_name + ") is already deleted", 3)
                 return
             Logger().debug("[-] Namespace(" + self.nsp_name +
                            ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", 3)
             Logger().error(str(e), 3)
 
-    def encapsulate_interface(self, vlan_iface_name: str):
+    def encapsulate_interface(self, iface_name: str):
         """
-        Capture the assigned interface in a namespace.
+        Encapsulate the the given interface inside the Namespace.
+
+        :param iface_name:
         """
-        self.vlan_iface_name = vlan_iface_name
-        self.vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])
+        iface_name = iface_name
+        iface_ip = self._get_ip(True, iface_name)
         try:
-            with self.ipdb.interfaces[self.vlan_iface_name] as vlan:
-                vlan.net_ns_fd = self.nsp_name
+            with self.ipdb.interfaces[iface_name] as iface:
+                iface.net_ns_fd = self.nsp_name
             # the interface automatically switched the database and is now inside ipdb_netns_dictionary[vlan_iface_name]
-            with self.ipdb_netns.interfaces[self.vlan_iface_name] as vlan:
-                vlan.add_ip(self.vlan_iface_ip)  # '192.168.1.11/24'
-                vlan.up()
-            Logger().debug("[+] Encapsulate Interface(" + self.vlan_iface_name + ")", 3)
+            with self.ipdb_netns.interfaces[iface_name] as iface:
+                iface.add_ip(iface_ip)  # '192.168.1.11/24'
+                iface.up()
+            Logger().debug("[+] Encapsulate Interface(" + iface_name + ")", 3)
         except Exception as e:
-            Logger().debug("[-] Couldn't encapsulate the Interface(" + self.vlan_iface_name + ")", 3)
+            Logger().debug("[-] Couldn't encapsulate the Interface(" + iface_name + ")", 3)
             Logger().error(str(e), 3)
 
-    def get_ip_of_encapsulate_interface(self) -> str:
+    def set_new_ip(self, dhcp: bool, iface_name: str, new_ip: str=None, new_ip_mask: int=None):
         """
-        :return: The IP(without ip_mask) of the interface encapsulated in this namespace
-        """
-        return self.vlan_iface_ip.split('/')[0]
+        Sets the IP either given by 'new_ip'-parameter or via dhclient.
 
-    def _get_ipv4_from_dictionary(self, iface) -> str:
+        :param dhcp: should a dhclient be used?
+        :param iface_name:
+        :param new_ip:
+        :param new_ip_mask:
+        :return: the new IP with the format ip/mask
         """
-        Gets the ip and network-mask from the ipdb
+        iface_ip = None
+        if dhcp:
+            try:
+                self._wait_for_ip_assignment(iface_name)
+                iface_ip = self._get_ip(False, iface_name)
+                Logger().debug("[+] New IP " + iface_ip + " for " + iface_name + " by dhcp", 2)
+            except TimeoutError as e:
+                Logger().debug("[-] Couldn't get a new IP for " + iface_name + " by dhcp", 2)
+        else:
+            iface_ip = new_ip+"/"+str(new_ip_mask)
+            Logger().debug("[+] New IP " + iface_ip + " for " + iface_name, 2)
+        return iface_ip
 
-        :param iface: the interface from ipdb
-        :return: ip with network-mask
+    def _wait_for_ip_assignment(self, iface_name: str):
         """
+        Waits until the dhcp-client got an ip
+
+        :param iface_name:
+        """
+        Logger().debug("Wait for ip assignment via dhcp for Interface(" + iface_name +
+                       ") in Namespace(" + self.nsp_name + ")...", 3)
+        current_ip = self._get_ip(False, iface_name).split('/')[0]
+        if not self._get_ip(False, iface_name, not_this_ip=current_ip):
+            os.system("ip netns exec " + self.nsp_name + " dhclient " + iface_name)
+            i = 0
+            while self._get_ip(False, iface_name, not_this_ip=current_ip) is None:
+                time.sleep(0.5)
+                i += 1
+                if i == 20:
+                    raise TimeoutError
+
+    def _get_ip(self, ipdb: bool, iface_name: str, not_this_ip: str = None):
+        """
+        Reads the 'first' IP from the IPDB or if intended from IPDN_NETNS.
+
+        :param ipdb: If True IPDB is used, else IPDB_NETNS is used
+        :param iface_name:
+        :param not_this_ip: If we know the first IP and are searching for another
+        :return: the IP with the format ip/mask
+        """
+        if ipdb:
+            iface = self.ipdb.interfaces[iface_name]
+        else:
+            iface = self.ipdb_netns.interfaces[iface_name]
         ipaddr_dictionary = iface.ipaddr
         for i in range(len(ipaddr_dictionary)):
             ip = ipaddr_dictionary[i]['address']
             mask = ipaddr_dictionary[i]['prefixlen']
             if re.match("((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))", ip):
-                return ip+"/"+str(mask)
+                if ip != not_this_ip:
+                    return ip + "/" + str(mask)
+        return ""

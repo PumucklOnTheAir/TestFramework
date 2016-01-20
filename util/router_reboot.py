@@ -4,37 +4,10 @@ from server.router import Router, Mode
 from log.logger import Logger
 
 
-class RouterReboot:
+class RouterReboot(Thread):
     """
     The RouterInfo collects in a new Thread informations about the Routers
-    """
-
-    @staticmethod
-    def configmode(router: Router):
-        """
-        Reboots the Router into the configuration mode
-
-        :param router: Router objects
-        """
-        Logger().info("Reboot the Router(" + str(router.id) + ") into Configmode ...", 1)
-        worker = Worker(router, True)
-        worker.start()
-        worker.join()
-
-    @staticmethod
-    def normal(router: Router):
-        """
-        Reboots the router
-
-        :param router: Router objects
-        """
-        Logger().info("Reboot the Router(" + str(router.id) + ") ...", 1)
-        worker = Worker(router, False)
-        worker.start()
-        worker.join()
-
-
-class Worker(Thread):
+    """""
 
     def __init__(self, router: Router, configmode: bool):
         """
@@ -52,12 +25,12 @@ class Worker(Thread):
         """
         Runs new thread and trys to send a command via ssh to reboot the Router.
         """
-        network_ctrl = NetworkCtrl(self.router, 'eth0')
+        Logger().info("Reboot the Router(" + str(self.router.id) + ") ...", 1)
+        network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_remote_system()
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 Logger().info("[+] Router is already in configuration mode", 2)
-                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
@@ -71,7 +44,6 @@ class Worker(Thread):
         else:
             if self.router.mode == Mode.normal:
                 Logger().info("[+] Router is already in normal mode", 2)
-                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("reboot")
@@ -80,8 +52,6 @@ class Worker(Thread):
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
-
-        network_ctrl.exit()
 
     def join(self):
         Thread.join(self)

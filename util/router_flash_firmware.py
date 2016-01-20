@@ -6,35 +6,10 @@ from network.network_ctrl import NetworkCtrl
 from server.router import Router
 
 
-# TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
-# TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
-class RouterFlashFirmware:
-
-    @staticmethod
-    def sysupdate(router: Router, firmware_config):
-        """
-        Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
-        :param router:
-        :param firmware_config:
-        """
-        worker = SysupdateWorker(router, firmware_config)
-        worker.start()
-        worker.join()
-
-    @staticmethod
-    def sysupgrade(router: Router, n: bool):
-        """
-        Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
-        and does a Sysupgrade.
-        :param router:
-        :param n: If n is True the upgrade discard the last firmware
-        """
-        worker = SysupgradeWorker(router, n)
-        worker.start()
-        worker.join()
-
-
-class SysupdateWorker(Thread):
+class Sysupdate(Thread):
+    """
+    Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
+    """""
 
     def __init__(self, router: Router, firmware_config):
         Thread.__init__(self)
@@ -57,8 +32,11 @@ class SysupdateWorker(Thread):
         Thread.join(self)
 
 
-class SysupgradeWorker(Thread):
-
+class Sysupgrade(Thread):
+    """
+    Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
+    and does a Sysupgrade.
+    """""
     def __init__(self, router: Router, n: bool):
         Thread.__init__(self)
         Logger().info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
@@ -74,13 +52,12 @@ class SysupgradeWorker(Thread):
         and does a Sysupgrade.
         :return:
         """
-        network_ctrl = NetworkCtrl(self.router, 'eth0')
+        network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_remote_system()
         network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/')
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
         network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
-        network_ctrl.exit()
 
     def join(self):
         Thread.join(self)

@@ -46,6 +46,7 @@ class NetworkInterface:
     def ipv4_lst(self, index: int) -> IPv4:
         """
         The ipv4 addresses of the network interface
+        :param index:
         :return: IPv4
         """
         return self._ipv4_lst[index]
@@ -62,6 +63,7 @@ class NetworkInterface:
     def ipv6_lst(self, index: int) -> IPv6:
         """
         The ipv6 addresses of the network interface
+        :param index:
         :return: IPv6
         """
         return self._ipv6_lst[index]
