@@ -1,5 +1,5 @@
 from threading import Thread
-from server.router import Router
+from router.router import Router
 from log.logger import Logger
 from network.network_ctrl import NetworkCtrl
 

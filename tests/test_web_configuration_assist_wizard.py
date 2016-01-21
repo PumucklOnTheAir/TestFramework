@@ -1,9 +1,8 @@
 from unittest import TestCase
 
 from network.network_ctrl import NetworkCtrl
-from server.router import Router
+from router.router import Router, Mode
 from config.configmanager import ConfigManager
-from server.router import Mode
 
 
 class TestWebConfigurationAssistExpert(TestCase):

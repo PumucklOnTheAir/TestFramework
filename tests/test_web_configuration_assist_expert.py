@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from network.network_ctrl import NetworkCtrl
-from server.router import Router, Mode
+from router.router import Router, Mode
 from config.configmanager import ConfigManager
 
 
