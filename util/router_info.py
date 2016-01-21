@@ -87,7 +87,14 @@ class RouterInfo(Thread):
 
             # Status: UP | DOWN | UNKNOWN
             cmd = "ip addr show " + iface_name
-            interface.status = self.network_ctrl.send_command(cmd).split("state")[1].split("group")[0].replace(" ", "")
+            value = self.network_ctrl.send_command(cmd).split("state")[1].split("group")[0].replace(" ", "")
+            if value == "UP":
+                status = Status.up
+            elif value == "DOWN":
+                status = Status.down
+            else:
+                status = Status.unknown
+            interface.status = status
 
             # IPv4 addresses
             inet_lst = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet '")

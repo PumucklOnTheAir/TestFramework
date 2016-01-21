@@ -61,18 +61,6 @@ class NetworkInterface:
         assert isinstance(value, Status)
         self._status = value
 
-    @status.setter
-    def status(self, value: str):
-        """
-        :type value: str
-        """
-        if value == "UP":
-            self._status = Status.up
-        elif value == "DOWN":
-            self._status = Status.down
-        else:
-            self._status = Status.unknown
-
     @property
     def mac(self) -> str:
         """
