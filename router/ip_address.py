@@ -1,6 +1,11 @@
+from abc import ABCMeta
 
 
-class IPAddress:
+class IPAddress(metaclass=ABCMeta):
+    """
+    This abstract class represents the IP address as an object.
+    """""
+
     def __init__(self, ip: str):
         self._ip = ip
 
@@ -19,18 +24,25 @@ class IPAddress:
         :type value: str
         """
         assert isinstance(value, str)
-        self._ip= value
+        self._ip = value
 
 
 class IPv4(IPAddress):
+    """
+    This class represents an IPv4 address, with IPAddress as the super-class.
+    """""
     def __init__(self, ip: str, mask: int):
+        """
+        :param ip: the ip address
+        :param mask: the netmask of the ip address
+        """
         super().__init__(ip)
         self._mask = mask
 
     @property
     def mask(self) -> int:
         """
-        The mask of the ip address
+        The netmask of the ip address
 
         :return: int
         """
@@ -42,18 +54,22 @@ class IPv4(IPAddress):
         :type value: int
         """
         assert isinstance(value, int)
-        self._mask= value
+        self._mask = value
 
 
 class IPv6(IPAddress):
     def __init__(self, ip: str, prefix_len: int):
+        """
+        :param ip: the ip address
+        :param prefix_len: the prefix-length of the ip address
+        """
         super().__init__(ip)
         self._prefix_len = prefix_len
 
     @property
     def prefix_len(self) -> int:
         """
-        The prefix_length of the ip address
+        The prefix-length of the ip address
 
         :return: int
         """
@@ -65,4 +81,4 @@ class IPv6(IPAddress):
         :type value: int
         """
         assert isinstance(value, int)
-        self._prefix_len= value
+        self._prefix_len = value
