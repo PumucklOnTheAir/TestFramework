@@ -147,11 +147,15 @@ class Server(ServerProxy):
         from util.router_info import RouterInfo
         if update_all:
             for router in cls.get_routers():
-                RouterInfo.update(router)
+                router_info = RouterInfo(router)
+                router_info.start()
+                router_info.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                RouterInfo.update(router)
+                router_info = RouterInfo(router)
+                router_info.start()
+                router_info.join()
 
     @classmethod
     def get_router_by_id(cls, router_id: int) -> Router:
@@ -172,7 +176,7 @@ class Server(ServerProxy):
     @classmethod
     def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
+        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) or to all Routers
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
