@@ -60,7 +60,7 @@ class Vlan:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
             self.ipdb.release()
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
-        except KeyError as ke:
+        except KeyError:
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
             return
         except Exception as e:

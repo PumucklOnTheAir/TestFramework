@@ -3,7 +3,6 @@ from network.vlan import Vlan
 from network.namespace import Namespace
 from subprocess import Popen, PIPE
 from log.logger import Logger
-import time
 
 
 class TestNamespace(TestCase):
