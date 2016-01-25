@@ -18,7 +18,7 @@ class TestNamespace(TestCase):
         namespace = Namespace('nsp1', vlan.ipdb)
         assert isinstance(namespace, Namespace)
 
-        #encapsulate VLAN
+        # encapsulate VLAN
         namespace.encapsulate_interface(vlan.vlan_iface_name)
 
         # Test if the namespace now exists

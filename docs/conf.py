@@ -25,8 +25,6 @@ sys.path.insert(0, os.path.abspath('../'))
 year_since = 2015
 year_current = date.today().year
 
-
-
 source_parsers = {
     '.md': CommonMarkParser
 }
@@ -51,7 +49,7 @@ templates_path = []
 source_suffix = ['.rst', '.md']
 
 # The encoding of source files.
-#source_encoding = 'utf-8-sig'
+# source_encoding = 'utf-8-sig'
 
 # The master toctree document.
 master_doc = 'index'
@@ -204,7 +202,7 @@ latex_elements = {
     'pointsize': '10pt',
 
     # Additional stuff for the LaTeX preamble.
-    #'preamble': '',
+    # 'preamble': '',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
@@ -231,7 +229,7 @@ latex_elements = {
 # latex_appendices = []
 
 # If false, no module index is generated.
-#latex_domain_indices = True
+# latex_domain_indices = True
 
 
 # -- Options for manual page output --------------------------------------------
