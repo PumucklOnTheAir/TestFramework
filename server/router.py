@@ -64,6 +64,16 @@ class Router(ProxyObject, RemoteSystem):
     def __str__(self):
         return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
 
+    def update(self, new_router) -> None:
+        """
+        Updates the properties from this router
+        :param new_router: router with newer property values
+        :return:
+        """
+        self._model = new_router.model
+        self._mac = new_router.mac
+        self._ssid = new_router.ssid
+
     @property
     def id(self) -> int:
         """

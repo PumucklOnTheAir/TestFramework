@@ -1,5 +1,6 @@
 from threading import Thread
 from network.network_ctrl import NetworkCtrl
+from network.remote_system import RemoteSystemJob
 from server.router import Router
 from log.logger import Logger
 
@@ -32,3 +33,29 @@ class RouterInfo(Thread):
 
     def join(self):
         Thread.join(self)
+
+
+class RouterInfoJob(RemoteSystemJob):
+    """
+    Encapsulate RouterInfo as a job for the Server
+    """""
+    def run(self):
+        router = self.remote_system
+        router_info = RouterInfo(router)
+        router_info.start()
+        router_info.join()
+        return {'router': router}
+
+    def pre_process(self, server) -> {}:
+        return None
+
+    def post_process(self, data: {}, server) -> None:
+        """
+        Updates the router in the Server with the new information
+
+        :param data: result from run()
+        :param server: the Server
+        :return:
+        """
+        ref_router = server.get_router_by_id(data.router.id)
+        ref_router.update(data.router)  # Don't forget to update this method

@@ -2,13 +2,13 @@ from .serverproxy import ServerProxy
 from .ipc import IPC
 from .router import Router
 from config.configmanager import ConfigManager
-from typing import List
+from typing import List, Union
 from .test import FirmwareTest
 from concurrent.futures import ProcessPoolExecutor
-# from util.router_info import RouterInfo # TODO can not import properly the RouterInfo #64
 from log.logger import Logger
 from concurrent.futures import Future
 from unittest.result import TestResult
+from threading import Event
 import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 # type alias
@@ -67,8 +67,7 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
-        # deprecated
-        # cls.update_router_info(cls.get_routers()[0])  # TODO das ist doch nicht richtig? #64
+        cls.update_router_info(cls.get_routers()[0])  # TODO das ist doch nicht richtig? #64
 
         Logger().info("Runtime Server started")
 
@@ -113,22 +112,30 @@ class Server(ServerProxy):
         pass
 
     @classmethod
-    def start_job(cls, remote_sys: RemoteSystem, test_name: str) -> bool:
-        """Start an specific job on an RemoteSystem
+    def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
+        """Starts an specific job on a RemoteSystem.
+            The job will be executed asynchronous this means the method is not blocking.
+            It add only the job to the task queue from RemoteSystem.
+            If you want, that this method wait until the job is executed, you have to set the wait param.
+            Think about that your job has maybe to wait in the queue.
 
-        :param remote_sys: The RemoteSystem on which the test will run
-        :param test_name: The name of the test to execute
-        :return: True if start was successful
+        :param remote_sys: The RemoteSystem on which the job will run
+        :param remote_job: The name of the test to execute
+        :param wait: -1 for async execution and positive integer for wait in seconds
+        :return: True if job was successful added in the queue
         """
+        assert isinstance(RemoteSystemJob, remote_job)
 
-        from firmware_tests.connection_test import GeneralJobTest
-        if test_name == "GeneralJobTest":
-            demo_test = GeneralJobTest  # Important: Param is a class and not an object
+        if wait != -1:
+            done_event = Event()
+            remote_job.set_done_event(done_event)
+
+            result = cls.__start_task(remote_sys, remote_job)
+            done_event.wait(wait)
+            return result
         else:
-            Logger().error("Testname unknown")
-            return False
+            return cls.__start_task(remote_sys, remote_job)
 
-        return cls.__start_task(remote_sys, demo_test) # TODO ÜBERLEGE ES DIR GUT! Object oder Class...
 
     @classmethod
     def start_test(cls, router_id: int, test_name: str) -> bool:
@@ -136,7 +143,7 @@ class Server(ServerProxy):
 
         :param router_id: The id of the router on which the test will run
         :param test_name: The name of the test to execute
-        :return: True if start was successful
+        :return: True if test was successful added in the queue
         """
         router = cls.get_router_by_id(router_id)
         if router is None:
@@ -157,7 +164,7 @@ class Server(ServerProxy):
         return cls.__start_task(router, demo_test)
 
     @classmethod
-    def __start_task(cls, remote_sys: RemoteSystem, job: RemoteSystemJobClass) -> bool:
+    def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
         if job is None:  # no job given? look up for the next job in the queue
             Logger().debug("Task object is none", 1)
             if len(remote_sys.waiting_tasks) == 0:
@@ -192,7 +199,7 @@ class Server(ServerProxy):
             return False
 
     @classmethod
-    def _execute_task(cls, job: RemoteSystemJobClass, remote_sys: RemoteSystem, data: {}) -> {}:
+    def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
         Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
         job.prepare(remote_sys, data)
@@ -272,12 +279,12 @@ class Server(ServerProxy):
         Logger().debug("Task done " + str(task), 1)
         Logger().debug("At " + str(task.remote_sys), 2)
         task.remote_sys.running_task = None
-        # TODO task steckerleiste has no router
         exception = task.exception()
         if exception is not None:
             Logger().error("Task raised an exception: " + str(exception), 1)
         else:
             task.remote_sys.running_task.post_process(task.result())
+            task.remote_sys.running_task.done()
 
         # start next test in the queue
         cls.__start_task(task.remote_sys, None)
@@ -363,19 +370,15 @@ class Server(ServerProxy):
         :param update_all: Is True if all Routers should be updated
         """
         if cls.VLAN:
-            from util.router_info import RouterInfo  # TODO remove it from here #64
+            from util.router_info import RouterInfoJob  # TODO remove it from here #64
 
             if update_all:
                 for router in cls.get_routers():
-                    router_info = RouterInfo(router)
-                    router_info.start()
-                    router_info.join()
+                    cls.start_job(router, RouterInfoJob())
             else:
                 for router_id in router_ids:
                     router = cls.get_router_by_id(router_id)
-                    router_info = RouterInfo(router)
-                    router_info.start()
-                    router_info.join()
+                    cls.start_job(router, RouterInfoJob())
         else:
             Logger().info("set VLAN to true to activate 'update_router_info' it")
 

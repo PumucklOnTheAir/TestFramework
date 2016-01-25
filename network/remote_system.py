@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractproperty, abstractmethod, abstractstaticmethod
 from log.logger import Logger
-from threading import Thread
+from threading import Thread, Event
 # from server.server import Server
 
 
@@ -8,8 +8,8 @@ class RemoteSystem(metaclass=ABCMeta):
 
     def __init__(self):
         # test/task handling
-        self.running_task = None  # type(RemoteSystemJob)
-        self.waiting_tasks = []  # List[type(RemoteSystemJob)]
+        self.running_task = None  # type(Union[RemoteSystemJobClass, RemoteSystemJob])
+        self.waiting_tasks = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
 
     def __str__(self):
         return "RemoteSystem{IP:%s, VLAN ID:%s, NS:%s}" % (self.ip, self.vlan_iface_id, self.namespace_name)
@@ -57,6 +57,7 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
     def __init__(self):
         self.remote_system = None
         self.data = None
+        self.__done_event = None
 
     def prepare(self, remote_sys: RemoteSystem, data: {} = None) -> None:
         """
@@ -68,6 +69,22 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         Logger().debug("Prepare job", 5)
         self.remote_system = remote_sys
         self.data = data
+
+    def set_done_event(self, done_event: Event = None) -> None:
+        """
+
+        :param done_event: Optional Event which will be called at the end
+        :return:
+        """
+        self.__done_event = done_event
+
+    def done(self) -> None:
+        """
+        Will be called by the Server
+        :return:
+        """
+        if self.__done_event is not None:
+            self.__done_event.set()
 
     @abstractstaticmethod
     def pre_process(self, server) -> {}:
