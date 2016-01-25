@@ -13,6 +13,7 @@ import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 # type alias
 FirmwareTestClass = type(FirmwareTest)
+RemoteSystemJobClass = type(RemoteSystemJob)
 
 
 class Server(ServerProxy):
@@ -96,15 +97,38 @@ class Server(ServerProxy):
         cls._ipc_server.shutdown()
 
     @classmethod
-    def stop_all_tasks(cls):
+    def stop_all_tasks(cls) -> None:
+        """
+        Stops all running jobs on the RemoteSystems
+        """
         cls.executor.shutdown(wait=False)
         for router in cls.get_routers():
+            # router.running_task # TODO stop all running Futures
             router.running_task = None
+        Logger().info("Stopped all jobs")
 
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
         # TODO test verwaltung
         pass
+
+    @classmethod
+    def start_job(cls, remote_sys: RemoteSystem, test_name: str) -> bool:
+        """Start an specific job on an RemoteSystem
+
+        :param remote_sys: The RemoteSystem on which the test will run
+        :param test_name: The name of the test to execute
+        :return: True if start was successful
+        """
+
+        from firmware_tests.connection_test import GeneralJobTest
+        if test_name == "GeneralJobTest":
+            demo_test = GeneralJobTest  # Important: Param is a class and not an object
+        else:
+            Logger().error("Testname unknown")
+            return False
+
+        return cls.__start_task(remote_sys, demo_test) # TODO ÜBERLEGE ES DIR GUT! Object oder Class...
 
     @classmethod
     def start_test(cls, router_id: int, test_name: str) -> bool:
@@ -133,7 +157,7 @@ class Server(ServerProxy):
         return cls.__start_task(router, demo_test)
 
     @classmethod
-    def __start_task(cls, remote_sys: RemoteSystem, job: RemoteSystemJob) -> bool:
+    def __start_task(cls, remote_sys: RemoteSystem, job: RemoteSystemJobClass) -> bool:
         if job is None:  # no job given? look up for the next job in the queue
             Logger().debug("Task object is none", 1)
             if len(remote_sys.waiting_tasks) == 0:
@@ -168,7 +192,7 @@ class Server(ServerProxy):
             return False
 
     @classmethod
-    def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
+    def _execute_task(cls, job: RemoteSystemJobClass, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
         Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
         job.prepare(remote_sys, data)
@@ -269,7 +293,7 @@ class Server(ServerProxy):
         if cls.VLAN:
             from network.nv_assist import NVAssistent  # TODO auslagern...
             nv_assi = NVAssistent()
-            nv_assi.create_namespace_vlan(remote_sys.namespace_name, "eth0", remote_sys.vlan_iface_name, remote_sys.vlan_iface_id)
+            nv_assi.create_namespace_vlan_veth(remote_sys)
             return nv_assi
         else:
             Logger().debug("Ignoring activate VLAN", 2)
@@ -285,7 +309,7 @@ class Server(ServerProxy):
         """
         if cls.VLAN:
             Logger().debug("Ignoring deactivate VLAN", 2)
-            nv_assi.delete_namespace()
+            nv_assi.close()
 
     @classmethod
     def get_routers(cls) -> List[Router]:

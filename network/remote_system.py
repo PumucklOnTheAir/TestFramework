@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractproperty, abstractmethod
+from abc import ABCMeta, abstractproperty, abstractmethod, abstractstaticmethod
 from log.logger import Logger
 from threading import Thread
 # from server.server import Server
@@ -8,8 +8,8 @@ class RemoteSystem(metaclass=ABCMeta):
 
     def __init__(self):
         # test/task handling
-        self.running_task = None
-        self.waiting_tasks = []
+        self.running_task = None  # type(RemoteSystemJob)
+        self.waiting_tasks = []  # List[type(RemoteSystemJob)]
 
     def __str__(self):
         return "RemoteSystem{IP:%s, VLAN ID:%s, NS:%s}" % (self.ip, self.vlan_iface_id, self.namespace_name)
@@ -69,7 +69,7 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         self.remote_system = remote_sys
         self.data = data
 
-    @abstractmethod
+    @abstractstaticmethod
     def pre_process(self, server) -> {}:
         """
         Pre process and aggregate data in the main process
@@ -79,7 +79,7 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         """
         return None
 
-    @abstractmethod
+    @abstractstaticmethod
     def post_process(self, data: {}, server) -> None:
         """
         Post process the result data from RemoteSystemJob in the main process

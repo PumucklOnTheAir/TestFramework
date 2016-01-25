@@ -1,4 +1,5 @@
 from server.test import FirmwareTest
+from network.remote_system import RemoteSystemJob
 import time
 import os
 
@@ -31,7 +32,7 @@ class VeryLongTest(FirmwareTest):
     def test_very_long_test(self):
         lol = True
         assert lol
-        # time.sleep(1)
+        #time.sleep(20)
         assert not not lol
         # assert not lol
 
@@ -50,4 +51,14 @@ class VeryLongTest(FirmwareTest):
         # assert not lol
 
 
+class GeneralJobTest(RemoteSystemJob):
+    def run(self):
+        print("Hi")
 
+    @staticmethod
+    def pre_process(self, server) -> {}:
+        return None
+
+    @staticmethod
+    def post_process(self, data: {}, server) -> None:
+        pass
