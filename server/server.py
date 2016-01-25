@@ -136,7 +136,6 @@ class Server(ServerProxy):
         else:
             return cls.__start_task(remote_sys, remote_job)
 
-
     @classmethod
     def start_test(cls, router_id: int, test_name: str) -> bool:
         """Start an specific test on an router
@@ -225,7 +224,7 @@ class Server(ServerProxy):
         # prepare all test cases
         for test_case in test_suite:
             Logger().debug("TestCase " + str(test_case), 4)
-            test_case.prepare(router)  # TODO ist das nötig?
+            test_case.prepare(router)
 
         result = TestResult()
 
