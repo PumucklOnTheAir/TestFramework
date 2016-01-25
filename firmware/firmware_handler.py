@@ -259,7 +259,7 @@ class FirmwareHandler:
 
         try:
             files = os.listdir(path)
-        except Exception as e:
+        except Exception:
             Logger().debug("No Firmwares available for download at path '" + path + "'", 3)
             return
 
@@ -272,7 +272,7 @@ class FirmwareHandler:
                 self.firmwares.append(Firmware(firmware_name, firmware_version, freifunk_verein,
                                                release_model, file, url))
                 count += 1
-            except Exception as e:
+            except Exception:
                 Logger().warning("[-] Couldn't import " + firmware_name, 3)
                 continue
         Logger().debug(str(count) + " Firmwares imported", 3)
