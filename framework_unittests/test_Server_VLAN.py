@@ -4,6 +4,7 @@ from server.router import Router
 from multiprocessing import Process
 from server.ipc import IPC
 import time
+from os import getpid
 
 
 class ServerTestCase2(unittest.TestCase):

@@ -4,6 +4,9 @@ from network.namespace import Namespace
 from network.bridge import Bridge
 from pyroute2.ipdb import IPDB
 from server.router import Router
+from log.logger import Logger
+import os
+from os import getpid
 
 
 class NVAssistent:
@@ -26,6 +29,7 @@ class NVAssistent:
 
         :param link_iface_name: 'physical'-interface like 'eth0'
         """
+        print("nvassi: " + str(getpid()))
         self.ipdb = IPDB()
         self.link_iface_name = link_iface_name
         self.bridge = Bridge(self.ipdb, 'br0', self.link_iface_name)
@@ -94,3 +98,5 @@ class NVAssistent:
         self.namespace.remove()
         self.bridge.close()
         self.ipdb.release()
+        Logger().debug("Kill dhclient ...")
+        os.system('pkill dhclient')

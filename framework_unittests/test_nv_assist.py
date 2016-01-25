@@ -9,7 +9,7 @@ class TestNVAssist(TestCase):
     @staticmethod
     def use_nv_assist(router: Router):
         print(str(getpid()))
-        nv_assi = NVAssistent("enp0s25")
+        nv_assi = NVAssistent("eth0")
         nv_assi.create_namespace_vlan_veth(router)
         nv_assi.close()
 
@@ -23,7 +23,7 @@ class TestNVAssist(TestCase):
         router.mode = Mode.configuration
         assert isinstance(router, Router)
 
-        nv_assi = NVAssistent("enp0s25")
+        nv_assi = NVAssistent("eth0")
         nv_assi.create_namespace_vlan_veth(router)
         assert isinstance(nv_assi, NVAssistent)
         nv_assi.close()

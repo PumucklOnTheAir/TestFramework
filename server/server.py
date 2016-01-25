@@ -67,11 +67,11 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
-        cls.update_router_info(cls.get_routers()[0])  # TODO das ist doch nicht richtig? #64
+        cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
+
+        cls.update_router_info(None, update_all=True)  # TODO das ist doch nicht richtig? #64
 
         Logger().info("Runtime Server started")
-
-        cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
 
         try:
             cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
@@ -124,7 +124,7 @@ class Server(ServerProxy):
         :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if job was successful added in the queue
         """
-        assert isinstance(RemoteSystemJob, remote_job)
+        assert isinstance(remote_job, RemoteSystemJob)
 
         if wait != -1:
             done_event = Event()
@@ -298,7 +298,7 @@ class Server(ServerProxy):
         """
         if cls.VLAN:
             from network.nv_assist import NVAssistent  # TODO auslagern...
-            nv_assi = NVAssistent()
+            nv_assi = NVAssistent("eth0")
             nv_assi.create_namespace_vlan_veth(remote_sys)
             return nv_assi
         else:

@@ -14,6 +14,10 @@ class RemoteSystem(metaclass=ABCMeta):
     def __str__(self):
         return "RemoteSystem{IP:%s, VLAN ID:%s, NS:%s}" % (self.ip, self.vlan_iface_id, self.namespace_name)
 
+    @abstractproperty
+    def id(self) -> int:
+        pass
+
     # TODO docu
     @abstractproperty
     def ip(self) -> str:
@@ -55,9 +59,13 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
 
     """""
     def __init__(self):
+        Thread.__init__(self)
         self.remote_system = None
         self.data = None
         self.__done_event = None
+
+    def __str__(self):
+        return "TODO: __str__ remotesystemjob"
 
     def prepare(self, remote_sys: RemoteSystem, data: {} = None) -> None:
         """
