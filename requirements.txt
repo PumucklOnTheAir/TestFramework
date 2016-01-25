@@ -7,6 +7,7 @@ pyroute2
 pylint
 recommonmark
 sphinx
+selenium
 sphinx_rtd_theme
 pytest-cov
 pytest-cache
