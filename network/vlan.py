@@ -1,7 +1,9 @@
 from pyroute2.ipdb import IPDB
 import time
 import re
-import socket, struct, fcntl
+import socket
+import struct
+import fcntl
 from log.logger import Logger
 import os
 

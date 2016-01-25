@@ -156,7 +156,7 @@ class FirmwareHandler:
         with open(file, 'r') as f:
             for i, line in enumerate(f):
                 if i >= 4:
-                    firmware = "[" + str(i-4) + "]  " + line
+                    firmware = "[" + str(i - 4) + "]  " + line
                     firmwares.append(firmware)
             firmwares = firmwares[:-3]
             f.close()
@@ -227,7 +227,7 @@ class FirmwareHandler:
         Logger().debug("Parse RouterModel ...", 2)
         tmp = router_model.split(' v')
         router_model_name = tmp[0]
-        router_model_version = 'v'+tmp[1]
+        router_model_version = 'v' + tmp[1]
         router_model_name = router_model_name.lower()
         # replace all symbols with a minus
         router_model_name = re.sub(r'(?:[^\w])', '-', router_model_name)

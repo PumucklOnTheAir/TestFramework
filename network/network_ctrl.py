@@ -59,7 +59,7 @@ class NetworkCtrl:
             Logger().debug("[+] Successfully connected", 2)
         except Exception as e:
             Logger().error("[-] Couldn't connect", 2)
-            Logger().error(""+str(e), 1)
+            Logger().error("" + str(e), 1)
 
     def send_command(self, command) -> str:
         """
