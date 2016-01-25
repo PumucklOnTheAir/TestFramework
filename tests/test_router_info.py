@@ -17,5 +17,3 @@ class TestRouterInfo(TestCase):
         router_info = RouterInfo(router)
         router_info.start()
         router_info.join()
-
-        print("")

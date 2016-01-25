@@ -81,7 +81,8 @@ class RouterInfo(Thread):
             interface_names.append(tmp.split(":")[1].replace(" ", ""))
 
         for iface_name in interface_names:
-            mac = self.network_ctrl.send_command("ip addr show enp0s25 | grep 'link/ether'").split(" ")[1]
+            tmp = self.network_ctrl.send_command("ip addr show eth0 | grep 'link/ether'")
+            mac = tmp.split(" ")[1]
 
             interface = NetworkInterface(iface_name, mac)
 
