@@ -44,7 +44,7 @@ class RouterInfoJob(RemoteSystemJob):
         router_info = RouterInfo(router)
         router_info.start()
         router_info.join()
-        return {'router': router}
+        self.return_data({'router': router})
 
     def pre_process(self, server) -> {}:
         return None
@@ -57,5 +57,5 @@ class RouterInfoJob(RemoteSystemJob):
         :param server: the Server
         :return:
         """
-        ref_router = server.get_router_by_id(data.router.id)
-        ref_router.update(data.router)  # Don't forget to update this method
+        ref_router = server.get_router_by_id(data['router'].id)
+        ref_router.update(data['router'])  # Don't forget to update this method

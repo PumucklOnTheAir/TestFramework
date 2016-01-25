@@ -47,11 +47,15 @@ class ServerTestCase2(unittest.TestCase):
 
         assert started
 
-        if started:
-            time.sleep(5)
-            reports = self.server_proxy.get_reports()
-            assert len(reports) != 0
-            assert len(reports[-1].errors) == 0  # check last report
+        wait = True
+        while wait:
+            time.sleep(2)
+            if len(self.server_proxy.get_reports()) > 0:
+                wait = False
+
+        reports = self.server_proxy.get_reports()
+        assert len(reports) != 0
+        assert len(reports[-1].errors) == 0  # check last report
 
     def test_long_self_check(self):
         started = self.server_proxy.start_test(0, "VeryLongTest")
@@ -66,7 +70,3 @@ class ServerTestCase2(unittest.TestCase):
             reports = self.server_proxy.get_reports()
             assert len(reports) != 0
             assert reports[-1].wasSuccessful()  # check last report
-
-            routers = self.server_proxy.get_routers()
-            for router in routers:
-                assert router.running_task is None

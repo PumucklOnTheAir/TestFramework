@@ -6,11 +6,6 @@ from threading import Thread, Event
 
 class RemoteSystem(metaclass=ABCMeta):
 
-    def __init__(self):
-        # test/task handling
-        self.running_task = None  # type(Union[RemoteSystemJobClass, RemoteSystemJob])
-        self.waiting_tasks = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
-
     def __str__(self):
         return "RemoteSystem{IP:%s, VLAN ID:%s, NS:%s}" % (self.ip, self.vlan_iface_id, self.namespace_name)
 
@@ -59,10 +54,10 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
 
     """""
     def __init__(self):
-        Thread.__init__(self)
         self.remote_system = None
         self.data = None
         self.__done_event = None
+        self.__return_data = None
 
     def __str__(self):
         return "TODO: __str__ remotesystemjob"
@@ -93,6 +88,12 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         """
         if self.__done_event is not None:
             self.__done_event.set()
+
+    def return_data(self, return_data: {}):
+        self.__return_data = return_data
+
+    def get_return_data(self) -> {}:
+        return self.__return_data
 
     @abstractstaticmethod
     def pre_process(self, server) -> {}:

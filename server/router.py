@@ -62,7 +62,7 @@ class Router(ProxyObject, RemoteSystem):
         self._firmware = Firmware.get_default_firmware()
 
     def __str__(self):
-        return "Router{ID:%s, PS:%s, %s}" % (self.id, self.power_socket, self.wlan_mode)
+        return "Router{ID:%s, PS:%s, %s, %s}" % (self.id, self.power_socket, self.wlan_mode, self.mac)
 
     def update(self, new_router) -> None:
         """

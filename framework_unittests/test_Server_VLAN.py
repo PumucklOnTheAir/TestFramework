@@ -15,7 +15,7 @@ class ServerTestCase2(unittest.TestCase):
     def setUpClass(cls):
         #  starts the IPC server in another(!) process
         cls.proc = Process(target=ServerTestCase2.serverStartWithParams, args=()).start()
-        time.sleep(2)
+        time.sleep(40)
 
     @classmethod
     def tearDownClass(cls):
@@ -67,6 +67,3 @@ class ServerTestCase2(unittest.TestCase):
         assert len(reports) != 0
         assert reports[-1].wasSuccessful()  # check last report
 
-        routers = self.server_proxy.get_routers()
-        for router in routers:
-            assert router.running_task is None

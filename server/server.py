@@ -8,7 +8,7 @@ from concurrent.futures import ProcessPoolExecutor
 from log.logger import Logger
 from concurrent.futures import Future
 from unittest.result import TestResult
-from threading import Event
+from threading import Event, Thread
 import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 # type alias
@@ -39,6 +39,9 @@ class Server(ServerProxy):
     # runtime vars
     _routers = []
     _reports = []
+            # test/task handling
+    _running_task = {}  # Dict[type(Union[RemoteSystemJobClass, RemoteSystemJob])]
+    _waiting_tasks = {}  # Dict[List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
     # TODO reichen Threads aus? oder müssen es Prozesse sein wegen VLAN? -> Es müssen Prozesse sein..
     executor = None
 
@@ -102,14 +105,23 @@ class Server(ServerProxy):
         """
         cls.executor.shutdown(wait=False)
         for router in cls.get_routers():
-            # router.running_task # TODO stop all running Futures
-            router.running_task = None
+            cls.set_running_task(router, None)  # TODO stop all running Futures
+            # cls.get_running_task()
+
         Logger().info("Stopped all jobs")
 
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
         # TODO test verwaltung
         pass
+
+    @classmethod
+    def get_running_task(cls, remote_system: RemoteSystem) -> Union[RemoteSystemJob, RemoteSystemJobClass]:
+        return cls._running_task.get(remote_system.id)
+
+    @classmethod
+    def set_running_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]):
+        cls._running_task[remote_system.id] = task
 
     @classmethod
     def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
@@ -166,20 +178,20 @@ class Server(ServerProxy):
     def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
         if job is None:  # no job given? look up for the next job in the queue
             Logger().debug("Task object is none", 1)
-            if len(remote_sys.waiting_tasks) == 0:
+            if cls._waiting_tasks.get(remote_sys.id) is None or len(cls._waiting_tasks.get(remote_sys.id)) == 0:
                 Logger().debug("No tasks in the queue to run.", 2)
                 return False
             else:
-                if remote_sys.running_task is not None:
+                if cls.get_running_task(remote_sys) is not None:
                     Logger().debug("Router working. Next task has to wait..", 3)
                     return False
                 else:
                     Logger().debug("Get next task from the queue", 3)
-                    job = remote_sys.waiting_tasks.pop(0)
+                    job = cls._waiting_tasks.get(remote_sys.id).pop(0)
 
-        if remote_sys.running_task is None:
+        if cls.get_running_task(remote_sys) is None:
             Logger().debug("Starting test " + str(job), 1)
-            remote_sys.running_task = job
+            cls.set_running_task(remote_sys, job)
             if isinstance(job, FirmwareTestClass):
                 # Task is a test
                 task = cls.executor.submit(cls._execute_test, job, remote_sys)
@@ -194,20 +206,33 @@ class Server(ServerProxy):
             return True
         else:
             Logger().debug("Put test in the wait queue. " + str(job), 1)
-            remote_sys.waiting_tasks.append(job)
+            if cls._waiting_tasks.get(remote_sys.id) is None:
+                cls._waiting_tasks[remote_sys.id] = [job]
+            else:
+                cls._waiting_tasks[remote_sys.id].append(job)
+
             return False
 
     @classmethod
     def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
         Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
+        Thread.__init__(job)
         job.prepare(remote_sys, data)
 
         nv_assi = cls.__activate_vlan(remote_sys)
-        job.run()
-        result = job.join(60*5)  # TimeOut: 5 minutes
-        cls.__deactivate_vlan(nv_assi)
-
+        try:
+            job.start()
+            job.join(60*5)  # TimeOut: 5 minutes
+            result = job.get_return_data()
+        except Exception as e:
+            Logger().error(str(e), 3)
+        finally:
+            cls.__deactivate_vlan(nv_assi)
+        import copy
+        result = copy.copy(result)
+        print(result)
+        print("LL")
         return result
 
     @classmethod
@@ -256,7 +281,7 @@ class Server(ServerProxy):
         """
         Logger().debug("Test done " + str(task), 1)
         Logger().debug("From " + str(task.remote_sys), 2)
-        task.remote_sys.running_task = None
+        cls.set_running_task(task.remote_sys, None)
         exception = task.exception()
         if exception is not None:
             Logger().error("Test case raised an exception: " + str(exception), 1)
@@ -277,13 +302,16 @@ class Server(ServerProxy):
         """
         Logger().debug("Task done " + str(task), 1)
         Logger().debug("At " + str(task.remote_sys), 2)
-        task.remote_sys.running_task = None
         exception = task.exception()
         if exception is not None:
             Logger().error("Task raised an exception: " + str(exception), 1)
         else:
-            task.remote_sys.running_task.post_process(task.result())
-            task.remote_sys.running_task.done()
+            dd = task.result(10)
+            print(dd)
+
+            running_task = cls.get_running_task(task.remote_sys)
+            running_task.post_process(dd, cls)
+            running_task.done()
 
         # start next test in the queue
         cls.__start_task(task.remote_sys, None)
