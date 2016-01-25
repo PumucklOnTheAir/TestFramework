@@ -29,11 +29,11 @@ class WebdriverPhantomjsExtended(WebDriver):
          - service_log_path: Path for phantomjs service to log to.
         """
 
-        self.service = ServicePhantomjsExtended(executable_path, port=port, pre_command=pre_command, service_args= service_args, log_path=service_log_path)
+        self.service = ServicePhantomjsExtended(executable_path, port=port, pre_command=pre_command, service_args=service_args, log_path=service_log_path)
         self.service.start()
 
         try:
-            RemoteWebDriver.__init__(self, command_executor=self.service.service_url, desired_capabilities= desired_capabilities)
+            RemoteWebDriver.__init__(self, command_executor=self.service.service_url, desired_capabilities=desired_capabilities)
         except:
             self.quit()
             raise
