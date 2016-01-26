@@ -4,13 +4,15 @@ from log.logger import Logger
 
 class FileManager:
     """
-    Manager who handles the read and write of files
+    Manager which handles the read and write access of files.
+    Used mainly by the *ConfigManager*.
     """
 
     @staticmethod
     def read_file(path: str = "") -> []:
         """
         Read a file from the path
+
         :param path: File path
         :return: Array with the output from the file
         """
@@ -29,6 +31,7 @@ class FileManager:
     def write_file(data: str = "", path: str = "") -> None:
         """
         Write a file on the path
+
         :param data: String of data to write in the file
         :param path: File path
         :return: None

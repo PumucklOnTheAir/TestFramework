@@ -51,7 +51,7 @@ class TestIPC(TestCase):
         testss = server_proxy.get_tests()
         #  print(testss)
         assert len(testss) == 3
-        assert testss[0] == "test1" # wäre der Server in einem anderen Prozess gestartet, wäre 'test1' nicht vorhanden
+        assert testss[0] == "test1"  # wäre der Server in einem anderen Prozess gestartet, wäre 'test1' nicht vorhanden
         assert testss[1] == "test2"
         assert testss[2] == "test3"
 
@@ -64,7 +64,7 @@ class DummyObject(ProxyObject):
 
 class DummyServer(ServerProxy):
     testList = []
-    
+
     @classmethod
     def start_test(cls, router_id, test_id):
         DummyServer.testList.append("test2")
@@ -112,5 +112,14 @@ class DummyServer(ServerProxy):
     def sysupgrade_firmware(cls, router_ids, upgrade_all, n) -> []:
         pass
 
+    @classmethod
+    def setup_web_configuration(cls, router_ids, setup_all: bool):
+        pass
 
+    @classmethod
+    def reboot_router(cls, router_ids, reboot_all: bool, configmode: bool):
+        pass
 
+    @classmethod
+    def get_server_version(cls) -> str:
+        pass

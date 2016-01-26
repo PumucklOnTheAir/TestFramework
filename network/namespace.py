@@ -1,7 +1,8 @@
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
 from pyroute2 import netns
-import re, sys
+import re
+import sys
 import traceback
 from log.logger import Logger
 
@@ -11,6 +12,7 @@ class Namespace:
     def __init__(self, nsp_name: str, ipdb: IPDB):
         """
         Creats a namespace for a specific vlan_iface
+
         :param nsp_name:
         :param vlan_iface_name:
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
@@ -26,6 +28,7 @@ class Namespace:
         try:
             self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
             netns.setns(nsp_name)
+            self.ipdb_netns.interfaces['lo'].up().commit()
             Logger().debug("[+] Namespace(" + nsp_name + ") successfully created", 3)
             # self.encapsulate_interface()
         except Exception as e:
@@ -48,7 +51,7 @@ class Namespace:
                 self.ipdb_netns.release()
             Logger().debug("[+] Namespace(" + self.nsp_name + ") successfully deleted", 3)
         except Exception as e:
-            if re.match("\[Errno 2\]*",str(e)):
+            if re.match("\[Errno 2\]*", str(e)):
                 Logger().debug("[+] Namespace(" + self.nsp_name + ") is already deleted", 3)
                 return
             Logger().debug("[-] Namespace(" + self.nsp_name +
@@ -82,6 +85,7 @@ class Namespace:
     def _get_ipv4_from_dictionary(self, iface) -> str:
         """
         Gets the ip and network-mask from the ipdb
+
         :param iface: the interface from ipdb
         :return: ip with network-mask
         """
@@ -89,5 +93,5 @@ class Namespace:
         for i in range(len(ipaddr_dictionary)):
             ip = ipaddr_dictionary[i]['address']
             mask = ipaddr_dictionary[i]['prefixlen']
-            if re.match("((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))", ip):
-                return ip+"/"+str(mask)
+            if re.match('((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))', ip):
+                return ip + "/" + str(mask)

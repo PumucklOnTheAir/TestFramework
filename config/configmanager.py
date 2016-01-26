@@ -1,14 +1,13 @@
 import yaml
 import io
+from log.logger import Logger
 import os.path
 from server.router import Router
-from util.ubnt import Ubnt
-from log.logger import Logger
 
 
 class ConfigManager:
     """
-    Manager who handles the config files
+    Manager which handles the config files for the TestServer.
     """
 
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
@@ -18,12 +17,13 @@ class ConfigManager:
     SERVER_CONFIG_FILE = 'server_config.yaml'
     TEST_CONFIG_FILE = 'test_config.yaml'
     FIRMWARE_CONFIG_FILE = 'firmware_config.yaml'
-    POWER_STRIP_CONFIG_FILE = 'powerstrip_config.yaml'
+    WEB_INTERFACE_CONFIG_FILE = 'web_interface_config.yaml'
 
     @classmethod
     def set_config_path(cls, config_path: str = "") -> None:
         """
         Set the path from the files
+
         :param config_path: where the files are
         :return: None
         """
@@ -33,6 +33,7 @@ class ConfigManager:
     def read_file(path: str = "") -> []:
         """
         Read a config file from the path
+
         :param path: File path
         :return: Array with the output from the file
         """
@@ -53,6 +54,7 @@ class ConfigManager:
     def write_file(data: str = "", path: str = "") -> None:
         """
         Write a config file on the path
+
         :param data: String of data to write in the file
         :param path: File path
         :return: None
@@ -74,6 +76,7 @@ class ConfigManager:
     def get_router_auto_config() -> []:
         """
         Read the Router Auto Config file
+
         :return: Array with the output from the file
         """
         path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.ROUTER_AUTO_CONFIG_FILE)
@@ -83,13 +86,14 @@ class ConfigManager:
     def get_router_auto_list(count: int = 0) -> []:
         """
         Read the Router Manual Config file
+
         :param count: Count of the Router
         :return: List with any Router objects from the file
         """
         output = ConfigManager.get_router_auto_config()
 
-        if not len(output) == 8:
-            Logger().error("List must be length of 8 but has a length of {0}".format(len(output)))
+        if not len(output) == 10:
+            Logger().error("List must be length of 10 but has a length of {0}".format(len(output)))
             return
 
         try:
@@ -97,10 +101,12 @@ class ConfigManager:
             name = output[1]
             identifier = output[2]
             ip = output[3]
-            mask = output[4]
-            username = output[5]
-            password = output[6]
-            power_socket = output[7]
+            ip_mask = output[4]
+            config_ip = output[5]
+            config_ip_mask = output[6]
+            username = output[7]
+            password = output[8]
+            power_socket = output[9]
 
             i = identifier['default_Start_Id']
             socket_id = power_socket['powerSocket_Start_Id']
@@ -112,7 +118,8 @@ class ConfigManager:
                 count = count
 
             for x in range(0, count):
-                v = Router(x, name['default_Name'] + "{0}".format(i), i, ip['default_IP'], mask['default_Mask'],
+                v = Router(x, name['default_Name'] + "{0}".format(i), i, ip['default_IP'], ip_mask['default_IP_Mask'],
+                           config_ip['default_CONFIG_IP'], config_ip_mask['default_CONFIG_IP_MASK'],
                            username['default_Username'], password['default_Password'], socket_id)
                 router_list.append(v)
                 i += 1
@@ -127,6 +134,7 @@ class ConfigManager:
     def get_router_manual_config() -> []:
         """
         Read the Router Manual Config file
+
         :return: Array with the output from the file
         """
         path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.ROUTER_MANUAL_CONFIG_FILE)
@@ -136,6 +144,7 @@ class ConfigManager:
     def get_router_manual_list() -> []:
         """
         Read the Router Manual Config file
+
         :return: List with any Router objects from the file
         """
         output = ConfigManager.get_router_manual_config()
@@ -145,12 +154,13 @@ class ConfigManager:
         for i in range(0, len(output)):
             router_info = output[i]
 
-            if not len(router_info) == 7:
-                Logger().error("List must be length of 7 but has a length of {0}".format(len(output)))
+            if not len(router_info) == 9:
+                Logger().error("List must be length of 9 but has a length of {0}".format(len(output)))
                 return
 
             try:
-                v = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['Mask'],
+                v = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['IP_Mask'],
+                           router_info['CONFIG_IP'], router_info['CONFIG_IP_MASK'],
                            router_info['Username'], router_info['Password'], router_info['PowerSocket'])
                 router_list.append(v)
 
@@ -163,6 +173,7 @@ class ConfigManager:
     def get_server_config() -> []:
         """
         Read the Server Config file
+
         :return: Array with the output from the file
         """
         path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.SERVER_CONFIG_FILE)
@@ -172,6 +183,7 @@ class ConfigManager:
     def get_server_dict() -> []:
         """
         Read the Server Config file
+
         :return: Dictionary with a specific output from the file
         """
         output = ConfigManager.get_server_config()
@@ -181,6 +193,7 @@ class ConfigManager:
     def get_server_list() -> []:
         """
         Read the Server Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_server_config()
@@ -194,6 +207,7 @@ class ConfigManager:
     def get_server_property(prop: str = "") -> object:
         """
         Read the Server Config file and give the property back
+
         :param prop: Property from Server file
         :return: Value of the property from the file
         """
@@ -211,6 +225,7 @@ class ConfigManager:
     def get_test_config() -> []:
         """
         Read the Test Config file
+
         :return: Array with the output from the file
         """
         path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.TEST_CONFIG_FILE)
@@ -220,6 +235,7 @@ class ConfigManager:
     def get_test_dict() -> []:
         """
         Read the Test Config file
+
         :return: Dictionary with a specific output from the file
         """
         output = ConfigManager.get_test_config()
@@ -229,6 +245,7 @@ class ConfigManager:
     def get_test_list() -> []:
         """
         Read the Test Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_test_config()
@@ -242,6 +259,7 @@ class ConfigManager:
     def get_firmware_config() -> []:
         """
         Read the Firmware Config file
+
         :return: Array with the output from the file
         """
         path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.FIRMWARE_CONFIG_FILE)
@@ -251,6 +269,7 @@ class ConfigManager:
     def get_firmware_dict() -> []:
         """
         Read the Firmware Config file
+
         :return: Dictionary with a specific output from the file
         """
         output = ConfigManager.get_firmware_config()
@@ -260,6 +279,7 @@ class ConfigManager:
     def get_firmware_list() -> []:
         """
         Read the Firmware Config file
+
         :return: List with a specific output from the file
         """
         output = ConfigManager.get_firmware_config()
@@ -273,6 +293,7 @@ class ConfigManager:
     def get_firmware_property(prop: str = "") -> object:
         """
         Read the Firmware Config file and give the property back
+
         :param prop: Property from Firmware file
         :return: Value of the property from the file
         """
@@ -287,47 +308,32 @@ class ConfigManager:
         return None
 
     @staticmethod
-    def get_power_strip_config() -> []:
+    def get_web_interface_config() -> []:
         """
-        Read the power strip Config file
+        Read the web interface Config file
         :return: Array with the output from the file
         """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.POWER_STRIP_CONFIG_FILE)
+        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.WEB_INTERFACE_CONFIG_FILE)
         return ConfigManager.read_file(path)
 
     @staticmethod
-    def get_power_strip_list() -> []:
+    def get_web_interface_dict() -> []:
         """
-        Read the power strip Config file
-        :return: List with any power strips objects from the file
+        Read the web interface Config file
+        :return: Dictionary with a specific output from the file
         """
-        output = ConfigManager.get_power_strip_config()
+        output = ConfigManager.get_web_interface_config()
+        return output
 
-        if not len(output) == 8:
-            Logger().error("List must be length of 8 but has a length of {0}".format(len(output)))
-            return
-
-        try:
-            count_dict = output[0]
-            count = count_dict['Power_Strip_Count']
-            name = output[1]
-            id_dict = output[2]
-            id_power_strip = id_dict['default_Start_Id']
-            mask = output[3]
-            ip = output[4]
-            username = output[5]
-            password = output[6]
-            n_ports = output[7]
-
-            power_strip_list = []
-
-            for i in range(0, count):
-                u = Ubnt(name['default_Name'], id_power_strip, ip['default_IP'], mask['default_Mask'],
-                         username['default_Username'], password['default_Password'], n_ports['default_Ports'])
-                id_power_strip += 1
-                power_strip_list.append(u)
-
-            return power_strip_list
-
-        except Exception as ex:
-            Logger().error("Error at building the list of Router's\nError: {0}".format(ex))
+    @staticmethod
+    def get_web_interface_list() -> []:
+        """
+        Read the web interface Config file
+        :return: List with a specific output from the file
+        """
+        output = ConfigManager.get_web_interface_config()
+        web_list = []
+        for x in output:
+            for v in x.values():
+                web_list.append(v)
+        return web_list

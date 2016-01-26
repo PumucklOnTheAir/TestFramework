@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from network.network_iface import NetworkIface
+from network.remote_system import RemoteSystem
 
 
-class PowerStrip(NetworkIface):
+class PowerStrip(metaclass=RemoteSystem):
     """
     This class provides the Interface for the basic functions to manage the power strip.
     """
@@ -18,6 +18,7 @@ class PowerStrip(NetworkIface):
     def port_status(self, port_id) -> int:
         """
         returns the status of the requested port
+
         :param port_id: port to be checked
         :return: 0 or 1 for off or on
         """
@@ -27,6 +28,7 @@ class PowerStrip(NetworkIface):
     def up(self, port_id) -> bool:
         """
         sets the selected port to up, aka turn on the power
+
         :param port_id: port to be set
         :return: bool for failure or success
         """
@@ -36,6 +38,7 @@ class PowerStrip(NetworkIface):
     def down(self, port_id) -> bool:
         """
         sets the selected port to down, aka turn off power
+
         :param port_id: port to be set
         :return: bool for failure or success
         """

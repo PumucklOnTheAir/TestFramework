@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractproperty
 
 
-class NetworkIface(metaclass=ABCMeta):
+class RemoteSystem(metaclass=ABCMeta):
 
     @abstractproperty
     def ip(self) -> str:
@@ -13,6 +13,10 @@ class NetworkIface(metaclass=ABCMeta):
 
     @abstractproperty
     def vlan_iface_name(self) -> str:
+        pass
+
+    @abstractproperty
+    def namespace_name(self) -> str:
         pass
 
     @abstractproperty

@@ -1,6 +1,6 @@
-Travis-CI Build Status auf dem Master: [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)
+[![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework)[![Documentation Status](https://readthedocs.org/projects/freifunk-testframework/badge/?version=master)](http://freifunk-testframework.readthedocs.org/en/master/?badge=master)[![codecov.io](https://codecov.io/github/PumucklOnTheAir/TestFramework/coverage.svg?branch=master)](https://codecov.io/github/PumucklOnTheAir/TestFramework?branch=master)[![Code Climate](https://codeclimate.com/github/PumucklOnTheAir/TestFramework/badges/gpa.svg)](https://codeclimate.com/github/PumucklOnTheAir/TestFramework)[![Issue Count](https://codeclimate.com/github/PumucklOnTheAir/TestFramework/badges/issue_count.svg)](https://codeclimate.com/github/PumucklOnTheAir/TestFramework)
 
-Aufgaben:
+Issues:
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=ready&title=Ready)](http://waffle.io/PumucklOnTheAir/TestFramework)
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=In%20Progress&title=In%20Progress)](http://waffle.io/PumucklOnTheAir/TestFramework)
 [![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=review&title=Review)](http://waffle.io/PumucklOnTheAir/TestFramework)
@@ -41,8 +41,6 @@ Alternativ wen man den Testserver nur ausführen aber nicht als Service installi
      
      
 
-_Konventionen, Vorgehensweise und Dokumentation im Wiki_
-
-![Class Diagram](http://plantuml.com/plantuml/svg/3SSx3i8m303Ggy05ufsD4xG3UsLSAx68dSeVSNrusxkBqQoJo-TjP5xn073yjYuvwbt1JikIBHijXRsqw3CtUmr-YiFc7Kq2Sxa43GvGZ6G7cXXnbCxZ5EoEsgv_VW00?lol12)
+_Konventionen, Vorgehensweise und weitere Dokumentation im Wiki_
 
 

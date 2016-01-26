@@ -1,20 +1,24 @@
-from subprocess import Popen, PIPE
 from pyroute2.ipdb import IPDB
 import time
 import re
-import socket, struct, fcntl
+import socket
+import struct
+import fcntl
 from log.logger import Logger
 import os
 
 
 class Vlan:
 
-    def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
+    def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str=None,
+                 vlan_iface_ip_mask: int=None):
         """
         Creats a virtual interface on a existing interface (like eth0).
         It uses IPDB: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
+
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
+        :param vlan_iface_name: name of the vlan
         :param vlan_iface_id: the id of the vlan
         :param vlan_iface_ip: ip of the virtual interface
         :param vlan_iface_ip_mask: network-mask of the virtual interface
@@ -23,26 +27,28 @@ class Vlan:
         self.vlan_iface_name = vlan_iface_name
         self.vlan_iface_id = vlan_iface_id
         self.ipdb = IPDB()
-        #self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
+        # self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
 
     def create_interface(self, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
         """
          Creats a virtual interface on a existing interface (like eth0)
+
         :param vlan_iface_ip: ip of the virtual interface
         :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
         Logger().debug("Create VLAN Interface ...", 2)
         try:
             link_iface = self.ipdb.interfaces[self.link_iface_name]
-            with self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface, vlan_id=self.vlan_iface_id).commit()\
-                    as i:
+            with self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface,
+                                  vlan_id=self.vlan_iface_id).commit() as i:
                 if vlan_iface_ip:
                     i.add_ip(vlan_iface_ip, vlan_iface_ip_mask)
                 i.mtu = 1400
             if not vlan_iface_ip:
                 self._wait_for_ip_assignment()
                 vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])
-            Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name + ", VLAN_ID=" + str(self.vlan_iface_id)+ ", IP=" + vlan_iface_ip, 3)
+            Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
+                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + vlan_iface_ip, 3)
         except Exception as e:
             Logger().debug("[-] " + self.vlan_iface_name + " couldn't be created", 3)
             Logger().error(str(e), 3)
@@ -56,11 +62,12 @@ class Vlan:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
             self.ipdb.release()
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
-        except KeyError as ke:
+        except KeyError:
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
             return
         except Exception as e:
-            Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
+            Logger().debug("[-] Interface(" + self.vlan_iface_name +
+                           ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
             Logger().error(str(e), 3)
 
     def _wait_for_ip_assignment(self):
@@ -91,6 +98,7 @@ class Vlan:
     def _get_ipv4_from_dictionary(self, iface) -> str:
         """
         Gets the ip and network-mask from the ipdb
+
         :param iface: the interface from ipdb
         :return: ip with network-mask
         """
