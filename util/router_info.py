@@ -87,11 +87,16 @@ class RouterInfo(Thread):
             interface = NetworkInterface(iface_name, mac)
 
             # Status: UP | DOWN | UNKNOWN
-            cmd = "ip addr show " + iface_name
-            value = self.network_ctrl.send_command(cmd).split("state")[1].split("group")[0].replace(" ", "")
-            if value == "UP":
+            cmd = "ip addr show " + iface_name + " | grep 'lo:'"
+            # 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+            tmp = self.network_ctrl.send_command(cmd)
+            print("tmp:" + tmp)
+            tmp = tmp.split("state")[1]
+            tmp = tmp.split("group")[0]
+            state = tmp.replace(" ", "")
+            if state == "UP":
                 status = Status.up
-            elif value == "DOWN":
+            elif state == "DOWN":
                 status = Status.down
             else:
                 status = Status.unknown
