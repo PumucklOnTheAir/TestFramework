@@ -247,10 +247,7 @@ class Server(ServerProxy):
             Logger().error(str(e), 3)
         finally:
             cls.__deactivate_vlan(nv_assi)
-        import copy
-        result = copy.copy(result)
-        print(result)
-        print("LL")
+
         return result
 
     @classmethod
