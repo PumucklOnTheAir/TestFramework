@@ -3,6 +3,7 @@ from .ipc import IPC
 from .router import Router
 from config.configmanager import ConfigManager
 from typing import List
+from log.logger import Logger
 import os
 
 
@@ -53,6 +54,8 @@ class Server(ServerProxy):
             debug_mode = True
         cls.DEBUG = debug_mode
 
+        Logger().setup(log_level, log_level, log_level)
+
         # load Router configs
         cls.__load_configuration()
 
@@ -80,6 +83,7 @@ class Server(ServerProxy):
         """
         Stops the server, all running tests and closes all connections.
         """
+        Logger().close()
         cls._ipc_server.shutdown()
         pass
 

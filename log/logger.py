@@ -1,7 +1,6 @@
 import logging
 import logging.handlers
 import os
-import sys
 
 
 class Singleton(type):
@@ -131,6 +130,7 @@ class Logger(metaclass=Singleton):
 
     _logger = None
     _max_detail_log_level = None
+    _console = None
 
     @property
     def logger(self) -> logging.Logger:
@@ -176,7 +176,8 @@ class Logger(metaclass=Singleton):
         :return: None
         """
         try:
-            self._logger = logging.getLogger(__name__)
+            self._logger = logging.getLogger('My_Logger')
+            self._logger.handlers.clear()
 
             # set level
             self._logger.setLevel(log_level)
@@ -194,12 +195,16 @@ class Logger(metaclass=Singleton):
             file_handler.setLevel(file_log_level)
 
             # create StreamHandler
-            # default is without param, than the handler is sys.stderr
-            stream_handler = logging.StreamHandler(sys.stdout)
+            stream_handler = logging.StreamHandler()
             stream_handler.setLevel(stream_log_level)
 
+            # create ConsoleHandler
+            _console = open('/dev/tty1', 'w')
+            console_handler = logging.StreamHandler(_console)
+            console_handler.setLevel(stream_log_level)
+
             # create a SysLogHandler
-            syslog_handler = logging.handlers.SysLogHandler(address=('localhost', 514))
+            syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
             syslog_handler.setLevel(stream_log_level)
 
             # create a logging format
@@ -211,10 +216,12 @@ class Logger(metaclass=Singleton):
             if log_stream_format == "":
                 log_stream_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
                 stream_handler.setFormatter(ColoredFormatter(log_stream_format))
+                console_handler.setFormatter(ColoredFormatter(log_stream_format))
                 syslog_handler.setFormatter(ColoredFormatter(log_stream_format))
             else:
                 stream_formatter = logging.Formatter(log_stream_format)
                 stream_handler.setFormatter(stream_formatter)
+                console_handler.setFormatter(stream_formatter)
                 syslog_handler.setFormatter(stream_formatter)
 
             # add the handlers to the logger
@@ -222,6 +229,7 @@ class Logger(metaclass=Singleton):
                 self._logger.handlers.clear()
             self._logger.addHandler(file_handler)
             self._logger.addHandler(stream_handler)
+            self._logger.addHandler(console_handler)
             self._logger.addHandler(syslog_handler)
 
             self._max_detail_log_level = max_detail_log_level
@@ -231,9 +239,17 @@ class Logger(metaclass=Singleton):
                 if len(self._logger.filters) > 0:
                     self._logger.filters.clear()
                 self._logger.addFilter(log_filter)
-
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
+
+    def close(self) -> None:
+        """
+
+        :return:
+        """
+        self._logger = None
+        self._console.close()
+        self._console = None
 
     def get_log_level_tab(self, log_level: int = 0) -> str:
         """
