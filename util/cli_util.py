@@ -77,8 +77,8 @@ class CLIUtil:
         """
         progress = int(percentage / 2)
         return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" +
-                "".join("{}".format("#") for i in range(progress)) +
-                "".join("{}".format(" ") for j in range(50 - progress)) + "]\t" + str(percentage) + "%")
+                "".join("{}".format("#") for _ in range(progress)) +
+                "".join("{}".format(" ") for _ in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
     @staticmethod
     def print_list(content):
