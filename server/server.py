@@ -2,7 +2,7 @@ from .serverproxy import ServerProxy
 from .ipc import IPC
 from .router import Router
 from config.configmanager import ConfigManager
-from typing import List, Union
+from typing import List, Union, Dict
 from .test import FirmwareTest
 from concurrent.futures import ProcessPoolExecutor
 from log.logger import Logger
@@ -39,11 +39,11 @@ class Server(ServerProxy):
     # runtime vars
     _routers = []
     _reports = []
-            # test/task handling
-    _running_task = {}  # Dict[type(Union[RemoteSystemJobClass, RemoteSystemJob])]
-    _waiting_tasks = {}  # Dict[List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
-    # TODO reichen Threads aus? oder müssen es Prozesse sein wegen VLAN? -> Es müssen Prozesse sein..
-    executor = None
+
+    # test/task handling
+    _running_task = {}  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
+    _waiting_tasks = {}  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
+    executor = None  # ProcessPool
 
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
@@ -72,7 +72,7 @@ class Server(ServerProxy):
 
         cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
 
-        cls.update_router_info(None, update_all=True)  # TODO das ist doch nicht richtig? #64
+        cls.update_router_info(None, update_all=True)
 
         Logger().info("Runtime Server started")
 
@@ -122,6 +122,20 @@ class Server(ServerProxy):
     @classmethod
     def set_running_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]):
         cls._running_task[remote_system.id] = task
+
+    @classmethod
+    def get_waiting_tasks(cls, remote_system: RemoteSystem) -> Dict[int, List[Union[RemoteSystemJob, RemoteSystemJobClass]]]:
+        result = cls._waiting_tasks.get(remote_system.id)
+        if result is None:
+            result = []
+            cls._waiting_tasks[remote_system.id] = result
+
+        return result
+
+    @classmethod
+    def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
+        queue = cls.get_waiting_tasks(remote_system.id)
+        queue.append(task)
 
     @classmethod
     def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
@@ -178,7 +192,7 @@ class Server(ServerProxy):
     def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
         if job is None:  # no job given? look up for the next job in the queue
             Logger().debug("Task object is none", 1)
-            if cls._waiting_tasks.get(remote_sys.id) is None or len(cls._waiting_tasks.get(remote_sys.id)) == 0:
+            if not len(cls.get_waiting_tasks(remote_sys)):
                 Logger().debug("No tasks in the queue to run.", 2)
                 return False
             else:
@@ -187,7 +201,7 @@ class Server(ServerProxy):
                     return False
                 else:
                     Logger().debug("Get next task from the queue", 3)
-                    job = cls._waiting_tasks.get(remote_sys.id).pop(0)
+                    job = cls.get_waiting_tasks(remote_sys).pop(0)
 
         if cls.get_running_task(remote_sys) is None:
             Logger().debug("Starting test " + str(job), 1)
@@ -206,10 +220,7 @@ class Server(ServerProxy):
             return True
         else:
             Logger().debug("Put test in the wait queue. " + str(job), 1)
-            if cls._waiting_tasks.get(remote_sys.id) is None:
-                cls._waiting_tasks[remote_sys.id] = [job]
-            else:
-                cls._waiting_tasks[remote_sys.id].append(job)
+            cls.get_waiting_tasks(remote_sys).append(job)
 
             return False
 
@@ -358,11 +369,26 @@ class Server(ServerProxy):
         return cls._routers.copy()
 
     @classmethod
+    def get_routers_task_queue(cls, router_id: int) -> List[str]:
+        """
+        returns current task queue at the first place and after that the task queue of the router
+        :param router_id: ID of the router
+        :return: task queue + current active task as a string
+        """
+        remote_sys = cls.get_router_by_id(router_id)
+        result = [str(cls.get_running_task(remote_sys))]
+        task_queue = cls.get_waiting_tasks(remote_sys)
+
+        for task in task_queue:
+            result.append(str(task))
+        return result
+
+    @classmethod
     def get_running_tests(cls) -> List[FirmwareTestClass]:
         """
         :return: List of running test on the test server. List is a copy of the original list.
         """
-        # FIXME exist now in router
+        # FIXME
         return cls._running_tasks.copy()
 
     @classmethod

@@ -128,4 +128,6 @@ class DummyServer(ServerProxy):
     def get_server_version(cls) -> str:
         pass
 
-
+    @classmethod
+    def get_routers_task_queue(cls, router_id: int) -> [str]:
+        pass

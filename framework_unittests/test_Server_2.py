@@ -47,11 +47,9 @@ class ServerTestCase2(unittest.TestCase):
 
         assert started
 
-        wait = True
-        while wait:
+        # wait until tests are done
+        while not self.server_proxy.get_reports():
             time.sleep(2)
-            if len(self.server_proxy.get_reports()) > 0:
-                wait = False
 
         reports = self.server_proxy.get_reports()
         assert len(reports) != 0

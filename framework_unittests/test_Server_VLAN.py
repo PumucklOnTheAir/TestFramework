@@ -4,7 +4,6 @@ from server.router import Router
 from multiprocessing import Process
 from server.ipc import IPC
 import time
-from os import getpid
 
 
 class ServerTestCase2(unittest.TestCase):
@@ -15,7 +14,9 @@ class ServerTestCase2(unittest.TestCase):
     def setUpClass(cls):
         #  starts the IPC server in another(!) process
         cls.proc = Process(target=ServerTestCase2.serverStartWithParams, args=()).start()
-        time.sleep(40)
+
+        # wait until server is started
+        time.sleep(10)
 
     @classmethod
     def tearDownClass(cls):
@@ -35,6 +36,13 @@ class ServerTestCase2(unittest.TestCase):
         self.ipc_client.connect()
         self.server_proxy = self.ipc_client.get_server_proxy()
 
+        # wait until server has all tasks before executed
+        for i in range(2):  # do it two times to be sure
+            routers = self.server_proxy.get_routers()
+            for router in routers:
+                while len(self.server_proxy.get_routers_task_queue(router.id)):
+                    time.sleep(2)
+
     def test_get_routers(self):
         routers = self.server_proxy.get_routers()
         assert len(routers) != 0
@@ -44,11 +52,9 @@ class ServerTestCase2(unittest.TestCase):
         started = self.server_proxy.start_test(0, "ConnectionTest")
         assert started
 
-        wait = True
-        while wait:
+        # wait until tests are done
+        while not self.server_proxy.get_reports():
             time.sleep(2)
-            if len(self.server_proxy.get_reports()) > 0:
-                wait = False
 
         reports = self.server_proxy.get_reports()
         assert len(reports) != 0

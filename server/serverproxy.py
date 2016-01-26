@@ -27,6 +27,15 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
+    def get_routers_task_queue(self, router_id: int) -> List[str]:
+        """
+        returns current task queue at the first place and after that the task queue of the router
+        :param router_id: ID of the router
+        :return: task queue + current active task as a string
+        """
+        pass
+
+    @abstractclassmethod
     def get_running_tests(self) -> []:
         """
         :return: List of running test on the test server
