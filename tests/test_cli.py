@@ -18,7 +18,8 @@ class CLITestClass(TestCaseParser):
     """
     def test_no_args(self):
         args = self.parser.parse_args([])
-        assert args is None
+        assert args.mode is None
+        assert not args.verbose
 
     def test_status(self):
         args = self.parser.parse_args(["status", "-a"])
