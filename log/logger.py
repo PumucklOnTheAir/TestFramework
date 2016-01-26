@@ -33,7 +33,7 @@ class ColoredFormatter(logging.Formatter):
     RESET_SEQ = "\033[0m"
     COLOR_SEQ = "\033[0;%dm"
 
-    # Colors: 30=schwarz ,31=rot ,32=gruen ,33=orange ,34=blau ,35=rosa, 36=Türkis ,37= weiß/grau
+    # Colors: 30=black ,31=rot ,32=green ,33=orange ,34=blue ,35=rosa, 36=cyan ,37= white/gray
     COLORS = {
         'WARNING': 33,
         'INFO': 37,
@@ -191,7 +191,8 @@ class Logger(metaclass=Singleton):
             stream_handler.setLevel(stream_log_level)
 
             # create ConsoleHandler
-            _console = open('/dev/tty', 'w+')
+            # '/dev/tty'
+            _console = open('/dev/console', 'w')
             console_handler = logging.StreamHandler(_console)
             console_handler.setLevel(stream_log_level)
 
@@ -251,10 +252,10 @@ class Logger(metaclass=Singleton):
                 for handler in self._logger.handlers:
                     handler.close()
                 self._logger.handlers.clear()
-        self._logger = None
+            self._logger = None
         if self._console is not None:
             self._console.close()
-        self._console = None
+            self._console = None
 
     def get_log_level_tab(self, log_level: int = 0) -> str:
         """
@@ -263,6 +264,8 @@ class Logger(metaclass=Singleton):
         :param log_level: deep of the level mode
         :return: String with tabulators
         """
+        if not self.is_loaded:
+            self.setup()
         if log_level > self._max_detail_log_level:
             log_level = self._max_detail_log_level
         temp_str = ""
