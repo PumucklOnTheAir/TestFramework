@@ -3,6 +3,7 @@ from util.cli_util import CLIUtil
 from log.logger import Logger
 import argparse
 import time
+import sys
 
 
 def connect_to_server():
@@ -15,20 +16,16 @@ def connect_to_server():
 
     global ipc_client
     ipc_client = IPC()
-    try:
-        ipc_client.connect()
-    except ConnectionError as e:
-        Logger().warning("Failed to establish connection: " + str(e))
-        return
+    ipc_client.connect()
 
     # Wait for connection
     time.sleep(1)
 
     if verbose:
-        Logger().info("Client successfully setup")
+        Logger().info("Client successfully connected")
 
-    global server_proxy
     server_proxy = ipc_client.get_server_proxy()
+    return server_proxy
 
 
 def print_routers(routers):
@@ -153,7 +150,13 @@ def main():
     global util
     util = CLIUtil()
     util.print_header()
-    connect_to_server()
+
+    try:
+        server_proxy = connect_to_server()
+    except ConnectionError as e:
+        Logger().warning("Failed to establish connection: " + str(e))
+        Logger().info("Exiting")
+        sys.exit(1)
 
     if verbose:
         Logger().info("Mode set to verbose")
