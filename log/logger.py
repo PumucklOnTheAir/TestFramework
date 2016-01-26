@@ -115,11 +115,11 @@ class Logger(metaclass=Singleton):
 
     Logger().setup()
 
-    Logger.info('INFO-MSG')
-    Logger.debug('DEBUG-MSG')
-    Logger.warning('WARNING-MSG')
-    Logger.error('ERROR-MSG')
-    Logger.critical('CRITICAL-MSG')
+    Logger().info('INFO-MSG')
+    Logger().debug('DEBUG-MSG')
+    Logger().warning('WARNING-MSG')
+    Logger().error('ERROR-MSG')
+    Logger().critical('CRITICAL-MSG')
 
     logging.Level order
     NOTSET < DEBUG < INFO < WARNING < ERROR < CRITICAL
@@ -152,14 +152,6 @@ class Logger(metaclass=Singleton):
             return False
         return True
 
-    @property
-    def max_detail_log_level(self) -> int:
-        """
-        Return the max detail level
-        :return: int
-        """
-        return self._max_detail_log_level
-
     def setup(self, log_level: int = logging.DEBUG, file_log_level: int = logging.DEBUG,
               stream_log_level: int = logging.DEBUG, log_file_path: str = "logger.log", log_file_format: str = "",
               log_stream_format: str = "", max_detail_log_level: int = 5, log_filter: logging.Filter = None) -> None:
@@ -176,8 +168,8 @@ class Logger(metaclass=Singleton):
         :return: None
         """
         try:
-            self._logger = logging.getLogger('My_Logger')
-            self._logger.handlers.clear()
+            # get the highest Logger in the hierarchical
+            self._logger = logging.getLogger(__name__)
 
             # set level
             self._logger.setLevel(log_level)
@@ -199,7 +191,7 @@ class Logger(metaclass=Singleton):
             stream_handler.setLevel(stream_log_level)
 
             # create ConsoleHandler
-            _console = open('/dev/tty1', 'w')
+            _console = open('/dev/tty', 'w+')
             console_handler = logging.StreamHandler(_console)
             console_handler.setLevel(stream_log_level)
 
@@ -242,13 +234,26 @@ class Logger(metaclass=Singleton):
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 
+    def max_detail_log_level(self) -> int:
+        """
+        Return the max detail level
+        :return: int
+        """
+        return self._max_detail_log_level
+
     def close(self) -> None:
         """
-
-        :return:
+        Close open streams, handlers and the logger instance
+        :return: None
         """
+        if self._logger is not None:
+            if self._logger.hasHandlers():
+                for handler in self._logger.handlers:
+                    handler.close()
+                self._logger.handlers.clear()
         self._logger = None
-        self._console.close()
+        if self._console is not None:
+            self._console.close()
         self._console = None
 
     def get_log_level_tab(self, log_level: int = 0) -> str:

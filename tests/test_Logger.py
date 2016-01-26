@@ -11,6 +11,8 @@ class MyTestCase(unittest.TestCase):
         """
         l = Logger()
 
+        l.setup(10)
+
         l.info("Hello from logger Nr. 1 with same instance as logger Nr. 2: {0}".format(Logger()))
 
         l1 = Logger()
@@ -22,6 +24,8 @@ class MyTestCase(unittest.TestCase):
         Logger().warning("Warning from Logger() {0}".format(Logger()))
         Logger().critical("Critical from Logger() {0}".format(Logger()))
         Logger().debug("Debug from level 2", 2)
+
+        l.close()
 
         self.assertEqual(True, l is l1 is Logger())
 

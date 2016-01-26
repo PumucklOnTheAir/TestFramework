@@ -48,12 +48,13 @@ class Server(ServerProxy):
         cls.VLAN = vlan_activate
 
         # read from config if debug mode is on
-        log_level = ConfigManager.get_server_property("Log_Level")
+        log_level = int(ConfigManager.get_server_property("Log_Level"))
         debug_mode = False
         if log_level is 10:
             debug_mode = True
         cls.DEBUG = debug_mode
 
+        # create instance and give params to the logger object
         Logger().setup(log_level, log_level, log_level)
 
         # load Router configs
@@ -83,7 +84,9 @@ class Server(ServerProxy):
         """
         Stops the server, all running tests and closes all connections.
         """
+        # close open streams and the logger instance
         Logger().close()
+
         cls._ipc_server.shutdown()
         pass
 
@@ -176,7 +179,8 @@ class Server(ServerProxy):
     @classmethod
     def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
+        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all
+        Routers
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
