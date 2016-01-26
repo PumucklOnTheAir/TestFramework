@@ -28,7 +28,6 @@ class TestVlan(TestCase):
         assert stdout.decode('utf-8') == ""
         print("Test again")
 
-
     def test_create_existing_vlan(self):
         Logger().debug("TestVlan: test_create_existing_vlan ...")
         # Create VLAN 1

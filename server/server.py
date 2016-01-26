@@ -334,7 +334,6 @@ class Server(ServerProxy):
 
         finally:
             cls.set_running_task(task.remote_sys, None)
-
             # start next test in the queue
             cls.__start_task(task.remote_sys, None)
 

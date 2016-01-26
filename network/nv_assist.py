@@ -32,7 +32,7 @@ class NVAssistent:
         print("nvassi: " + str(getpid()))
         self.ipdb = IPDB()
         self.link_iface_name = link_iface_name
-        self.bridge = Bridge(self.ipdb, 'br0', self.link_iface_name)
+        #self.bridge = Bridge(self.ipdb, 'br0', self.link_iface_name)
         self.vlan_dict = dict()
         self.veth_dict = dict()
         self.namespace = None
@@ -70,6 +70,7 @@ class NVAssistent:
         veth.create_interface()
         self.veth_dict[veth.veth_iface_name1] = veth
 
+        self.bridge = Bridge(self.ipdb, 'br'+str(router.id), self.link_iface_name)
         self.bridge.add_iface(veth.veth_iface_name1)
 
         namespace = Namespace(self.ipdb, router.namespace_name)
@@ -91,11 +92,11 @@ class NVAssistent:
         """
         Deletes all VLANs, 'veth'-interfaces and Namespaces
         """
-        self.namespace.remove()
         for vlan in self.vlan_dict:
             self.delete_vlan(vlan)
         for veth in self.veth_dict:
             self.delete_veth(veth)
+        self.namespace.remove()
         self.bridge.close()
         self.ipdb.release()
         Logger().debug("Kill dhclient ...")
