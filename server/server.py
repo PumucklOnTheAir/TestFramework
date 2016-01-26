@@ -8,9 +8,10 @@ from concurrent.futures import ProcessPoolExecutor
 from log.logger import Logger
 from concurrent.futures import Future
 from unittest.result import TestResult
-from threading import Event, Thread
+from threading import Event, Thread, Semaphore
 import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
+from unittest import defaultTestLoader
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 RemoteSystemJobClass = type(RemoteSystemJob)
@@ -44,6 +45,7 @@ class Server(ServerProxy):
     _running_task = {}  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
     _waiting_tasks = {}  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
     executor = None  # ProcessPool
+    _semaphore_task_management = Semaphore(1)
 
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
@@ -190,39 +192,44 @@ class Server(ServerProxy):
 
     @classmethod
     def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
-        if job is None:  # no job given? look up for the next job in the queue
-            Logger().debug("Task object is none", 1)
-            if not len(cls.get_waiting_tasks(remote_sys)):
-                Logger().debug("No tasks in the queue to run.", 2)
-                return False
-            else:
-                if cls.get_running_task(remote_sys) is not None:
-                    Logger().debug("Router working. Next task has to wait..", 3)
+
+        cls._semaphore_task_management.acquire(blocking=True)
+        try:
+            if job is None:  # no job given? look up for the next job in the queue
+                Logger().debug("Lookup for next task", 1)
+                if not len(cls.get_waiting_tasks(remote_sys)):
+                    Logger().debug("No tasks in the queue to run.", 2)
                     return False
                 else:
-                    Logger().debug("Get next task from the queue", 3)
-                    job = cls.get_waiting_tasks(remote_sys).pop(0)
+                    if cls.get_running_task(remote_sys) is not None:
+                        Logger().debug("Router working. Next task has to wait..", 3)
+                        return False
+                    else:
+                        Logger().debug("Get next task from the queue", 3)
+                        job = cls.get_waiting_tasks(remote_sys).pop(0)
 
-        if cls.get_running_task(remote_sys) is None:
-            Logger().debug("Starting test " + str(job), 1)
-            cls.set_running_task(remote_sys, job)
-            if isinstance(job, FirmwareTestClass):
-                # Task is a test
-                task = cls.executor.submit(cls._execute_test, job, remote_sys)
-                task.add_done_callback(cls._test_done)
+            if cls.get_running_task(remote_sys) is None:
+                Logger().debug("Starting test " + str(job), 1)
+                cls.set_running_task(remote_sys, job)
+                if isinstance(job, FirmwareTestClass):
+                    # Task is a test
+                    task = cls.executor.submit(cls._execute_test, job, remote_sys)
+                    task.add_done_callback(cls._test_done)
+                else:
+                    # task is a regular job
+                    data = job.pre_process(cls)
+                    task = cls.executor.submit(cls._execute_task, job, remote_sys, data)
+                    task.add_done_callback(cls._task_done)
+                task.remote_sys = remote_sys
+
+                return True
             else:
-                # task is a regular job
-                data = job.pre_process(cls)
-                task = cls.executor.submit(cls._execute_task, job, remote_sys, data)
-                task.add_done_callback(cls._task_done)
-            task.remote_sys = remote_sys
+                Logger().debug("Put test in the wait queue. " + str(job), 1)
+                cls.get_waiting_tasks(remote_sys).append(job)
 
-            return True
-        else:
-            Logger().debug("Put test in the wait queue. " + str(job), 1)
-            cls.get_waiting_tasks(remote_sys).append(job)
-
-            return False
+                return False
+        finally:
+            cls._semaphore_task_management.release()
 
     @classmethod
     def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
@@ -254,7 +261,6 @@ class Server(ServerProxy):
         Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
         Logger().debug("Execute test cases.. ", 3)
 
-        from unittest import defaultTestLoader
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
 
         # prepare all test cases
@@ -266,20 +272,21 @@ class Server(ServerProxy):
 
         nv_assi = cls.__activate_vlan(router)
         try:
+
             result = test_suite.run(result)  # TODO if debug set, run as debug()
         except Exception as e:
+            Logger().error("TestCase raised an exception", 3)
             Logger().error(str(e), 3)
         finally:
             cls.__deactivate_vlan(nv_assi)
 
-        Logger().debug("Result from test " + str(result), 3)
+            # I'm sry for this dirty hack, but if you don't do this you get an
+            # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
+            result._original_stdout = None
+            result._original_stderr = None
 
-        # I'm sry for this dirty hack, but if you don't do this you get an
-        # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
-        result._original_stdout = None
-        result._original_stderr = None
-
-        return result
+            Logger().debug("Result from test " + str(result), 3)
+            return result
 
     @classmethod
     def _test_done(cls, task: Future) -> None:
@@ -295,7 +302,13 @@ class Server(ServerProxy):
         cls.set_running_task(task.remote_sys, None)
         exception = task.exception()
         if exception is not None:
-            Logger().error("Test case raised an exception: " + str(exception), 1)
+            Logger().error("Test raised an Exception: " + str(exception), 1)
+
+            result = TestResult()
+            # result.addError(None, (type(exception), exception, None))
+            # TODO exception handling for failed Futures/Tests
+
+            cls._reports.append(result)
         else:
             cls._reports.append(task.result())
 
@@ -313,19 +326,20 @@ class Server(ServerProxy):
         """
         Logger().debug("Task done " + str(task), 1)
         Logger().debug("At " + str(task.remote_sys), 2)
-        exception = task.exception()
-        if exception is not None:
-            Logger().error("Task raised an exception: " + str(exception), 1)
-        else:
-            dd = task.result(10)
-            print(dd)
+        try:
+            exception = task.exception()
+            if exception is not None:
+                Logger().error("Task raised an exception: " + str(exception), 1)
+            else:
+                running_task = cls.get_running_task(task.remote_sys)
+                running_task.post_process(task.result(10), cls)
+                running_task.done()
 
-            running_task = cls.get_running_task(task.remote_sys)
-            running_task.post_process(dd, cls)
-            running_task.done()
+        finally:
+            cls.set_running_task(task.remote_sys, None)
 
-        # start next test in the queue
-        cls.__start_task(task.remote_sys, None)
+            # start next test in the queue
+            cls.__start_task(task.remote_sys, None)
 
     @classmethod
     def __activate_vlan(cls, remote_sys: RemoteSystem):  # -> NVAssistent:
@@ -376,7 +390,10 @@ class Server(ServerProxy):
         :return: task queue + current active task as a string
         """
         remote_sys = cls.get_router_by_id(router_id)
-        result = [str(cls.get_running_task(remote_sys))]
+        result = []
+        if cls.get_running_task(remote_sys) is not None:
+            result.append(str(cls.get_running_task(remote_sys)))
+
         task_queue = cls.get_waiting_tasks(remote_sys)
 
         for task in task_queue:
@@ -443,12 +460,11 @@ class Server(ServerProxy):
         :param router_id:
         :return: Router
         """
-        Logger().debug("get_router_by_id with id: " + str(router_id), 1)
         # if routers[router_id].id == router_id:
         #     return router_id # IndexError
         for router in cls._routers:
             if router.id == router_id:
-                Logger().debug("return Router: " + str(router), 2)
+                Logger().debug("get_router_by_id: " + str(router), 4)
                 return router
         return None
 
