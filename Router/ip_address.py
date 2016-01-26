@@ -18,4 +18,4 @@ class IPAddress:
         :type value: str
         """
         assert isinstance(value, str)
-        self._ip= value
+        self._ip = value

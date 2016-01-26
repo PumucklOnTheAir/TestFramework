@@ -156,7 +156,7 @@ class FirmwareHandler:
         with open(file, 'r') as f:
             for i, line in enumerate(f):
                 if i >= 4:
-                    firmware = "[" + str(i-4) + "]  " + line
+                    firmware = "[" + str(i - 4) + "]  " + line
                     firmwares.append(firmware)
             firmwares = firmwares[:-3]
             f.close()
@@ -227,7 +227,7 @@ class FirmwareHandler:
         Logger().debug("Parse RouterModel ...", 2)
         tmp = router_model.split(' v')
         router_model_name = tmp[0]
-        router_model_version = 'v'+tmp[1]
+        router_model_version = 'v' + tmp[1]
         router_model_name = router_model_name.lower()
         # replace all symbols with a minus
         router_model_name = re.sub(r'(?:[^\w])', '-', router_model_name)
@@ -259,7 +259,7 @@ class FirmwareHandler:
 
         try:
             files = os.listdir(path)
-        except Exception as e:
+        except Exception:
             Logger().debug("No Firmwares available for download at path '" + path + "'", 3)
             return
 
@@ -272,7 +272,7 @@ class FirmwareHandler:
                 self.firmwares.append(Firmware(firmware_name, firmware_version, freifunk_verein,
                                                release_model, file, url))
                 count += 1
-            except Exception as e:
+            except Exception:
                 Logger().warning("[-] Couldn't import " + firmware_name, 3)
                 continue
         Logger().debug(str(count) + " Firmwares imported", 3)

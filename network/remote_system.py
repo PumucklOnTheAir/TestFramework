@@ -1,4 +1,4 @@
-from abc import ABCMeta, abstractclassmethod, abstractproperty
+from abc import ABCMeta, abstractproperty
 
 
 class RemoteSystem(metaclass=ABCMeta):

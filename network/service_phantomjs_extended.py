@@ -47,5 +47,4 @@ class ServicePhantomjsExtended(Service):
             count += 1
             time.sleep(1)
             if count == 30:
-                raise WebDriverException(
-                     "Can not connect to GhostDriver on port {}".format(self.port))
+                raise WebDriverException("Can not connect to GhostDriver on port {}".format(self.port))
