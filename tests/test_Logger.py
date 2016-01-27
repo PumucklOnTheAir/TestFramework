@@ -116,10 +116,10 @@ class MyTestCase(unittest.TestCase):
         Test log level tab
         :return: Test results
         """
-        tabs = Logger().get_log_level_tab(1)
+        tabs = Logger().get_log_level_tab(2)
         Logger().close()
 
-        self.assertEqual(True, tabs == "\t")
+        self.assertEqual(True, tabs == "\t\t")
 
     def test_close(self):
         """
