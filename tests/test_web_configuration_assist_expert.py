@@ -3,6 +3,8 @@ from unittest import TestCase
 from network.network_ctrl import NetworkCtrl
 from router.router import Router, Mode
 from config.configmanager import ConfigManager
+from util.router_setup_web_configuration import RouterWebConfiguration
+from log.logger import Logger
 
 
 class TestWebConfigurationAssistExpert(TestCase):
@@ -25,6 +27,12 @@ class TestWebConfigurationAssistExpert(TestCase):
         network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
 
-        self.assertRaises(Exception, network_ctrl.wca_setup_expert(config))
-
-        network_ctrl.exit()
+        try:
+            web_config_assist = RouterWebConfiguration(router, config, wizard=False)
+            web_config_assist.start()
+            web_config_assist.join()
+        except Exception as e:
+            Logger().error(str(e))
+        finally:
+            assert router.mode == Mode.configuration
+            network_ctrl.exit()
