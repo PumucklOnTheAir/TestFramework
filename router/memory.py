@@ -82,8 +82,8 @@ class RAM(Memory):
         return self._buffers
 
     def __str__(self):
-        return str(self.total) + " " + str(self.used) + " " + str(self.free) + " " \
-               + str(self.shared) + " " + str(self.buffers)
+        return str(self.total) + " " + str(self.used) + " " + str(self.free) + " " + \
+               str(self.shared) + " " + str(self.buffers)
 
 
 class Swap(Memory):
