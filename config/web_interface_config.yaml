@@ -13,7 +13,7 @@ limit_bandwidth: False,
 # If you want the location of your node to be displayed on the map, you can enter its coordinates here.
 # Specifying the altitude is optional and should only be done if a proper value is known.
 show_location: True,
-latitude: 49.872160,
+latitude: 49.872161,
 longitude: 8.635345,
 altitude: 140.5,
 # You can provide your contact information here to allow others to contact you.

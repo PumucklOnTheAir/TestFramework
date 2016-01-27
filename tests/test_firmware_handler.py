@@ -1,7 +1,7 @@
 from unittest import TestCase
 from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware import Firmware
-from server.router import Router
+from router.router import Router
 from log.logger import Logger
 
 

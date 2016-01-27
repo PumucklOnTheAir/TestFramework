@@ -3,7 +3,7 @@ from threading import Thread
 from firmware.firmware_handler import FirmwareHandler
 from log.logger import Logger
 from network.network_ctrl import NetworkCtrl
-from server.router import Router
+from router.router import Router
 
 
 # TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
