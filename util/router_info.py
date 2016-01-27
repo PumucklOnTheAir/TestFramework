@@ -27,21 +27,23 @@ class RouterInfo(Thread):
         """
         Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
         self.network_ctrl.connect_with_remote_system()
-
-        # Model
-        self.router.model = self._get_router_model()
-        # MAC
-        self.router.mac = self._get_router_mac()
-        # SSID
-        self.router.ssid = self._get_router_ssid()
-        # NetworkInterfaces
-        self.router.interfaces = self._get_router_network_interfaces()
-        # CPUProcesses
-        self.router.cpu_processes = self._get_router_cpu_process()
-        # RAM
-        self.router.ram = self._get_router_mem_ram()
-        # Flashdriver
-        # TODO: self.router.flashdriver = self._get_router_mem_flashdriver()
+        try:
+            # Model
+            self.router.model = self._get_router_model()
+            # MAC
+            self.router.mac = self._get_router_mac()
+            # SSID
+            self.router.ssid = self._get_router_ssid()
+            # NetworkInterfaces
+            self.router.interfaces = self._get_router_network_interfaces()
+            # CPUProcesses
+            self.router.cpu_processes = self._get_router_cpu_process()
+            # RAM
+            self.router.ram = self._get_router_mem_ram()
+            Logger().debug("[+] Infos updated")
+        except Exception as e:
+            Logger().warning("[-] Couldn't update all Infos")
+            Logger().error(str(e))
 
     def join(self):
         self.network_ctrl.exit()
@@ -133,7 +135,6 @@ class RouterInfo(Thread):
                     ip = inet.split("/")[0].split("inet6 ")[1]
                     ip_prefix_len = int(inet.split("/")[1].split(" ")[0])
                     interface.ipv6_lst.append(IPv6(ip, ip_prefix_len))
-            print("interface: " + str(interface))
             interfaces[iface_name] = interface
         return interfaces
 
