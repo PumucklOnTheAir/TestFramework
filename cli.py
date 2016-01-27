@@ -31,6 +31,7 @@ def connect_to_server():
 def print_routers(routers):
     """
     Collects data for routers and sets headers for a table
+
     :param routers: list of routers
     :return:
     """
@@ -54,6 +55,7 @@ def print_routers(routers):
 def print_router_info(router_list, rid):
     """
     Prints information on a single router
+
     :param router_list: list of all routers
     :param rid: ID of router to be printed
     :return:
@@ -82,6 +84,7 @@ def print_router_info(router_list, rid):
 def create_parsers():
     """
     Creates parser and subparsers for the command line
+
     :return: parser
     """
 
