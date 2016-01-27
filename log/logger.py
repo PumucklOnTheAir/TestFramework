@@ -152,11 +152,12 @@ class Logger(metaclass=Singleton):
             return False
         return True
 
-    def setup(self, log_level: int = logging.DEBUG, file_log_level: int = logging.DEBUG,
+    def setup(self, use_console_output: bool = False, log_level: int = logging.DEBUG, file_log_level: int = logging.DEBUG,
               stream_log_level: int = logging.DEBUG, log_file_path: str = "logger.log", log_file_format: str = "",
               log_stream_format: str = "", max_detail_log_level: int = 5, log_filter: logging.Filter = None) -> None:
         """
         Create and initialize a new logging.Logger and create a new file and stream handler with the params
+        :param use_console_output: Logging on every console
         :param log_level: Logging level for the logging.Logger
         :param file_log_level: Logging level for the file handler
         :param stream_log_level: Logging level for the stream handler
@@ -191,10 +192,11 @@ class Logger(metaclass=Singleton):
             stream_handler.setLevel(stream_log_level)
 
             # create ConsoleHandler
-            # '/dev/console'
-            _console = open('/dev/tty1', 'w')
-            console_handler = logging.StreamHandler(_console)
-            console_handler.setLevel(stream_log_level)
+            console_handler = None
+            if use_console_output:
+                _console = open('/dev/console', 'w')
+                console_handler = logging.StreamHandler(_console)
+                console_handler.setLevel(stream_log_level)
 
             # create a SysLogHandler
             syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
@@ -209,12 +211,14 @@ class Logger(metaclass=Singleton):
             if log_stream_format == "":
                 log_stream_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
                 stream_handler.setFormatter(ColoredFormatter(log_stream_format))
-                console_handler.setFormatter(ColoredFormatter(log_stream_format))
+                if use_console_output:
+                    console_handler.setFormatter(ColoredFormatter(log_stream_format))
                 syslog_handler.setFormatter(ColoredFormatter(log_stream_format))
             else:
                 stream_formatter = logging.Formatter(log_stream_format)
                 stream_handler.setFormatter(stream_formatter)
-                console_handler.setFormatter(stream_formatter)
+                if use_console_output:
+                    console_handler.setFormatter(stream_formatter)
                 syslog_handler.setFormatter(stream_formatter)
 
             # add the handlers to the logger
@@ -222,7 +226,8 @@ class Logger(metaclass=Singleton):
                 self._logger.handlers.clear()
             self._logger.addHandler(file_handler)
             self._logger.addHandler(stream_handler)
-            self._logger.addHandler(console_handler)
+            if use_console_output:
+                self._logger.addHandler(console_handler)
             self._logger.addHandler(syslog_handler)
 
             self._max_detail_log_level = max_detail_log_level

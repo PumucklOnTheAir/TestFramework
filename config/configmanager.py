@@ -211,7 +211,7 @@ class ConfigManager:
         :param prop: Property from Server file
         :return: Value of the property from the file
         """
-        dic_keys = {"Server_Name", "Log_Level", "Vlan_On"}
+        dic_keys = {"Server_Name", "Log_Level", "Vlan_On", "Use_Console_Output"}
 
         if prop in dic_keys:
             output = ConfigManager.get_server_config()

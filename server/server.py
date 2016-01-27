@@ -55,7 +55,8 @@ class Server(ServerProxy):
         cls.DEBUG = debug_mode
 
         # create instance and give params to the logger object
-        Logger().setup(log_level, log_level, log_level)
+        use_console_output = int(ConfigManager.get_server_property("Use_Console_Output"))
+        Logger().setup(use_console_output, log_level, log_level, log_level)
 
         # load Router configs
         cls.__load_configuration()
