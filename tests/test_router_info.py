@@ -1,8 +1,6 @@
 from unittest import TestCase
 from router.router import Router, Mode
-from network.nv_assist import NVAssistent
 from util.router_info import RouterInfo
-import os
 
 
 class TestRouterInfo(TestCase):

@@ -2,7 +2,7 @@ import yaml
 import io
 from log.logger import Logger
 import os.path
-from router.router import *
+from router.router import Router
 
 
 class ConfigManager:

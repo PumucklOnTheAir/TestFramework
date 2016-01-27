@@ -1,7 +1,6 @@
 from threading import Thread
 from router.router import Router
 from log.logger import Logger
-from network.network_ctrl import NetworkCtrl
 from network.web_config_assist import WebConfigurationAssist
 
 
