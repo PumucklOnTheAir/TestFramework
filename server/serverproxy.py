@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractclassmethod
 from typing import List
-from server.router import Router
+from router.router import Router
 
 
 class ServerProxy(metaclass=ABCMeta):

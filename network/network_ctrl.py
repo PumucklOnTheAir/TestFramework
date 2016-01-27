@@ -1,7 +1,6 @@
 import os
 import paramiko
 from log.logger import Logger
-from network.web_config_assist import WebConfigurationAssist
 from network.webserver import WebServer
 from network.nv_assist import NVAssistent
 from network.remote_system import RemoteSystem
@@ -14,7 +13,6 @@ class NetworkCtrl:
         2. Encapsulates the Vlan inside the Namespace
         3. Provides a SSH-Connection via paramiko
         4. Provides a WebServer
-        5. Provides a Web_configuration_Assistent
     """
 
     def __init__(self, remote_system: RemoteSystem, link_iface_name='eth0'):
@@ -126,43 +124,6 @@ class NetworkCtrl:
             webserver.join()
         except Exception as e:
             Logger().error(str(e), 2)
-
-    def wca_setup_wizard(self, config):
-        """
-        Starts the WebConfigurationAssist and
-        sets the values provided by the wizard-mode (in the WebConfiguration)
-        :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
-        """
-        try:
-            # remote_sytem has to be a router object
-            wca = WebConfigurationAssist(config, self.remote_system)
-            wca.setup_wizard()
-            wca.exit()
-        except Exception as e:
-            Logger().error(str(e), 2)
-            self.exit()
-            raise e
-
-    def wca_setup_expert(self, config):
-        """
-        Starts the WebConfigurationAssist and
-        sets the values provided by the expert-mode(in the WebConfiguration)
-        :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
-        """
-        try:
-            # remote_sytem has to be a router object
-            wca = WebConfigurationAssist(config, self.remote_system)
-            wca.setup_expert_private_wlan()
-            wca.setup_expert_remote_access()
-            wca.setup_expert_network()
-            wca.setup_expert_mesh_vpn()
-            wca.setup_expert_wlan()
-            wca.setup_expert_autoupdate()
-            wca.exit()
-        except Exception as e:
-            Logger().error(str(e), 2)
-            self.exit()
-            raise e
 
     def test_connection(self) -> bool:
         """

@@ -1,7 +1,8 @@
-from .proxyobject import ProxyObject
+from server.proxyobject import ProxyObject
 from enum import Enum
 from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
+from router.memory import RAM, Flashdriver
 
 
 class WlanMode(Enum):
@@ -33,21 +34,13 @@ class Router(ProxyObject, RemoteSystem):
         ProxyObject.__init__(self)
 
         self._id = id
-
         self._ip = ip
-
         self._ip_mask = ip_mask
-
         self._config_ip = config_ip
-
         self._config_ip_mask = config_ip_mask
-
         self._vlan_iface_id = vlan_iface_id
-
         self._vlan_iface_name = vlan_iface_name
-
         self._namespace_name = "nsp" + str(self._vlan_iface_id)
-
         self._power_socket = power_socket
 
         # Optional values
@@ -58,6 +51,10 @@ class Router(ProxyObject, RemoteSystem):
         self._mac = '00:00:00:00:00:00'
         self._wlan_mode = WlanMode.unknown
         self._ssid = ''
+        self.interfaces = dict()
+        self.cpu_processes = list()
+        self._ram = None
+        self._flashdriver = None
         self._firmware = Firmware.get_default_firmware()
 
     @property
@@ -260,3 +257,39 @@ class Router(ProxyObject, RemoteSystem):
         """
         assert isinstance(value, Mode)
         self._mode = value
+
+    @property
+    def ram(self) -> RAM:
+        """
+        The RAM of the routers
+
+        :rtype: RAM
+        :return:
+        """
+        return self._ram
+
+    @ram.setter
+    def ram(self, value: RAM):
+        """
+        :type value: RAM
+        """
+        assert isinstance(value, RAM)
+        self._ram = value
+
+    @property
+    def flashdriver(self) -> Flashdriver:
+        """
+        The Flashdriver of the routers
+
+        :rtype: Flashdriver
+        :return:
+        """
+        return self._flashdriver
+
+    @flashdriver.setter
+    def flashdriver(self, value: Flashdriver):
+        """
+        :type value: Flashdriver
+        """
+        assert isinstance(value, Flashdriver)
+        self._flashdriver = value
