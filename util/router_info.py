@@ -30,17 +30,17 @@ cpu_process_info
         self.network_ctrl.connect_with_remote_system()
 
         # Model
-        #self.router.model = self._get_router_model()
+        self.router.model = self._get_router_model()
         # MAC
-        #self.router.mac = self._get_router_mac()
+        self.router.mac = self._get_router_mac()
         # SSID
-        #self.router.ssid = self._get_router_ssid()
+        self.router.ssid = self._get_router_ssid()
         # NetworkInterfaces
         self.router.interfaces = self._get_router_network_interfaces()
         # CPUProcesses
-        #self.router.cpu_processes = self._get_router_cpu_process()
+        self.router.cpu_processes = self._get_router_cpu_process()
         # RAM
-        #self.router.ram = self._get_router_mem_ram()
+        self.router.ram = self._get_router_mem_ram()
         # Flashdriver
         # TODO: self.router.flashdriver = self._get_router_mem_flashdriver()
 
@@ -72,7 +72,6 @@ cpu_process_info
         """
         interfaces = dict()
         raw_iface_names = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'").split("\\n'")[1:-1]
-        #tmp_interfaces_names = tmp.split("\n")
         iface_names = list()
 
         # transform a line tmp:
@@ -85,7 +84,7 @@ cpu_process_info
         for iface_name in iface_names:
             # MAC
             raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'link/ether'")
-            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
 
             if len(raw_iface_infos) > 0:
                 raw_mac = raw_iface_infos.split(" ")
@@ -97,7 +96,7 @@ cpu_process_info
 
             # Status
             raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep " + iface_name)
-            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
             raw_status = raw_iface_infos.split("state")
             if len(raw_status) > 1:
                 status = raw_status[1].split(" ")[1]
@@ -111,7 +110,7 @@ cpu_process_info
 
             # IPv4 addresses
             raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet '")
-            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
             if len(raw_iface_infos) > 0:
                 inet_lst = raw_iface_infos.split("\\n")
                 for inet in inet_lst:
@@ -123,7 +122,7 @@ cpu_process_info
 
             # IPv6 addresses
             raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet6 '")
-            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
             if len(raw_iface_infos) > 0:
                 inet_lst = raw_iface_infos.split("\\n")
                 for inet in inet_lst:
@@ -141,13 +140,13 @@ cpu_process_info
         :return: the cpu processes of the given Router object
         """
         cpu_processes = list()
-        raw_cpu_process_infos = self.network_ctrl.send_command("top -n 1")
-        raw_cpu_process_infos = raw_cpu_process_infos.replace("[","").replace("]","").replace("'","").replace(",","")
-        raw_cpu_process_infos = raw_cpu_process_infos.split("\\n")
-        print(str(raw_cpu_process_infos))
+        raw_cpu_process_info = self.network_ctrl.send_command("top -n 1")
+        raw_cpu_process_info = raw_cpu_process_info.replace("[", "").replace("]", "").replace("'", "").replace(",", "")
+        raw_cpu_process_info = raw_cpu_process_info.split("\\n")
+        print(str(raw_cpu_process_info))
         # A line looks like:
         # 1051  1020 root     R     1388   5%   9% firefox
-        for cpu_process_info_line in raw_cpu_process_infos[5:]:
+        for cpu_process_info_line in raw_cpu_process_info[5:]:
             print("info: " + cpu_process_info_line)
             # Split and remove the spaces
             cpu_process_info_lst = cpu_process_info_line.split(" ")
@@ -176,7 +175,7 @@ cpu_process_info
         """
         ram = None
         ram_mem_infos = self.network_ctrl.send_command("free -m")
-        ram_mem_infos = ram_mem_infos.replace("[","").replace("]","").replace("'","").replace(",","")
+        ram_mem_infos = ram_mem_infos.replace("[", "").replace("]", "").replace("'", "").replace(",", "")
         ram_mem_infos = ram_mem_infos.split("\\n")
         for ram_info_line in ram_mem_infos:
             if "Mem" in ram_info_line:
