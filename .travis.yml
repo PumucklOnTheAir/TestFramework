@@ -13,7 +13,7 @@ before_cache:
 notifications:
   email: false
 
-sudo: true
+sudo: required
 
 before_install:
   - pip install codecov
