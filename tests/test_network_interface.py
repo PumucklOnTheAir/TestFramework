@@ -5,9 +5,11 @@ from router.network_interface import NetworkInterface, Status
 
 class TestNetworkInterface(TestCase):
     def test_create_network_interface(self):
-        network_interface = NetworkInterface("eth0", "d8:31:26:45:56:2f")
+        network_interface = NetworkInterface("eth0")
         assert isinstance(network_interface, NetworkInterface)
         self.assertEqual(Status.unknown, network_interface.status)
+
+        network_interface.mac = "d8:31:26:45:56:2f"
 
         ipv4 = IPv4("192.168.1.1", 24)
         network_interface.ipv4_lst.append(ipv4)

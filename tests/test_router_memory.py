@@ -5,14 +5,13 @@ from router.memory import RAM, Flashdriver, Swap
 class TestCPUProcess(TestCase):
 
     def test_RAM(self):
-        ram = RAM(8000, 4000, 4000, 20, 250, 420)
+        ram = RAM(8000, 4000, 4000, 20, 250)
         assert isinstance(ram, RAM)
         self.assertEqual(8000, ram.total)
         self.assertEqual(4000, ram.used)
         self.assertEqual(4000, ram.free)
         self.assertEqual(20, ram.shared)
         self.assertEqual(250, ram.buffers)
-        self.assertEqual(420, ram.cached)
 
     def test_Flashdriver(self):
         flashdriver = Flashdriver(8000, 4000, 4000)

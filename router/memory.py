@@ -42,25 +42,26 @@ class Memory:
         """
         return self._free
 
+    def __str__(self):
+        return str(self.total) + " " + str(self.used) + " " + str(self.free)
+
 
 class RAM(Memory):
     """
     This class represents a RAM object, with the extra properties shared, bufferes, cached memory.
     """""
 
-    def __init__(self, total: int, used: int, free: int, shared: int, buffers: int, cached: int):
+    def __init__(self, total: int, used: int, free: int, shared: int, buffers: int):
         """
         :param total: the total memory size
         :param used: the size of used memory
         :param free: the size of free memory
         :param shared: the size of shared memory
         :param buffers: the size of buffers memory
-        :param cached: the size of cached memory
         """
         super().__init__(total, used, free)
         self._shared = shared
         self._buffers = buffers
-        self._cached = cached
 
     @property
     def shared(self) -> int:
@@ -80,14 +81,9 @@ class RAM(Memory):
         """
         return self._buffers
 
-    @property
-    def cached(self) -> int:
-        """
-        The size of cached memory
-
-        :return: int
-        """
-        return self._cached
+    def __str__(self):
+        return str(self.total) + " " + str(self.used) + " " + str(self.free) + " " \
+               + str(self.shared) + " " + str(self.buffers)
 
 
 class Swap(Memory):

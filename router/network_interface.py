@@ -1,4 +1,3 @@
-from router.ip_address import IPv4, IPv6
 from enum import Enum
 
 
@@ -16,16 +15,15 @@ class NetworkInterface:
     This class represents a Network Interface, with a name, a mac address and two lists of IPs.
     """""
 
-    def __init__(self, name: str, mac: str):
+    def __init__(self, name: str):
         """
         This class represents a Network Interface.
 
         :param name: The name of the interface
-        :param mac: The mac address of the interface
         """
         self._name = name
         self._status = Status.unknown
-        self._mac = mac
+        self._mac = "00:00:00:00:00:00"
         self.ipv4_lst = list()
         self.ipv6_lst = list()
 
@@ -80,10 +78,10 @@ class NetworkInterface:
     def __str__(self):
         ipv4 = "["
         for ip in self.ipv4_lst:
-            ipv4 = ipv4 + " "  + str(ip)
+            ipv4 = ipv4 + " " + str(ip)
         ipv4 += " ]"
         ipv6 = "["
         for ip in self.ipv6_lst:
-            ipv6 = ipv6 + " "  + str(ip)
+            ipv6 = ipv6 + " " + str(ip)
         ipv6 += " ]"
         return self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipv4) + ", " + str(ipv6)

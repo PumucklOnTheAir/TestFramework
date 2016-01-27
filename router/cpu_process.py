@@ -6,7 +6,7 @@ class CPUProcess:
     cpu utilization, memory utilization, start time, and the actual command.
     """""
 
-    def __init__(self, pid: int, user: str, cpu: float, mem: float, command: str):
+    def __init__(self, pid: int, user: str, mem: float, cpu: float, command: str):
         """
         This class represents a CPU Process.
 
@@ -14,7 +14,6 @@ class CPUProcess:
         :param user: user name
         :param cpu: cpu utilization
         :param mem: memory utilization
-        :param start: start time
         :param command: actual command
         """
         self._pid = pid
@@ -38,7 +37,7 @@ class CPUProcess:
         :type value: int
         """
         assert isinstance(value, int)
-        self._pid= value
+        self._pid = value
 
     @property
     def user(self) -> str:
@@ -55,7 +54,7 @@ class CPUProcess:
         :type value: str
         """
         assert isinstance(value, str)
-        self._user= value
+        self._user = value
 
     @property
     def cpu(self) -> float:
@@ -72,7 +71,7 @@ class CPUProcess:
         :type value: float
         """
         assert isinstance(value, float)
-        self._cpu= value
+        self._cpu = value
 
     @property
     def mem(self) -> float:
@@ -89,7 +88,7 @@ class CPUProcess:
         :type value: float
         """
         assert isinstance(value, float)
-        self._mem= value
+        self._mem = value
 
     @property
     def command(self) -> str:
@@ -106,4 +105,7 @@ class CPUProcess:
         :type value: str
         """
         assert isinstance(value, str)
-        self._command= value
+        self._command = value
+
+    def __str__(self):
+        return str(self._pid) + " " + self.user + " " + str(self.mem) + "% " + str(self.cpu) + "% " + self.command
