@@ -1,6 +1,6 @@
 from threading import Thread
 from network.network_ctrl import NetworkCtrl
-from server.router import Router, Mode
+from router.router import Router, Mode
 from log.logger import Logger
 
 

@@ -1,6 +1,6 @@
 import unittest
 from server.server import Server
-from server.router import Router
+from router.router import Router
 from threading import Timer
 import time
 import os
