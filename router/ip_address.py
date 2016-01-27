@@ -59,6 +59,7 @@ class IPv4(IPAddress):
     def __str__(self):
         return self.ip + "/" + str(self.mask)
 
+
 class IPv6(IPAddress):
     def __init__(self, ip: str, prefix_len: int):
         """

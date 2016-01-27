@@ -26,4 +26,3 @@ class TestRouterReboot(TestCase):
         assert isinstance(router, Router)
         RouterReboot().normal(router)
         assert router.mode == Mode.normal
-
