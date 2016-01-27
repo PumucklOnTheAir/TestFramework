@@ -1,5 +1,5 @@
 import unittest
-from util.cli_util import *
+from util.cli_util import CLIUtil
 
 
 class MyTestCase(unittest.TestCase):

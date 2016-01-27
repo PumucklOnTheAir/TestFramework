@@ -1,5 +1,5 @@
 import unittest
-from cli import *
+from cli import create_parsers
 
 
 class TestCaseParser(unittest.TestCase):
