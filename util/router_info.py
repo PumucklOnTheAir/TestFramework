@@ -17,30 +17,30 @@ class RouterInfo(Thread):
     def __init__(self, router: Router):
         Thread.__init__(self)
         self.router = router
-        self.network_ctrl = NetworkCtrl(self.router, 'eth0')
+        self.network_ctrl = NetworkCtrl(self.router, 'enp0s25')
         self.daemon = True
 
     def run(self):
         """
         Runs new thread and gets the information from the router via ssh
-
+cpu_process_info
         :return:
         """
         Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
         self.network_ctrl.connect_with_remote_system()
 
         # Model
-        self.router.model = self._get_router_model()
+        #self.router.model = self._get_router_model()
         # MAC
-        self.router.mac = self._get_router_mac()
+        #self.router.mac = self._get_router_mac()
         # SSID
-        self.router.ssid = self._get_router_ssid()
+        #self.router.ssid = self._get_router_ssid()
         # NetworkInterfaces
         self.router.interfaces = self._get_router_network_interfaces()
         # CPUProcesses
-        self.router.cpu_processes = self._get_router_cpu_process()
+        #self.router.cpu_processes = self._get_router_cpu_process()
         # RAM
-        self.router.ram = self._get_router_mem_ram()
+        #self.router.ram = self._get_router_mem_ram()
         # Flashdriver
         # TODO: self.router.flashdriver = self._get_router_mem_flashdriver()
 
@@ -71,51 +71,68 @@ class RouterInfo(Thread):
         :return: the network interfaces of the given Router object
         """
         interfaces = dict()
-        tmp_interfaces_names = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'").split("\n")
-        interface_names = list()
+        raw_iface_names = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'").split("\\n'")[1:-1]
+        #tmp_interfaces_names = tmp.split("\n")
+        iface_names = list()
 
         # transform a line tmp:
         # '2: enp0s25: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state DOWN group default qlen 1000'
         # into 'enp0s25' and lists it.
-        for tmp in tmp_interfaces_names:
-            interface_names.append(tmp.split(":")[1].replace(" ", ""))
+        for raw_iface_name in raw_iface_names:
+            iface_name = raw_iface_name.split(":")[1].replace(" ", "")
+            iface_names.append(iface_name)
 
-        for iface_name in interface_names:
-            tmp = self.network_ctrl.send_command("ip addr show eth0 | grep 'link/ether'")
-            mac = tmp.split(" ")[1]
+        for iface_name in iface_names:
+            # MAC
+            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'link/ether'")
+            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
 
-            interface = NetworkInterface(iface_name, mac)
+            if len(raw_iface_infos) > 0:
+                raw_mac = raw_iface_infos.split(" ")
+                i = raw_mac.count("")
+                for i in range(0, i):
+                    raw_mac.remove("")
+                mac = raw_mac[1]
+                interface = NetworkInterface(iface_name, mac)
 
-            # Status: UP | DOWN | UNKNOWN
-            cmd = "ip addr show " + iface_name + " | grep 'lo:'"
-            # 2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
-            tmp = self.network_ctrl.send_command(cmd)
-            print("tmp:" + tmp)
-            tmp = tmp.split("state")[1]
-            tmp = tmp.split("group")[0]
-            state = tmp.replace(" ", "")
-            if state == "UP":
-                status = Status.up
-            elif state == "DOWN":
-                status = Status.down
-            else:
-                status = Status.unknown
-            interface.status = status
+            # Status
+            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep " + iface_name)
+            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            raw_status = raw_iface_infos.split("state")
+            if len(raw_status) > 1:
+                status = raw_status[1].split(" ")[1]
+                # Status: UP | DOWN | UNKNOWN
+                if status == "UP":
+                    interface.status = Status.up
+                elif status == "DOWN":
+                    interface.status = Status.down
+                else:
+                    interface.status = Status.unknown
 
             # IPv4 addresses
-            inet_lst = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet '")
-            for inet in inet_lst:
-                ip = inet.split("/")[0].split(" ")[1]
-                ip_mask = int(inet.split("/")[1].split(" ")[0])
-                interface.ipv4_lst.append(IPv4(ip, ip_mask))
+            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet '")
+            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            if len(raw_iface_infos) > 0:
+                inet_lst = raw_iface_infos.split("\\n")
+                for inet in inet_lst:
+                    if not ("inet" in inet):
+                        continue
+                    ip = inet.split("/")[0].split("inet ")[1]
+                    ip_mask = int(inet.split("/")[1].split(" ")[0])
+                    interface.ipv4_lst.append(IPv4(ip, ip_mask))
 
             # IPv6 addresses
-            inet_lst = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet6 '")
-            for inet in inet_lst:
-                ip = inet.split("/")[0].split(" ")[1]
-                ip_prefix_len = int(inet.split("/")[1].split(" ")[0])
-                interface.ipv6_lst.append(IPv6(ip, ip_prefix_len))
-
+            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet6 '")
+            raw_iface_infos = raw_iface_infos.replace("[","").replace("]","").replace("'","")
+            if len(raw_iface_infos) > 0:
+                inet_lst = raw_iface_infos.split("\\n")
+                for inet in inet_lst:
+                    if not ("inet6" in inet):
+                        continue
+                    ip = inet.split("/")[0].split("inet6 ")[1]
+                    ip_prefix_len = int(inet.split("/")[1].split(" ")[0])
+                    interface.ipv6_lst.append(IPv6(ip, ip_prefix_len))
+            print("interface: " + str(interface))
             interfaces[iface_name] = interface
         return interfaces
 
@@ -124,26 +141,32 @@ class RouterInfo(Thread):
         :return: the cpu processes of the given Router object
         """
         cpu_processes = list()
-        cpu_process_info = self.network_ctrl.send_command("ps aux")
-
+        raw_cpu_process_infos = self.network_ctrl.send_command("top -n 1")
+        raw_cpu_process_infos = raw_cpu_process_infos.replace("[","").replace("]","").replace("'","").replace(",","")
+        raw_cpu_process_infos = raw_cpu_process_infos.split("\\n")
+        print(str(raw_cpu_process_infos))
         # A line looks like:
-        # 'root     1731  7.0  8.2 1824844 661228 tty2   Sl+  09:50  18:01 firefox'
-        for cpu_process_info_line in cpu_process_info[1:]:
+        # 1051  1020 root     R     1388   5%   9% firefox
+        for cpu_process_info_line in raw_cpu_process_infos[5:]:
+            print("info: " + cpu_process_info_line)
             # Split and remove the spaces
             cpu_process_info_lst = cpu_process_info_line.split(" ")
             i = cpu_process_info_lst.count("")
             for i in range(0, i):
                 cpu_process_info_lst.remove("")
+            print(str(cpu_process_info_lst))
             # Get the infos
-            user = cpu_process_info_lst[0]
-            pid = int(cpu_process_info_lst[1])
-            cpu = float(cpu_process_info_lst[2])
-            mem = float(cpu_process_info_lst[3])
-            start = cpu_process_info_lst[8]
+            pid = int(cpu_process_info_lst[0])
+            print("pid:" + str(pid))
+            '''
+            user = cpu_process_info_lst[2]
+            mem = float(cpu_process_info_lst[5])
+            cpu = float(cpu_process_info_lst[6])
             command = ""
-            for i in range(10, len(cpu_process_info_lst)):
+            for i in range(7, len(cpu_process_info_lst)):
                 command += cpu_process_info_lst[i]
-            cpu_process = CPUProcess(pid, user, cpu, mem, start, command)
+            '''
+            cpu_process = CPUProcess(pid, "user", 0.0, 0.0, "command")
             cpu_processes.append(cpu_process)
         return cpu_processes
 
@@ -152,9 +175,11 @@ class RouterInfo(Thread):
         :return: the RAM of the given Router.
         """
         ram = None
-        ram_info = self.network_ctrl.send_command("free -m")
-        for ram_info_line in ram_info[1:]:
-            if "Mem" in ram_info:
+        ram_mem_infos = self.network_ctrl.send_command("free -m")
+        ram_mem_infos = ram_mem_infos.replace("[","").replace("]","").replace("'","").replace(",","")
+        ram_mem_infos = ram_mem_infos.split("\\n")
+        for ram_info_line in ram_mem_infos:
+            if "Mem" in ram_info_line:
                 # Split and remove the spaces
                 ram_info_lst = ram_info_line.split(" ")
                 i = ram_info_lst.count("")

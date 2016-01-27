@@ -6,7 +6,7 @@ class CPUProcess:
     cpu utilization, memory utilization, start time, and the actual command.
     """""
 
-    def __init__(self, pid: int, user: str, cpu: float, mem: float, start: str, command: str):
+    def __init__(self, pid: int, user: str, cpu: float, mem: float, command: str):
         """
         This class represents a CPU Process.
 
@@ -21,7 +21,6 @@ class CPUProcess:
         self._user = user
         self._cpu = cpu
         self._mem = mem
-        self._start = start
         self._command = command
 
     @property
@@ -91,23 +90,6 @@ class CPUProcess:
         """
         assert isinstance(value, float)
         self._mem= value
-
-    @property
-    def start(self) -> str:
-        """
-        The start time of the process
-
-        :return: str
-        """
-        return self._start
-
-    @start.setter
-    def start(self, value: str):
-        """
-        :type value: str
-        """
-        assert isinstance(value, str)
-        self._start= value
 
     @property
     def command(self) -> str:

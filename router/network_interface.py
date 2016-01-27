@@ -76,3 +76,14 @@ class NetworkInterface:
         """
         assert isinstance(value, str)
         self._mac = value
+
+    def __str__(self):
+        ipv4 = "["
+        for ip in self.ipv4_lst:
+            ipv4 = ipv4 + " "  + str(ip)
+        ipv4 += " ]"
+        ipv6 = "["
+        for ip in self.ipv6_lst:
+            ipv6 = ipv6 + " "  + str(ip)
+        ipv6 += " ]"
+        return self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipv4) + ", " + str(ipv6)

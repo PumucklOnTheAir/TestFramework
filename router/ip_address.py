@@ -56,6 +56,8 @@ class IPv4(IPAddress):
         assert isinstance(value, int)
         self._mask = value
 
+    def __str__(self):
+        return self.ip + "/" + str(self.mask)
 
 class IPv6(IPAddress):
     def __init__(self, ip: str, prefix_len: int):
@@ -82,3 +84,6 @@ class IPv6(IPAddress):
         """
         assert isinstance(value, int)
         self._prefix_len = value
+
+    def __str__(self):
+        return self.ip + str(self.prefix_len)
