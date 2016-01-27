@@ -191,8 +191,8 @@ class Logger(metaclass=Singleton):
             stream_handler.setLevel(stream_log_level)
 
             # create ConsoleHandler
-            # '/dev/tty0'
-            _console = open('ls -l /dev/console', 'w')
+            # '/dev/console'
+            _console = open('/dev/tty0', 'w')
             console_handler = logging.StreamHandler(_console)
             console_handler.setLevel(stream_log_level)
 
