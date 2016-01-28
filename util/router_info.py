@@ -26,8 +26,8 @@ class RouterInfo(Thread):
         :return:
         """
         Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
-        self.network_ctrl.connect_with_remote_system()
         try:
+            self.network_ctrl.connect_with_remote_system()
             # Model
             self.router.model = self._get_router_model()
             # MAC
@@ -40,9 +40,9 @@ class RouterInfo(Thread):
             self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
             self.router.ram = self._get_router_mem_ram()
-            Logger().debug("[+] Infos updated")
+            Logger().debug("[+] Infos updated", 2)
         except Exception as e:
-            Logger().warning("[-] Couldn't update all Infos")
+            Logger().warning("[-] Couldn't update all Infos", 2)
             Logger().error(str(e))
 
     def join(self):
