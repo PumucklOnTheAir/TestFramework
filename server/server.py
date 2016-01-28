@@ -60,12 +60,11 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
-        ''' von simon auskommentiert
         if cls.VLAN:
             from util.router_info import RouterInfo
             # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
-            RouterInfo.update(cls.get_routers()[0])
-        '''
+            cls.update_router_info(None, True)
+
 
         print("Runtime Server started")
 
