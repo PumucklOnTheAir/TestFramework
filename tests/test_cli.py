@@ -129,7 +129,3 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert len(version) != 0
 
         # TODO compare Version with Version from Server.VERSION and ./cli version (exists?)
-
-
-if __name__ == '__main__':
-    unittest.main()
