@@ -122,7 +122,7 @@ class TestCLItoServerConnection(unittest.TestCase):
 
     def test_cli_connected(self):
         response = os.system(self.path_cli)
-        assert not response == 0
+        assert response == 0
 
     def test_get_version(self):
         version = self.server_proxy.get_server_version()

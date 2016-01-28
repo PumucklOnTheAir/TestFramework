@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from server.ipc import IPC
 from util.cli_util import CLIUtil
 from log.logger import Logger
