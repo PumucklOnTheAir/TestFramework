@@ -9,9 +9,3 @@ ConfigManager
 ==============
 .. automodule:: config.configmanager
   :members:
-
-
-FileManager
-============
-.. automodule:: config.filemanager
-  :members:

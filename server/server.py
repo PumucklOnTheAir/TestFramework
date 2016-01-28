@@ -3,6 +3,7 @@ from .ipc import IPC
 from router.router import Router
 from config.configmanager import ConfigManager
 from typing import List
+from log.logger import Logger
 import os
 
 
@@ -47,11 +48,14 @@ class Server(ServerProxy):
         cls.VLAN = vlan_activate
 
         # read from config if debug mode is on
-        log_level = ConfigManager.get_server_property("Log_Level")
+        log_level = int(ConfigManager.get_server_property("Log_Level"))
         debug_mode = False
         if log_level is 10:
             debug_mode = True
         cls.DEBUG = debug_mode
+
+        # create instance and give params to the logger object
+        Logger().setup(log_level, log_level, log_level)
 
         # load Router configs
         cls.__load_configuration()
@@ -80,6 +84,9 @@ class Server(ServerProxy):
         """
         Stops the server, all running tests and closes all connections.
         """
+        # close open streams and the logger instance
+        Logger().close()
+
         cls._ipc_server.shutdown()
         pass
 
