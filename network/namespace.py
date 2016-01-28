@@ -50,12 +50,12 @@ class Namespace:
         """
         Logger().debug("Delete Namespace ...", 2)
         try:
-            if self.ipdb_netns is None:
-                netns.remove(self.nsp_name)
-            else:
+            if not (self.ipdb_netns is None):
                 for iface_name in self.ipdb_netns.interfaces:
-                    self.ipdb_netns.interfaces[iface_name].nl.remove()
-                self.ipdb_netns.release()
+                    if "vlan" in str(iface_name) or "veth" in str(iface_name):
+                        self.ipdb_netns.interfaces[iface_name].remove().commit()
+            netns.remove(self.nsp_name)
+            self.ipdb_netns.release()
             Logger().debug("[+] Namespace(" + self.nsp_name + ") successfully deleted", 3)
         except Exception as e:
             if re.match("\[Errno 2\]*", str(e)):
@@ -71,7 +71,6 @@ class Namespace:
 
         :param iface_name:
         """
-        iface_name = iface_name
         iface_ip = self._get_ip(True, iface_name)
         try:
             with self.ipdb.interfaces[iface_name] as iface:

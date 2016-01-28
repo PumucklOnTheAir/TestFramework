@@ -97,7 +97,7 @@ class NVAssistent:
         for veth in self.veth_dict:
             self.delete_veth(veth)
         self.namespace.remove()
-        self.bridge.close()
+        #self.bridge.close()
         self.ipdb.release()
         Logger().debug("Kill dhclient ...")
         os.system('pkill dhclient')

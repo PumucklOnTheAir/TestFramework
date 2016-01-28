@@ -347,7 +347,7 @@ class Server(ServerProxy):
         """
         if cls.VLAN:
             from network.nv_assist import NVAssistent  # TODO auslagern...
-            nv_assi = NVAssistent("eth0")
+            nv_assi = NVAssistent("enp0s25")
             nv_assi.create_namespace_vlan_veth(remote_sys)
             return nv_assi
         else:

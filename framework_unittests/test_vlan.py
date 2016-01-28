@@ -11,7 +11,7 @@ class TestVlan(TestCase):
         Logger().debug("TestVlan: test_create_vlan ...")
         # Create VLAN
         ipdb = IPDB()
-        vlan = Vlan(ipdb, 'eth0', 'vlan1', 21)
+        vlan = Vlan(ipdb, 'eth0', 'vlan21', 21)
         vlan.create_interface("192.168.1.11", 24)
         assert isinstance(vlan, Vlan)
 
@@ -26,17 +26,16 @@ class TestVlan(TestCase):
         process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert stdout.decode('utf-8') == ""
-        print("Test again")
 
     def test_create_existing_vlan(self):
         Logger().debug("TestVlan: test_create_existing_vlan ...")
         # Create VLAN 1
         ipdb = IPDB()
-        vlan = Vlan(ipdb, 'eth0', 'vlan1', 21)
+        vlan = Vlan(ipdb, 'eth0', 'vlan21', 21)
         vlan.create_interface("192.168.1.11", 24)
         assert isinstance(vlan, Vlan)
         # Create VLAN 2
-        vlan = Vlan(ipdb, 'eth0', 'vlan1', 21)
+        vlan = Vlan(ipdb, 'eth0', 'vlan21', 21)
         vlan.create_interface("192.168.1.11", 24)
         assert isinstance(vlan, Vlan)
 
@@ -56,12 +55,12 @@ class TestVlan(TestCase):
         Logger().debug("TestVlan: test_create_vlan_with_existing_name ...")
         # Create VLAN 1
         ipdb = IPDB()
-        vlan = Vlan(ipdb, 'eth0', 'vlan1', 21)
+        vlan = Vlan(ipdb, 'eth0', 'vlan21', 21)
         vlan.create_interface("192.168.1.11", 24)
         assert isinstance(vlan, Vlan)
         # Create VLAN 2
         ipdb = IPDB()
-        vlan = Vlan(ipdb, 'eth0', 'vlan1', 22)
+        vlan = Vlan(ipdb, 'eth0', 'vlan21', 22)
         vlan.create_interface("192.168.1.11", 24)
         assert isinstance(vlan, Vlan)
 
@@ -81,13 +80,13 @@ class TestVlan(TestCase):
         Logger().debug("TestVlan: test_create_vlan_with_existing_id ...")
         # Create VLAN 1
         ipdb = IPDB()
-        vlan1 = Vlan(ipdb, 'eth0', 'vlan1', 21)
+        vlan1 = Vlan(ipdb, 'eth0', 'vlan21', 21)
         assert isinstance(vlan1, Vlan)
         vlan1.create_interface("192.168.1.11", 24)
 
         # Create VLAN 2
         ipdb = IPDB()
-        vlan2 = Vlan(ipdb, 'eth0', 'vlan2', 21)
+        vlan2 = Vlan(ipdb, 'eth0', 'vlan22', 21)
         assert isinstance(vlan2, Vlan)
         vlan2.create_interface("192.168.1.11", 24)
 
