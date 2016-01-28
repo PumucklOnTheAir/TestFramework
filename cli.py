@@ -1,19 +1,22 @@
+#!/usr/bin/env python3
+
 from server.ipc import IPC
-from cli.cli_util import CLIUtil
+from util.cli_util import CLIUtil
 from log.logger import Logger
 import argparse
 import time
+import sys
 
 
 def connect_to_server():
-    """ Initiates connection to the IPC server by creating a client
+    """
+    Initiates connection to the IPC server by creating a client
     """
 
     if verbose:
         Logger().info("Setting up IPC client")
 
     global ipc_client
-    """Global Variable for the IPC Client"""
     ipc_client = IPC()
     ipc_client.connect()
 
@@ -21,16 +24,25 @@ def connect_to_server():
     time.sleep(1)
 
     if verbose:
-        Logger().info("Client succesfully setup")
+        Logger().info("Client successfully connected")
 
-    global server_proxy
-    """global variable for the proxy server"""
     server_proxy = ipc_client.get_server_proxy()
+    return server_proxy
 
 
 def print_routers(routers):
+    """
+    Collects data for routers and sets headers for a table
+
+    :param routers: list of routers
+    :return:
+    """
+
+    # Headers for table
     headers = ["ID", "Router Model/Vers", "VLAN ID", "Router Name", "IP", "MAC"]
     string_list = []
+
+    # Collect info on routers
     for i in range(len(routers)):
         string_list.append([routers[i].id,
                             routers[i].model,
@@ -38,14 +50,23 @@ def print_routers(routers):
                             routers[i].wlan_mode,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
+
     util.print_status(string_list, headers)
 
 
 def print_router_info(router_list, rid):
+    """
+    Prints information on a single router
+
+    :param router_list: list of all routers
+    :param rid: ID of router to be printed
+    :return:
+    """
     router = [elem for elem in router_list if str(elem.id) == str(rid)]
     if not router:
         Logger().info("No such router found, check the list again")
     else:
+        # Collect info on router [["header", info],...]
         router = router[0]
         info = [["ID", router.id],
                 ["Model", router.model],
@@ -62,8 +83,11 @@ def print_router_info(router_list, rid):
         util.print_router(info)
 
 
-def main():
-    """Freifunk TestFramework Command Line Interface
+def create_parsers():
+    """
+    Creates parser and subparsers for the command line
+
+    :return: parser
     """
 
     # Argument Parsing
@@ -79,7 +103,7 @@ def main():
     parser_status.add_argument("-a", "--all", help="Return status of all routers in network",
                                action="store_true")
     parser_status.add_argument("-r", "--router", help="Return detailed info on router", nargs=1,
-                               action="store", metavar="Router ID")
+                               type=int, action="store", metavar="Router ID")
 
     # subparser for sysupgrade
     parser_upgrade = subparsers.add_parser("sysupgrade", help="Upgrades the routers")
@@ -113,6 +137,16 @@ def main():
     parser_webconfig.add_argument("-a", "--all", action="store_true", default=False,
                                   help="Apply to all routers")
 
+    return parser
+
+
+def main():
+    """
+    Freifunk TestFramework Command Line Interface
+    """
+
+    # Parse Arguments
+    parser = create_parsers()
     args = parser.parse_args()
 
     global verbose
@@ -121,14 +155,23 @@ def main():
     global util
     util = CLIUtil()
     util.print_header()
-    connect_to_server()
+
+    try:
+        server_proxy = connect_to_server()
+    except ConnectionError as e:
+        Logger().warning("Failed to establish connection: " + str(e))
+        Logger().info("Exiting")
+        sys.exit(1)
 
     if verbose:
         Logger().info("Mode set to verbose")
 
     if args.mode == "status":
+        """
+        subparse: status
+        """
         if args.all:
-            """return status of routers"""
+            # return status of all routers
             routers = server_proxy.get_routers()
             if not routers:
                 Logger().warning("No routers in network")
@@ -139,34 +182,43 @@ def main():
             routers = server_proxy.get_routers()
             print_router_info(routers, args.router[0])
         else:
-            Logger().info("Please specify. See status -h")
+            parser.print_help()
     elif args.mode == "sysupgrade":
-        if args.all:
-            server_proxy.sysupgrade_firmware([], True, args.n)
-        else:
-            server_proxy.sysupgrade_firmware(args.routers, False, args.n)
+        """
+        subparse: sysupgrade
+        """
+        upgrade_all = args.all
+        not_saving_config = args.n
+
+        server_proxy.sysupgrade_firmware(args.routers, upgrade_all, not_saving_config)
+
     elif args.mode == "sysupdate":
-        if args.all:
-            server_proxy.sysupdate_firmware([], True)
-        else:
-            server_proxy.sysupdate_firmware(args.routers, False)
+        """
+        subparse: sysupdate
+        """
+        update_all = args.all
+
+        server_proxy.sysupdate_firmware(args.routers, update_all)
+
     elif args.mode == "reboot":
-        if args.all:
-            if args.config:
-                server_proxy.reboot_router([], True, True)
-            else:
-                server_proxy.reboot_router([], True, False)
-        elif args.config:
-            server_proxy.reboot_router(args.routers, False, True)
-        else:
-            server_proxy.reboot_router(args.routers, False, False)
+        """
+        subparse: reboot
+        """
+        config_mode = args.config
+        reboot_all = args.all
+
+        server_proxy.reboot_router(args.routers, reboot_all, config_mode)
+
     elif args.mode == "webconfig":
-        if args.all:
-            server_proxy.setup_web_configuration([], True)
-        else:
-            server_proxy.setup_web_configuration(args.routers, False)
+        """
+        subparse: webconfig
+        """
+        config_all = args.all
+
+        server_proxy.setup_web_configuration(args.routers, config_all)
+
     else:
-        Logger().info("Check -h for help")
+        Logger().info("Check --help for help")
 
 
 if __name__ == "__main__":
