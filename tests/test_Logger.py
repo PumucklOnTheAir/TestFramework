@@ -11,7 +11,7 @@ class MyTestCase(unittest.TestCase):
         """
         l = Logger()
 
-        l.setup(False, 10)
+        l.setup(10)
 
         self.assertEqual(True, l.is_loaded)
 
@@ -105,7 +105,7 @@ class MyTestCase(unittest.TestCase):
         :return: Test results
         """
         logger = Logger()
-        logger.setup(False, 10, 10, 10, "logger.log", "", "", 5, None)
+        logger.setup(10, 10, 10, "logger.log", "", "", 5, None)
         level = logger.max_detail_log_level()
         logger.close()
 

@@ -69,7 +69,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_server_list()
-        self.assertEqual(len(data), 4, "test_Yaml: Wrong size of the List")
+        self.assertEqual(len(data), 3, "test_Yaml: Wrong size of the List")
 
     def test_config_server_prop(self):
         """
