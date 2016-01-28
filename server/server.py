@@ -61,10 +61,12 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
+        ''' von simon auskommentiert
         if cls.VLAN:
             from util.router_info import RouterInfo
             # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
             RouterInfo.update(cls.get_routers()[0])
+        '''
 
         print("Runtime Server started")
 
@@ -175,7 +177,7 @@ class Server(ServerProxy):
         """
         routers = cls.get_routers()
         if routers[router_id].id == router_id:
-            return router_id
+            return routers[router_id]
         for router in routers:
             if router.id == router_id:
                 return router
