@@ -1,5 +1,10 @@
 import unittest
 from cli import create_parsers
+import time
+from server.server import Server
+from multiprocessing import Process
+from server.ipc import IPC
+import os
 
 
 class TestCaseParser(unittest.TestCase):
@@ -84,6 +89,48 @@ class CLITestClass(TestCaseParser):
         args = self.parser.parse_args(["webconfig", "-a"])
         assert args.all
         assert args.mode == "webconfig"
+
+
+class TestCLItoServerConnection(unittest.TestCase):
+    path_cli = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cli.py')
+
+    proc = None
+
+    @classmethod
+    def setUpClass(cls):
+        #  starts the IPC server in another(!) process
+        cls.proc = Process(target=TestCLItoServerConnection.serverStartWithParams, args=()).start()
+        time.sleep(2)
+
+    @classmethod
+    def tearDownClass(cls):
+        ipc_client = IPC()
+        ipc_client.connect()
+        server_proxy = ipc_client.get_server_proxy()
+        server_proxy.stop()
+
+    @staticmethod
+    def serverStartWithParams():
+        base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+        config_path = os.path.join(base_dir, 'tests/configs/config_no_vlan')  # Join Project Root with config
+        Server.start(config_path=config_path)
+
+    def setUp(self):
+        self.ipc_client = IPC()
+        self.ipc_client.connect()
+        self.server_proxy = self.ipc_client.get_server_proxy()
+
+    def test_cli_connected(self):
+        response = os.system(self.path_cli)
+        assert not response == 0
+
+    def test_get_version(self):
+        version = self.server_proxy.get_server_version()
+        assert len(version) != 0
+
+        # TODO compare Version with Version from Server.VERSION and ./cli version (exists?)
+
+
 
 
 if __name__ == '__main__':

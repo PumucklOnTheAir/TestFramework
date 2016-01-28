@@ -5,6 +5,7 @@ import time
 from server.server import Server
 from multiprocessing import Process
 from server.ipc import IPC
+import os
 
 
 server_all_ready_started = False
@@ -16,7 +17,7 @@ class ServerAlive(unittest.TestCase):
     If you are running this module standalone it will try to connect to an all ready started server.
     If not it creates his own server instance.
     """""
-
+    # TODO This test seems to be broken
     proc = None
 
     @classmethod
@@ -36,7 +37,9 @@ class ServerAlive(unittest.TestCase):
 
     @staticmethod
     def serverStartWithParams():
-        Server.start(debug_mode=True, config_path="../tests/config", vlan_activate=False)
+        base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+        config_path = os.path.join(base_dir, 'tests/configs/config_no_vlan')  # Join Project Root with config
+        Server.start(config_path=config_path)
 
     def setUp(self):
         self.ipc_client = IPC()
