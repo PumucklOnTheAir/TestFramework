@@ -7,6 +7,3 @@ class MyTestCase(unittest.TestCase):
         global cli_util
         cli_util = CLIUtil()
         assert isinstance(cli_util, CLIUtil)
-
-if __name__ == '__main__':
-    unittest.main()
