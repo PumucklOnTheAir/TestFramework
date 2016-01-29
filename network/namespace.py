@@ -33,7 +33,6 @@ class Namespace:
         self.nsp_name = nsp_name
         try:
             self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
-            netns.setns(nsp_name)
             self.ipdb_netns.interfaces['lo'].up().commit()
             Logger().debug("[+] Namespace(" + nsp_name + ") successfully created", 3)
             # self.encapsulate_interface()
@@ -50,10 +49,6 @@ class Namespace:
         """
         Logger().debug("Delete Namespace ...", 2)
         try:
-            if not (self.ipdb_netns is None):
-                for iface_name in self.ipdb_netns.interfaces:
-                    if "vlan" in str(iface_name) or "veth" in str(iface_name):
-                        self.ipdb_netns.interfaces[iface_name].remove().commit()
             netns.remove(self.nsp_name)
             self.ipdb_netns.release()
             Logger().debug("[+] Namespace(" + self.nsp_name + ") successfully deleted", 3)
