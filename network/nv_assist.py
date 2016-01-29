@@ -32,7 +32,6 @@ class NVAssistent:
         print("nvassi: " + str(getpid()))
         self.ipdb = IPDB()
         self.link_iface_name = link_iface_name
-        #self.bridge = Bridge(self.ipdb, 'br0', self.link_iface_name)
         self.vlan_dict = dict()
         self.veth_dict = dict()
         self.namespace = None
@@ -96,8 +95,8 @@ class NVAssistent:
             self.delete_vlan(vlan)
         for veth in self.veth_dict:
             self.delete_veth(veth)
-        self.namespace.remove()
-        #self.bridge.close()
+        if self.namespace is not None:
+            self.namespace.remove()
         self.ipdb.release()
         Logger().debug("Kill dhclient ...")
         os.system('pkill dhclient')
