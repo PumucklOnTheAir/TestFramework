@@ -7,9 +7,9 @@ from network.web_config_assist import WebConfigurationAssist
 # TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
 # TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
 class RouterWebConfiguration:
-    '''
+    """
     The RouterWebConfiguration setup the webinterface of the Router by a given configuration-file.
-    '''''
+    """""
 
     @staticmethod
     def setup(router: Router, webinterface_config, wizard: bool):
@@ -18,6 +18,7 @@ class RouterWebConfiguration:
 
         :param router:
         :param webinterface_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, ...}
+        :param wizard: if the wizard page should be configured
         """
         worker = Worker(router, webinterface_config, wizard)
         worker.start()
