@@ -16,14 +16,14 @@ class TestVlan(TestCase):
         assert isinstance(vlan, Vlan)
 
         # Test if the VLAN now exists
-        process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
+        process = Popen(["ip", "link", "show", "dev", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert sterr.decode('utf-8') == ""
         assert vlan.vlan_iface_name in stdout.decode('utf-8')
 
         # Remove the VLAN
         vlan.delete_interface(close_ipdb=True)
-        process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
+        process = Popen(["ip", "link", "show", "dev", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert stdout.decode('utf-8') == ""
 
@@ -40,14 +40,14 @@ class TestVlan(TestCase):
         assert isinstance(vlan, Vlan)
 
         # Test if the VLAN now exists
-        process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
+        process = Popen(["ip", "link", "show", "dev", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert sterr.decode('utf-8') == ""
         assert vlan.vlan_iface_name in stdout.decode('utf-8')
 
         # Remove the VLAN
         vlan.delete_interface(close_ipdb=True)
-        process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
+        process = Popen(["ip", "link", "show", "dev", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert stdout.decode('utf-8') == ""
 
@@ -65,44 +65,13 @@ class TestVlan(TestCase):
         assert isinstance(vlan, Vlan)
 
         # Test if the VLAN now exists
-        process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
+        process = Popen(["ip", "link", "show", "dev", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert sterr.decode('utf-8') == ""
         assert vlan.vlan_iface_name in stdout.decode('utf-8')
 
         # Remove the VLAN
         vlan.delete_interface(close_ipdb=True)
-        process = Popen(["ifconfig", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
-        stdout, sterr = process.communicate()
-        assert stdout.decode('utf-8') == ""
-
-    def test_create_vlan_with_existing_id(self):
-        Logger().debug("TestVlan: test_create_vlan_with_existing_id ...")
-        # Create VLAN 1
-        ipdb = IPDB()
-        vlan1 = Vlan(ipdb, 'eth0', 'vlan21', 21)
-        assert isinstance(vlan1, Vlan)
-        vlan1.create_interface("192.168.1.11", 24)
-
-        # Create VLAN 2
-        ipdb = IPDB()
-        vlan2 = Vlan(ipdb, 'eth0', 'vlan22', 21)
-        assert isinstance(vlan2, Vlan)
-        vlan2.create_interface("192.168.1.11", 24)
-
-        # Test if the VLAN now exists
-        process = Popen(["ifconfig", vlan2.vlan_iface_name], stdout=PIPE, stderr=PIPE)
-        stdout, sterr = process.communicate()
-        assert sterr.decode('utf-8') != ""
-
-        # Remove the VLAN
-        vlan2.delete_interface(close_ipdb=True)
-        process = Popen(["ifconfig", vlan2.vlan_iface_name], stdout=PIPE, stderr=PIPE)
-        stdout, sterr = process.communicate()
-        assert stdout.decode('utf-8') == ""
-
-        # Remove the VLAN
-        vlan1.delete_interface(close_ipdb=True)
-        process = Popen(["ifconfig", vlan1.vlan_iface_name], stdout=PIPE, stderr=PIPE)
+        process = Popen(["ip", "link", "show", "dev", vlan.vlan_iface_name], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert stdout.decode('utf-8') == ""
