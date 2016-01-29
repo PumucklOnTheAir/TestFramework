@@ -6,24 +6,25 @@ from network.web_config_assist import WebConfigurationAssist
 
 # TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
 # TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
-'''
 class RouterWebConfiguration:
+    '''
+    The RouterWebConfiguration setup the webinterface of the Router by a given configuration-file.
+    '''''
 
     @staticmethod
-    def setup(router: Router, webinterface_config):
+    def setup(router: Router, webinterface_config, wizard: bool):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
 
         :param router:
         :param webinterface_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, ...}
         """
-        worker = SetupWorker(router, webinterface_config)
+        worker = Worker(router, webinterface_config, wizard)
         worker.start()
         worker.join()
-'''
 
 
-class RouterWebConfiguration(Thread):
+class Worker(Thread):
 
     def __init__(self, router: Router, webinterface_config, wizard: bool):
         """
@@ -43,7 +44,7 @@ class RouterWebConfiguration(Thread):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
         """
-        Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
+        Logger().info("Configure the webinterface of the Router(" + str(self.router.id) + ") ...")
         if self.wizard:
             self._wca_setup_wizard(self.webinterface_config)
         else:

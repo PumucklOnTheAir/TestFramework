@@ -60,12 +60,6 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
-        if cls.VLAN:
-            from util.router_info import RouterInfo
-            # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
-            cls.update_router_info(None, True)
-
-
         print("Runtime Server started")
 
         cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
@@ -155,15 +149,11 @@ class Server(ServerProxy):
         from util.router_info import RouterInfo
         if update_all:
             for router in cls.get_routers():
-                router_info = RouterInfo(router)
-                router_info.start()
-                router_info.join()
+                RouterInfo.update(router)
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                router_info = RouterInfo(router)
-                router_info.start()
-                router_info.join()
+                RouterInfo.update(router)
 
     @classmethod
     def get_router_by_id(cls, router_id: int) -> Router:
@@ -217,7 +207,7 @@ class Server(ServerProxy):
                 RouterFlashFirmware.sysupgrade(router, n)
 
     @classmethod
-    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -229,11 +219,11 @@ class Server(ServerProxy):
         from util.router_setup_web_configuration import RouterWebConfiguration
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
-                RouterWebConfiguration.setup(router, ConfigManager.get_web_interface_config()[i])
+                RouterWebConfiguration.setup(router, ConfigManager.get_web_interface_config()[i], wizard)
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
-                RouterWebConfiguration.setup(router, ConfigManager.get_web_interface_config()[i])
+                RouterWebConfiguration.setup(router, ConfigManager.get_web_interface_config()[i], wizard)
 
     @classmethod
     def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):

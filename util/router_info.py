@@ -9,10 +9,27 @@ from router.memory import RAM
 from typing import Dict, List
 
 
-class RouterInfo(Thread):
+# TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
+# TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
+class RouterInfo:
     """
-    The RouterInfo collects in a new Thread informations about the Routers
+    The RouterInfo collects information about the Routers:
+        Model, NetworkInterfaces, CPU_Processes, Memory, SSID, ...
     """""
+
+    @staticmethod
+    def update(router: Router):
+        """
+        Collects the information of the Router in a new thread.
+
+        :param router:
+        """
+        worker = Worker(router)
+        worker.start()
+        worker.join()
+
+
+class Worker(Thread):
 
     def __init__(self, router: Router):
         Thread.__init__(self)
@@ -22,8 +39,7 @@ class RouterInfo(Thread):
 
     def run(self):
         """
-        Runs new thread and gets the information from the router via ssh
-        :return:
+        Runs new thread and gets the information from the Router via ssh
         """
         Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
         try:
