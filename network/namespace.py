@@ -14,7 +14,6 @@ class Namespace:
         Creats a namespace for a specific vlan_iface
 
         :param nsp_name:
-        :param vlan_iface_name:
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
         """
@@ -44,9 +43,8 @@ class Namespace:
         """
         Logger().debug("Delete Namespace ...", 2)
         try:
-            if self.ipdb_netns is None:
-                netns.remove(self.nsp_name)
-            else:
+            netns.remove(self.nsp_name)
+            if self.ipdb_netns is not None:
                 self.ipdb_netns.interfaces[self.vlan_iface_name].nl.remove()
                 self.ipdb_netns.release()
             Logger().debug("[+] Namespace(" + self.nsp_name + ") successfully deleted", 3)
@@ -61,6 +59,8 @@ class Namespace:
     def encapsulate_interface(self, vlan_iface_name: str):
         """
         Capture the assigned interface in a namespace.
+
+        :param vlan_iface_name: name of the vlan interface
         """
         self.vlan_iface_name = vlan_iface_name
         self.vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])

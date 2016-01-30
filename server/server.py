@@ -60,6 +60,11 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
+        if cls.VLAN:
+            from util.router_info import RouterInfo
+            # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
+            RouterInfo.update(cls.get_routers()[0])
+
         print("Runtime Server started")
 
         cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
