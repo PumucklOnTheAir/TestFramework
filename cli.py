@@ -137,6 +137,13 @@ def create_parsers():
     parser_webconfig.add_argument("-a", "--all", action="store_true", default=False,
                                   help="Apply to all routers")
 
+    # subparser for update_info
+    parser_update_info = subparsers.add_parser("update_info", help="Updates the router info")
+    parser_update_info.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                    default=[], action="store", help="List of routers", nargs="+")
+    parser_update_info.add_argument("-a", "--all", action="store_true", default=False,
+                                               help="Apply to all routers")
+
     return parser
 
 
@@ -216,6 +223,14 @@ def main():
         config_all = args.all
 
         server_proxy.setup_web_configuration(args.routers, config_all)
+
+    elif args.mode == "update_info":
+        """
+        subparse: update_info
+        """
+        update_all = args.all
+
+        server_proxy.update_router_info(args.routers, update_all)
 
     else:
         Logger().info("Check --help for help")
