@@ -90,7 +90,6 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         Logger().debug("Load configuration")
         cls._routers = ConfigManager.get_router_auto_list()
-        # cls._ set fixed demo test ConnectionTest
 
     @classmethod
     def stop(cls) -> None:
@@ -115,7 +114,7 @@ class Server(ServerProxy):
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
         # TODO test verwaltung
-        pass
+        raise NotImplementedError
 
     @classmethod
     def get_running_task(cls, remote_system: RemoteSystem) -> Union[RemoteSystemJob, RemoteSystemJobClass]:
@@ -402,6 +401,7 @@ class Server(ServerProxy):
         :return: List of running test on the test server. List is a copy of the original list.
         """
         # FIXME
+        raise NotImplementedError
         return cls._running_tasks.copy()
 
     @classmethod
@@ -417,7 +417,7 @@ class Server(ServerProxy):
         :return: List of available tests on the server
         """
         # TODO get available test from config
-        pass
+        raise NotImplementedError
 
     @classmethod
     def get_firmwares(cls) -> []:
@@ -425,7 +425,7 @@ class Server(ServerProxy):
         :return: List of known firmwares
         """
         # TODO vllt vom config?
-        pass
+        raise NotImplementedError
 
     @classmethod
     def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
