@@ -42,9 +42,6 @@ class RouterInfo(Thread):
             Logger().warning("[-] Couldn't update all Infos", 2)
             Logger().error(str(e))
 
-    def join(self):
-        Thread.join(self)
-
     def _get_router_model(self) -> str:
         """
         :return: the Model of the given Router object
