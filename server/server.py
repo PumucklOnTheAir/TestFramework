@@ -532,13 +532,13 @@ class Server(ServerProxy):
         from util.router_setup_web_configuration import RouterWebConfiguration
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
-                router_web_config = RouterWebConfiguration(router, ConfigManager.get_web_interface_config()[i])
+                router_web_config = RouterWebConfiguration(router, ConfigManager.get_web_interface_config()[i], wizard)
                 router_web_config.start()
                 router_web_config.join()
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
-                router_web_config = RouterWebConfiguration(router, ConfigManager.get_web_interface_config()[i])
+                router_web_config = RouterWebConfiguration(router, ConfigManager.get_web_interface_config()[i], wizard)
                 router_web_config.start()
                 router_web_config.join()
 

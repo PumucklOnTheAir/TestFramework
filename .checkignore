@@ -1,0 +1,3 @@
+#ignore UnitTests on quantifiedcode.com
+tests/test_*.py
+framework_unittests/test_*.py

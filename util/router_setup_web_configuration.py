@@ -4,28 +4,10 @@ from log.logger import Logger
 from network.web_config_assist import WebConfigurationAssist
 
 
-# TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
-# TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
-class RouterWebConfiguration:
+class RouterWebConfiguration(Thread):
     """
     The RouterWebConfiguration setup the webinterface of the Router by a given configuration-file.
     """""
-
-    @staticmethod
-    def setup(router: Router, webinterface_config, wizard: bool):
-        """
-        Instantiate a NetworkCtrl and setup the webinterface of the Router
-
-        :param router:
-        :param webinterface_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, ...}
-        :param wizard: if the wizard page should be configured
-        """
-        worker = Worker(router, webinterface_config, wizard)
-        worker.start()
-        worker.join()
-
-
-class Worker(Thread):
 
     def __init__(self, router: Router, webinterface_config, wizard: bool):
         """
