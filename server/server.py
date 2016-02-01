@@ -87,7 +87,8 @@ class Server(ServerProxy):
             for router in cls.get_routers():
                 Logger().debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
                 cls.nv_assistent.create_namespace_vlan(router)
-
+        # Update Router
+        cls.router_online(None, all=True)
         cls.update_router_info(None, update_all=True)
 
         Logger().info("Runtime Server started")
@@ -440,6 +441,42 @@ class Server(ServerProxy):
         raise NotImplementedError
 
     @classmethod
+    def get_router_by_id(cls, router_id: int) -> Router:
+        """
+        Returns a Router with the given id.
+
+        :param router_id:
+        :return: Router
+        """
+        routers = cls.get_routers()
+        for router in routers:
+            if router.id == router_id:
+                Logger().debug("get_router_by_id: " + str(router), 4)
+                return router
+        return None
+
+    @classmethod
+    def router_online(cls, router_ids: List[int], all: bool) -> None:
+        """
+        Tries to connect to the `Router` and updates the Mode of the Router.
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
+        :param update_all: Is True if all Routers should be updated
+        """
+        from util.router_online import RouterOnline
+        if all:
+            for router in cls.get_routers():
+                sysupdate = RouterOnline(router)
+                sysupdate.start()
+                sysupdate.join()
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                sysupdate = RouterOnline(router)
+                sysupdate.start()
+                sysupdate.join()
+
+    @classmethod
     def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
         """
         Updates all the information about the :py:class:`Router`
@@ -459,21 +496,6 @@ class Server(ServerProxy):
                     cls.start_job(router, RouterInfoJob())
         else:
             Logger().info("set VLAN to true to activate 'update_router_info' it")
-
-    @classmethod
-    def get_router_by_id(cls, router_id: int) -> Router:
-        """
-        Returns a Router with the given id.
-
-        :param router_id:
-        :return: Router
-        """
-        routers = cls.get_routers()
-        for router in routers:
-            if router.id == router_id:
-                Logger().debug("get_router_by_id: " + str(router), 4)
-                return router
-        return None
 
     @classmethod
     def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
