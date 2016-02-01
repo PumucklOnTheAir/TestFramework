@@ -136,13 +136,15 @@ def create_parsers():
                                   default=[], action="store", help="List of routers to be configured", nargs="+")
     parser_webconfig.add_argument("-a", "--all", action="store_true", default=False,
                                   help="Apply to all routers")
+    parser_webconfig.add_argument("-w", "--wizard", action="store_true", default=False,
+                                  help="start in Wizard Mode, if False start in Expert Mode")
 
     # subparser for update_info
     parser_update_info = subparsers.add_parser("update_info", help="Updates the router info")
     parser_update_info.add_argument("-r", "--routers", metavar="Router ID", type=int,
                                     default=[], action="store", help="List of routers", nargs="+")
     parser_update_info.add_argument("-a", "--all", action="store_true", default=False,
-                                               help="Apply to all routers")
+                                    help="Apply to all routers")
 
     return parser
 
@@ -221,8 +223,9 @@ def main():
         subparse: webconfig
         """
         config_all = args.all
+        toggle_wizard = args.wizard
 
-        server_proxy.setup_web_configuration(args.routers, config_all)
+        server_proxy.setup_web_configuration(args.routers, config_all, toggle_wizard)
 
     elif args.mode == "update_info":
         """
