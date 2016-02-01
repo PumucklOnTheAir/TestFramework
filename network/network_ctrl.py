@@ -22,7 +22,6 @@ class NetworkCtrl:
 
         :param remote_system: Could e a Router or a powerstrip object
         """
-        Logger().info("Create Network Controller ...", 1)
         self.remote_system = remote_system
         self.ssh = paramiko.SSHClient()
 

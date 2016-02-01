@@ -1,12 +1,12 @@
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
-from pyroute2 import netns
 import re
 import sys
 import traceback
 from log.logger import Logger
 import os
 import time
+from pyroute2 import netns
 
 
 class Namespace:

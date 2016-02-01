@@ -1,12 +1,9 @@
 from network.vlan import Vlan
-from network.veth import Veth
 from network.namespace import Namespace
-from network.bridge import Bridge
 from pyroute2.ipdb import IPDB
-from server.router import Router
+from network.remote_system import RemoteSystem
 from log.logger import Logger
 import os
-from os import getpid
 
 
 class NVAssistent:
@@ -29,54 +26,29 @@ class NVAssistent:
 
         :param link_iface_name: 'physical'-interface like 'eth0'
         """
-        print("nvassi: " + str(getpid()))
         self.ipdb = IPDB()
         self.link_iface_name = link_iface_name
         self.vlan_dict = dict()
         self.veth_dict = dict()
-        self.namespace = None
+        self.nsp_dict = dict()
 
-    def create_namespace_vlan(self, namespace_name: str, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int):
+    def create_namespace_vlan(self, remote_system: RemoteSystem):
         """
         Creats a Namespace and a VLAN. Encapsulate the VLAN inside the Namespace.
         
-        :param namespace_name: Namespace name
-        :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
-        :param vlan_iface_name: name of the vlan
-        :param vlan_iface_id: the id of the vlan
+        :param remote_system: Router or powerstrip
         """
-        vlan = Vlan(self.ipdb, link_iface_name, vlan_iface_name, vlan_iface_id)
+        if remote_system.namespace_name in self.nsp_dict.keys():
+            Logger().debug("[-] Namespace already exists", 2)
+            return
+
+        vlan = Vlan(self.ipdb, self.link_iface_name, remote_system.vlan_iface_name, remote_system.vlan_iface_id)
         vlan.create_interface()
         self.vlan_dict[vlan.vlan_iface_name] = vlan
 
-        namespace = Namespace(self.ipdb, namespace_name)
+        namespace = Namespace(self.ipdb, remote_system.namespace_name)
         namespace.encapsulate_interface(vlan.vlan_iface_name)
-        self.namespace = namespace
-
-    def create_namespace_vlan_veth(self, router: Router):
-        """
-        Creates a Namespace and a VLAN with the id given by the Router. Also creates a 'veth'-interface to connect
-        the 'physical'-interface with the Namespace.
-
-        :param router: Router object
-        """
-        vlan = Vlan(self.ipdb, self.link_iface_name, router.vlan_iface_name, router.vlan_iface_id)
-        vlan.create_interface()
-        self.vlan_dict[vlan.vlan_iface_name] = vlan
-
-        veth = Veth(self.ipdb, 'veth'+str(router.id)+str(router.id), 'veth'+str(router.id),
-                    '192.168.3.'+str(10+router.id), 24, '192.168.3.'+str(110+router.id), 24)
-        veth.create_interface()
-        self.veth_dict[veth.veth_iface_name1] = veth
-
-        self.bridge = Bridge(self.ipdb, 'br'+str(router.id), self.link_iface_name)
-        self.bridge.add_iface(veth.veth_iface_name1)
-
-        namespace = Namespace(self.ipdb, router.namespace_name)
-        namespace.encapsulate_interface(vlan.vlan_iface_name)
-        namespace.encapsulate_interface(veth.veth_iface_name2)
-        namespace.set_new_ip(dhcp=True, iface_name=veth.veth_iface_name2)
-        self.namespace = namespace
+        self.nsp_dict[namespace.nsp_name] = namespace
 
     def delete_vlan(self, vlan_iface_name: str):
         self.vlan_dict[vlan_iface_name].delete_interface()
@@ -85,7 +57,7 @@ class NVAssistent:
         self.veth_dict[veth_iface_name].delete_interface()
 
     def delete_namespace(self, nsp_name: str):
-        self.namespace.remove()
+        self.nsp_dict[nsp_name].remove()
 
     def close(self):
         """
@@ -95,8 +67,8 @@ class NVAssistent:
             self.delete_vlan(vlan)
         for veth in self.veth_dict:
             self.delete_veth(veth)
-        if self.namespace is not None:
-            self.namespace.remove()
+        for nsp in self.nsp_dict:
+            self.delete_namespace(nsp)
         self.ipdb.release()
-        Logger().debug("Kill dhclient ...")
+        Logger().debug("Kill dhclient ...", 2)
         os.system('pkill dhclient')

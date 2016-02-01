@@ -1,6 +1,6 @@
 from unittest import TestCase
 from network.nv_assist import NVAssistent
-from server.router import Router, Mode
+from router.router import Router, Mode
 from os import getpid
 import time
 

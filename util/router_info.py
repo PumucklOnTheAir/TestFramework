@@ -15,7 +15,7 @@ class RouterInfo(Thread):
     def __init__(self, router: Router):
         Thread.__init__(self)
         self.router = router
-        self.network_ctrl = NetworkCtrl(self.router, 'eth0')
+        self.network_ctrl = NetworkCtrl(self.router)
         self.daemon = True
 
     def run(self):
@@ -43,7 +43,6 @@ class RouterInfo(Thread):
             Logger().error(str(e))
 
     def join(self):
-        self.network_ctrl.exit()
         Thread.join(self)
 
     def _get_router_model(self) -> str:

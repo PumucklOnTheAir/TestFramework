@@ -3,11 +3,7 @@ from network.vlan import Vlan
 from network.namespace import Namespace
 from subprocess import Popen, PIPE
 from log.logger import Logger
-import time
 from pyroute2.ipdb import IPDB
-from pyroute2.netns.nslink import NetNS
-from pyroute2.ipdb import IPDB
-from pyroute2 import netns
 
 
 class TestNamespace(TestCase):
@@ -34,7 +30,9 @@ class TestNamespace(TestCase):
         assert namespace.nsp_name in stdout.decode('utf-8')
 
         # Remove the Namespace
+        vlan.delete_interface(close_ipdb=True)
         namespace.remove()
+        ipdb.release()
         process = Popen(["ip", "netns"], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert stdout.decode('utf-8') == ""
