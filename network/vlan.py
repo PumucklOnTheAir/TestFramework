@@ -60,7 +60,6 @@ class Vlan:
         Logger().debug("Delete VLAN Interface ...", 2)
         try:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
-            self.ipdb.release()
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
         except KeyError:
             Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
@@ -69,6 +68,8 @@ class Vlan:
             Logger().debug("[-] Interface(" + self.vlan_iface_name +
                            ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
             Logger().error(str(e), 3)
+        finally:
+            self.ipdb.release()
 
     def _wait_for_ip_assignment(self):
         """

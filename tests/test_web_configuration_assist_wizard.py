@@ -28,9 +28,7 @@ class TestWebConfigurationAssistWizard(TestCase):
         assert isinstance(network_ctrl, NetworkCtrl)
 
         try:
-            web_config_assist = RouterWebConfiguration(router, config, wizard=True)
-            web_config_assist.start()
-            web_config_assist.join()
+            RouterWebConfiguration.setup(router, config, wizard=True)
         except Exception as e:
             Logger().error(str(e))
         finally:
