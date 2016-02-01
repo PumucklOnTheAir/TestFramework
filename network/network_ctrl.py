@@ -4,6 +4,7 @@ from log.logger import Logger
 from network.webserver import WebServer
 from network.nv_assist import NVAssistent
 from network.remote_system import RemoteSystem
+from pyroute2 import netns
 
 
 class NetworkCtrl:
@@ -40,6 +41,7 @@ class NetworkCtrl:
         self.nv_assisten.create_namespace_vlan(str(self.remote_system.namespace_name), link_iface_name,
                                                str(self.remote_system.vlan_iface_name),
                                                int(self.remote_system.vlan_iface_id))
+        netns.setns(remote_system.namespace_name)
 
         self.ssh = paramiko.SSHClient()
 

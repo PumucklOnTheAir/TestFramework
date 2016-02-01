@@ -1,6 +1,5 @@
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
-from pyroute2 import netns
 import re
 import sys
 import traceback
@@ -26,7 +25,7 @@ class Namespace:
         self.ipdb_netns = None
         try:
             self.ipdb_netns = IPDB(nl=NetNS(nsp_name))
-            netns.setns(nsp_name)
+            #netns.setns(nsp_name)
             self.ipdb_netns.interfaces['lo'].up().commit()
             Logger().debug("[+] Namespace(" + nsp_name + ") successfully created", 3)
             # self.encapsulate_interface()
@@ -43,7 +42,6 @@ class Namespace:
         """
         Logger().debug("Delete Namespace ...", 2)
         try:
-            netns.remove(self.nsp_name)
             if self.ipdb_netns is not None:
                 self.ipdb_netns.interfaces[self.vlan_iface_name].nl.remove()
                 self.ipdb_netns.release()
