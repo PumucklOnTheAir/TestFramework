@@ -10,13 +10,7 @@ class TestNetworkCtrl(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Create router
-        cls.router = Router(1, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
-        cls.router.model = "TP-LINK TL-WR841N/ND v9"
-        cls.router.mac = "e8:de:27:b7:7c:e2"
-        # Has to be matched with the current mode (normal, configuration)
-        cls.router.mode = Mode.normal
-        assert isinstance(cls.router, Router)
+        cls.router = cls._create_router()
         # NVAssisten
         cls.nv_assist = NVAssistent("eth0")
         cls.nv_assist.create_namespace_vlan(cls.router)
@@ -50,3 +44,15 @@ class TestNetworkCtrl(TestCase):
         # Tests if the file has successful downloaded
         output = self.network_ctrl.send_command("test -f '/tmp/test_wget.txt' && echo True")
         self.assertEqual(output, "['True\\n']")
+
+    @classmethod
+    def _create_router(cls):
+        # Create router
+        router = Router(1, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
+        router.model = "TP-LINK TL-WR841N/ND v9"
+        router.mac = "e8:de:27:b7:7c:e2"
+        # Has to be matched with the current mode (normal, configuration)
+        router.mode = Mode.normal
+        assert isinstance(router, Router)
+        return router
+

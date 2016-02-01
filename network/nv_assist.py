@@ -42,7 +42,7 @@ class NVAssistent:
             Logger().debug("[-] Namespace already exists", 2)
             return
 
-        vlan = Vlan(self.ipdb, self.link_iface_name, remote_system.vlan_iface_name, remote_system.vlan_iface_id)
+        vlan = Vlan(self.ipdb, remote_system, self.link_iface_name)
         vlan.create_interface()
         self.vlan_dict[vlan.vlan_iface_name] = vlan
 

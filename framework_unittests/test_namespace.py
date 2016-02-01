@@ -2,22 +2,22 @@ from unittest import TestCase
 from network.vlan import Vlan
 from network.namespace import Namespace
 from subprocess import Popen, PIPE
-from log.logger import Logger
 from pyroute2.ipdb import IPDB
+from router.router import Router, Mode
 
 
 class TestNamespace(TestCase):
 
     def test_create_namespace(self):
-        Logger().debug("TestNamespace: test_create_namespace ...")
+        router = self._create_router()
         # Create VLAN
         ipdb = IPDB()
-        vlan = Vlan(ipdb, 'eth0', 'vlan21', 10)
+        vlan = Vlan(ipdb, router, "eth0")
         assert isinstance(vlan, Vlan)
-        vlan.create_interface("192.168.1.11", 24)
+        vlan.create_interface()
 
         # Create Namespace
-        namespace = Namespace(ipdb,'nsp21')
+        namespace = Namespace(ipdb,router.namespace_name)
         assert isinstance(namespace, Namespace)
 
         # encapsulate VLAN
@@ -36,3 +36,13 @@ class TestNamespace(TestCase):
         process = Popen(["ip", "netns"], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         assert stdout.decode('utf-8') == ""
+
+    def _create_router(self):
+        # Create router
+        router = Router(1, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
+        router.model = "TP-LINK TL-WR841N/ND v9"
+        router.mac = "e8:de:27:b7:7c:e2"
+        # Has to be matched with the current mode (normal, configuration)
+        router.mode = Mode.normal
+        assert isinstance(router, Router)
+        return router

@@ -2,6 +2,7 @@ from pyroute2.ipdb import IPDB
 import time
 import re
 from log.logger import Logger
+from network.remote_system import RemoteSystem
 import os
 
 
@@ -10,40 +11,40 @@ class Vlan:
     Represents a VLAN opbject.
     """""
 
-    def __init__(self, ipdb: IPDB, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int):
+    def __init__(self, ipdb: IPDB, remote_system: RemoteSystem, link_iface_name):
         """
         Creats a virtual interface on a existing interface (like eth0).
 
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
-        :param vlan_iface_name: name of the vlan
-        :param vlan_iface_id: the id of the vlan
         """
         self.ipdb = ipdb if ipdb else IPDB()
+        self.remote_system = remote_system
         self.link_iface_name = link_iface_name
-        self.vlan_iface_name = vlan_iface_name
-        self.vlan_iface_id = vlan_iface_id
+        self.vlan_iface_name = str(remote_system.vlan_iface_name)
+        self.vlan_iface_id = int(remote_system.vlan_iface_id)
 
-    def create_interface(self, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
+    def create_interface(self):
         """
          Creats a virtual interface on a existing interface (like eth0)
-
-        :param vlan_iface_ip: ip of the virtual interface
-        :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
         Logger().debug("Create VLAN Interface ...", 2)
         try:
+            # Get the real link interface
             link_iface = self.ipdb.interfaces[self.link_iface_name]
-            with self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface,
-                                  vlan_id=self.vlan_iface_id).commit() as i:
-                if vlan_iface_ip:
-                    i.add_ip(vlan_iface_ip, vlan_iface_ip_mask)
-                i.mtu = 1400
-            if not vlan_iface_ip:
-                vlan_iface_ip = self.set_new_ip(dhcp=True)
+
+            # Create a Vlan
+            iface = self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface,
+                                     vlan_id=self.vlan_iface_id).commit()
+            # Try to assign an IP via dhclient
+            if not self._wait_for_ip_assignment():
+                # Otherwise add a static IP
+                iface.add_ip(self._get_matching_ip(self.remote_system.ip),self.remote_system.ip_mask).commit()
+            iface.mtu = 1400
+
             Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
-                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + vlan_iface_ip, 3)
+                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self._ipdb_get_ip(), 3)
         except Exception as e:
             Logger().debug("[-] " + self.vlan_iface_name + " couldn't be created", 3)
             Logger().error(str(e), 3)
@@ -68,46 +69,24 @@ class Vlan:
                            ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
             Logger().error(str(e), 3)
 
-    def set_new_ip(self, dhcp: bool, new_ip: str=None, new_ip_mask: int=None):
-        """
-        Sets the IP either given by 'new_ip'-parameter or via dhclient.
-
-        :param dhcp: should a dhclient be used?
-        :param new_ip:
-        :param new_ip_mask:
-        :return: the new IP with the format ip/mask
-        """
-        iface_ip = None
-        if dhcp:
-            try:
-                self._wait_for_ip_assignment()
-                iface_ip = self._get_ip()
-                Logger().debug("[+] New IP " + iface_ip + " for " + self.vlan_iface_name +
-                               str(self.vlan_iface_id) + " by dhcp", 2)
-            except TimeoutError as e:
-                Logger().debug("[-] Couldn't get a new IP for " + self.vlan_iface_name +
-                               str(self.vlan_iface_id) + " by dhcp", 2)
-        else:
-            iface_ip = new_ip+"/"+str(new_ip_mask)
-            Logger().debug("[+] New IP " + iface_ip + " for " + self.vlan_iface_name + str(self.vlan_iface_id), 2)
-        return iface_ip
-
-    def _wait_for_ip_assignment(self):
+    def _wait_for_ip_assignment(self) -> bool:
         """
         Waits until the dhcp-client got an ip
-        """
-        Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...", 3)
-        current_ip = self._get_ip().split('/')[0]
-        if not self._get_ip(not_this_ip=current_ip):
-            os.system('dhclient ' + self.vlan_iface_name)
-            i = 0
-            while self._get_ip(not_this_ip=current_ip) is None:
-                time.sleep(0.5)
-                i += 1
-                if i == 20:
-                    raise TimeoutError
 
-    def _get_ip(self, not_this_ip: str = None):
+        :return: True if we got a IP via dhclient
+        """
+        Logger().debug("Wait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...", 3)
+        try:
+            stout = os.system('dhclient ' + self.vlan_iface_name)
+            return stout == 0
+        except KeyboardInterrupt:
+            return False
+        except Exception as e:
+            Logger().debug("[-] Couldn't get an IP via dhclient")
+            Logger().error(str(e), 3)
+            return False
+
+    def _ipdb_get_ip(self, not_this_ip: str = None):
         """
         Reads the first IP from IPDB.
 
@@ -123,3 +102,20 @@ class Vlan:
                 if ip != not_this_ip:
                     return ip + "/" + str(mask)
         return ""
+
+    def _get_matching_ip(self, ip: str) -> str:
+        """
+        Calculates the right IP for a given one.
+
+        :param ip: IP address
+        :return: New IP address
+        """
+        Logger().debug("")
+        last_numer = int(ip.split(".")[-1])
+        new_numer = last_numer
+        if last_numer < 254:
+            new_numer += 1
+        else:
+            new_numer -= 1
+
+        return ip.replace(str(last_numer), str(new_numer))

@@ -23,13 +23,9 @@ class Sysupdate(Thread):
         :return:
         """
         Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
-        # TODO: Liste sollte noch in directorys geändert werden, damit per string auf Elemente zugegriffen werden kann
         firmware_handler = FirmwareHandler(self.firmware_config['URL'])
         firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config['Release_Model'], self.firmware_config['Download_All'])
         self.router.firmware = firmware
-
-    def join(self):
-        Thread.join(self)
 
 
 class Sysupgrade(Thread):
@@ -37,27 +33,30 @@ class Sysupgrade(Thread):
     Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
     and does a Sysupgrade.
     """""
-    def __init__(self, router: Router, n: bool):
+    def __init__(self, router: Router, n: bool, debug: bool= False):
+        """
+        :param router: Router object
+        :param n: reject the last firmware configurations
+        :param debug: if we don't want to realy sysupgrade the firmware
+        """
         Thread.__init__(self)
         Logger().info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
 
         self.router = router
         self.n = n
-
+        self.debug = debug
         self.daemon = True
 
     def run(self):
         """
-        Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
+        Copies the firmware image onto the Router, proves if the firmware is in the right file(/tmp/<firmware_name>.bin)
         and does a Sysupgrade.
         :return:
         """
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_remote_system()
-        network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/')
+        network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/', self.router.ip)
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
-        network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
-
-    def join(self):
-        Thread.join(self)
+        if not self.debug:
+            network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
