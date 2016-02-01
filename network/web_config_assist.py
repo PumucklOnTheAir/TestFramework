@@ -1,6 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from log.logger import Logger
-from server.router import Mode
+from router.router import Mode
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
 
 
@@ -22,7 +22,7 @@ class WebConfigurationAssist:
     def __init__(self, config, router):
         """
         Starts the browser Phantomjs to configure the webpage of the router in the given namespace
-        
+
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
         :param router: Remote object
         """
@@ -335,7 +335,7 @@ class WebConfigurationAssist:
             if i == 1 or i == 2 or i == 3 or i == 6:
                 continue
             transmission_power_field_ids.append(transmission_power_field_id + str(i))
-        transmission_power_field_ids.append(transmission_power_field_id+"default")
+        transmission_power_field_ids.append(transmission_power_field_id + "default")
         client_network_field_element = self._get_element_by_id(client_network_field_id)
         mesh_network_field_element = self._get_element_by_id(mesh_network_field_id)
         safe_button_element = self._get_element_by_xpath(safe_button_xpath)
@@ -417,7 +417,7 @@ class WebConfigurationAssist:
     def _click_checkbox(field_element, condition):
         """
         Clicks on the given object if it isn't and it should or otherwise.
-        
+
         :param field_element: checkbox-object
         :param condition: the value that the checkbox should have
         """

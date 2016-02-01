@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractclassmethod
 from typing import List
-from server.router import Router
+from router.router import Router
 
 
 class ServerProxy(metaclass=ABCMeta):
@@ -116,7 +116,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -124,6 +124,7 @@ class ServerProxy(metaclass=ABCMeta):
 
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
+        :param wizard: If True the wizard-page will be configured, otherwise the expert-page
         """
         pass
 

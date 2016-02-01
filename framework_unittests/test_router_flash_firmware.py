@@ -1,7 +1,6 @@
 from util.router_flash_firmware import RouterFlashFirmware
-from server.router import Router
+from router.router import Router, Mode
 from config.configmanager import ConfigManager
-from server.router import Mode
 
 # Create router
 router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)

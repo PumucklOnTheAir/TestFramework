@@ -1,6 +1,6 @@
 import unittest
 from server.server import Server
-from server.router import Router
+from router.router import Router
 from multiprocessing import Process
 from server.ipc import IPC
 import time

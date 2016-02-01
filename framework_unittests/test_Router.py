@@ -1,7 +1,6 @@
 import unittest
 
-from server.router import Router
-from server.router import WlanMode, Mode
+from router.router import Router, WlanMode, Mode
 
 
 class MyTestCase(unittest.TestCase):

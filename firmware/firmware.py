@@ -1,4 +1,3 @@
-from enum import Enum
 import hashlib
 from log.logger import Logger
 

@@ -61,6 +61,7 @@ def print_router_info(router_list, rid):
 
         util.print_router(info)
 
+
 def main():
     """Freifunk TestFramework Command Line Interface
     """

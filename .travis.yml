@@ -23,17 +23,13 @@ after_success:
 
 install:
   - pip install -r requirements.txt
+before_script:
+  - python -m pyflakes */*.py
 
-
-# script: python -m unittest discover -s framework_unittests
+#run tests
 script:
   - python -m pytest --cov-append --cov=./ framework_unittests/test_Server_2.py
   - python -m pytest --cov-append --cov=./ framework_unittests/test_Server.py
   - python -m pytest --ff -n 2 --cov-append --cov=./  framework_unittests/test_IPC.py framework_unittests/test_Router.py framework_unittests/test_Yaml.py framework_unittests/test_Logger.py framework_unittests/test_firmware_handler.py
 
-notifications:
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/268804c6b1311acb60c6
-    on_success: always  # options: [always|never|change] default: always
-    on_failure: always  # options: [always|never|change] default: always
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225 */*.py *.py"

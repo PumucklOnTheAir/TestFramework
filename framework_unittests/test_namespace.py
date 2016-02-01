@@ -12,7 +12,6 @@ from pyroute2 import netns
 
 class TestNamespace(TestCase):
 
-
     def test_create_namespace(self):
         Logger().debug("TestNamespace: test_create_namespace ...")
         # Create VLAN
@@ -25,7 +24,7 @@ class TestNamespace(TestCase):
         namespace = Namespace(ipdb,'nsp21')
         assert isinstance(namespace, Namespace)
 
-        #encapsulate VLAN
+        # encapsulate VLAN
         namespace.encapsulate_interface(vlan.vlan_iface_name)
 
         # Test if the namespace now exists
@@ -38,6 +37,4 @@ class TestNamespace(TestCase):
         namespace.remove()
         process = Popen(["ip", "netns"], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
-        print(str(stdout))
         assert stdout.decode('utf-8') == ""
-        #vlan.delete_interface(close_ipdb=True)

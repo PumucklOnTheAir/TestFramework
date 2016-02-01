@@ -1,8 +1,7 @@
 from unittest import TestCase
 
-from server.router import Router
+from router.router import Router, Mode
 from util.router_reboot import RouterReboot
-from server.router import Mode
 from network.nv_assist import NVAssistent
 
 

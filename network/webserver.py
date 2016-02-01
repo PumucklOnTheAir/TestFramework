@@ -2,7 +2,8 @@ from log.logger import Logger
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 from threading import Thread
-import time, os
+import time
+import os
 
 
 class WebServer(Thread):

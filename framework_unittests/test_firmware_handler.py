@@ -1,7 +1,7 @@
 from unittest import TestCase
 from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware import Firmware
-from server.router import Router
+from router.router import Router
 from log.logger import Logger
 
 
@@ -85,11 +85,11 @@ class TestFirmwareHandler(TestCase):
         firmware_handler = FirmwareHandler(url)
         assert isinstance(firmware_handler, FirmwareHandler)
 
-        # Imports the Firmware if already existing or downlaods it
+        # Imports the Firmware if already existing or downloads it
         firmware = firmware_handler.get_firmware(router.model, release_model, download_all)
         assert isinstance(firmware, Firmware)
 
         incorrect_hash = "2b83a03e961f2e0a7fe1817e86e9caf248fbe440d12acda5a5c78de8a7d4f25ec48282cb8562d4b3b5e3c0"
-        assert firmware.check_hash(incorrect_hash) == False
+        assert not firmware.check_hash(incorrect_hash)
 
-        assert firmware.check_hash(firmware.hash) == True
+        assert firmware.check_hash(firmware.hash)

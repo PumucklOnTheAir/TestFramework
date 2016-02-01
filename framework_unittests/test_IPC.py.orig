@@ -113,11 +113,15 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
+<<<<<<< HEAD:framework_unittests/test_IPC.py
     def stop_all_tasks(cls):
         pass
 
     @classmethod
+    def setup_web_configuration(cls, router_ids, setup_all: bool):
+=======
     def setup_web_configuration(cls, router_ids, setup_all: bool, wizard: bool):
+>>>>>>> nv_assist_bug-#83:tests/test_IPC.py
         pass
 
     @classmethod
@@ -127,7 +131,10 @@ class DummyServer(ServerProxy):
     @classmethod
     def get_server_version(cls) -> str:
         pass
+<<<<<<< HEAD:framework_unittests/test_IPC.py
 
     @classmethod
     def get_routers_task_queue(cls, router_id: int) -> [str]:
         pass
+=======
+>>>>>>> nv_assist_bug-#83:tests/test_IPC.py

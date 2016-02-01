@@ -1,6 +1,6 @@
 from .serverproxy import ServerProxy
 from .ipc import IPC
-from .router import Router
+from router.router import Router
 from config.configmanager import ConfigManager
 from typing import List, Union, Dict
 from .test import FirmwareTest
@@ -63,11 +63,14 @@ class Server(ServerProxy):
         cls.VLAN = vlan_activate
 
         # read from config if debug mode is on
-        log_level = ConfigManager.get_server_property("Log_Level")
+        log_level = int(ConfigManager.get_server_property("Log_Level"))
         debug_mode = False
         if log_level is 10:
             debug_mode = True
         cls.DEBUG = debug_mode
+
+        # create instance and give params to the logger object
+        Logger().setup(log_level, log_level, log_level)
 
         # load Router configs
         cls.__load_configuration()
@@ -97,6 +100,9 @@ class Server(ServerProxy):
         Stops the server, all running tests and closes all connections.
         """
         cls.executor.shutdown(wait=False)
+        # close open streams and the logger instance
+        Logger().close()
+
         cls._ipc_server.shutdown()
 
     @classmethod
@@ -456,9 +462,8 @@ class Server(ServerProxy):
         :param router_id:
         :return: Router
         """
-        # if routers[router_id].id == router_id:
-        #     return router_id # IndexError
-        for router in cls._routers:
+        routers = cls.get_routers()
+        for router in routers:
             if router.id == router_id:
                 Logger().debug("get_router_by_id: " + str(router), 4)
                 return router
@@ -509,7 +514,7 @@ class Server(ServerProxy):
                 sysupgrade.join()
 
     @classmethod
-    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool):
+    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the

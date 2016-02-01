@@ -1,12 +1,13 @@
 from unittest import TestCase
 
 from network.network_ctrl import NetworkCtrl
-from server.router import Router
+from router.router import Router, Mode
 from config.configmanager import ConfigManager
-from server.router import Mode
+from util.router_setup_web_configuration import RouterWebConfiguration
+from log.logger import Logger
 
 
-class TestWebConfigurationAssistExpert(TestCase):
+class TestWebConfigurationAssistWizard(TestCase):
 
     def test_setup_expert(self):
         """
@@ -14,7 +15,7 @@ class TestWebConfigurationAssistExpert(TestCase):
         It sets the values of all the  from WebInterface of the Router.
         """
         # Create router
-        router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
+        router = Router(1, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         router.mode = Mode.configuration
@@ -26,7 +27,10 @@ class TestWebConfigurationAssistExpert(TestCase):
         network_ctrl = NetworkCtrl(router, 'eth0')
         assert isinstance(network_ctrl, NetworkCtrl)
 
-        self.assertRaises(Exception, network_ctrl.wca_setup_wizard(config))
-        assert router.mode == Mode.normal
-
-        network_ctrl.exit()
+        try:
+            RouterWebConfiguration.setup(router, config, wizard=True)
+        except Exception as e:
+            Logger().error(str(e))
+        finally:
+            assert router.mode == Mode.normal
+            network_ctrl.exit()
