@@ -12,6 +12,8 @@ from threading import Event, Thread, Semaphore
 import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
+from pyroute2 import netns
+from network.nv_assist import NVAssistent
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 RemoteSystemJobClass = type(RemoteSystemJob)
@@ -47,6 +49,9 @@ class Server(ServerProxy):
     executor = None  # ProcessPool
     _semaphore_task_management = Semaphore(1)
 
+    # NVAssistent
+    nv_assistent = NVAssistent("eth0")
+
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
@@ -76,6 +81,12 @@ class Server(ServerProxy):
         cls.__load_configuration()
 
         cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
+
+        # Add Namespace and Vlan for each Router
+        if cls.VLAN:
+            for router in cls.get_routers():
+                Logger().debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
+                cls.nv_assistent.create_namespace_vlan(router)
 
         cls.update_router_info(None, update_all=True)
 
@@ -243,7 +254,7 @@ class Server(ServerProxy):
         Thread.__init__(job)
         job.prepare(remote_sys, data)
 
-        nv_assi = cls.__activate_vlan(remote_sys)
+        cls.__setns(remote_sys)
         try:
             job.start()
             job.join(60*5)  # TimeOut: 5 minutes
@@ -251,7 +262,7 @@ class Server(ServerProxy):
         except Exception as e:
             Logger().error(str(e), 3)
         finally:
-            cls.__deactivate_vlan(nv_assi)
+            cls.__unsetns(remote_sys)
 
         return result
 
@@ -272,7 +283,7 @@ class Server(ServerProxy):
 
         result = TestResult()
 
-        nv_assi = cls.__activate_vlan(router)
+        cls.__setns(router)
         try:
 
             result = test_suite.run(result)  # TODO if debug set, run as debug()
@@ -280,7 +291,7 @@ class Server(ServerProxy):
             Logger().error("TestCase raised an exception", 3)
             Logger().error(str(e), 3)
         finally:
-            cls.__deactivate_vlan(nv_assi)
+            cls.__unsetns(router)
 
             # I'm sry for this dirty hack, but if you don't do this you get an
             # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
@@ -343,24 +354,19 @@ class Server(ServerProxy):
             cls.__start_task(task.remote_sys, None)
 
     @classmethod
-    def __activate_vlan(cls, remote_sys: RemoteSystem):  # -> NVAssistent:
+    def __setns(cls, remote_sys: RemoteSystem):  # -> NVAssistent:
         """
-        Activates vlan for the current process
+        Set Namespace and Vlan for the current process.
 
         :param remote_sys: The RemoteSystem which you want to connect over vlan
         :return: NVAssistent
         """
         if cls.VLAN:
-            from network.nv_assist import NVAssistent  # TODO auslagern...
-            nv_assi = NVAssistent("enp0s25")
-            nv_assi.create_namespace_vlan_veth(remote_sys)
-            return nv_assi
-        else:
-            Logger().debug("Ignoring activate VLAN", 2)
-            Logger().debug("Var VLAN is false", 3)
+            Logger().debug("Set Namespace and Vlan for the current process(" + str(os.getpid()) + ")", 2)
+            netns.setns(remote_sys.namespace_name)
 
     @classmethod
-    def __deactivate_vlan(cls, nv_assi):
+    def __unsetns(cls, remote_sys: RemoteSystem):
         """
         Deactivates vlan after you activate it with cls.__activate_vlan
 
@@ -368,8 +374,8 @@ class Server(ServerProxy):
         :return:
         """
         if cls.VLAN:
-            Logger().debug("Ignoring deactivate VLAN", 2)
-            nv_assi.close()
+            Logger().debug("Remove Namespace and Vlan for the current process(" + str(os.getpid()) + ")", 2)
+            cls.nv_assistent.delete_namespace(remote_sys.namespace_name)
 
     @classmethod
     def get_routers(cls) -> List[Router]:
