@@ -12,4 +12,6 @@ class TestRouterInfo(TestCase):
         router.mac = "e8:de:27:b7:7c:e2"
         router.mode = Mode.normal
 
-        RouterInfo.update(router)
+        router_info = RouterInfo(router)
+        router_info.start()
+        router_info.join()
