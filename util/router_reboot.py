@@ -52,6 +52,3 @@ class RouterReboot(Thread):
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
-
-    def join(self):
-        Thread.join(self)

@@ -89,20 +89,20 @@ class NetworkCtrl:
                            ":" + remote_file + "'", 2)
             Logger().error(str(e), 2)
 
-    def remote_system_wget(self, file: str, remote_path: str, ip: str):
+    def remote_system_wget(self, file: str, remote_path: str, web_server_ip: str):
         """
         The RemoteSystem downloads the file from the PI and stores it at remote_file
         :param file: like /root/TestFramework/firmware/.../<firmware>.bin
         :param remote_path: like /tmp/
-        :param ip: IP-address of the raspberryPI
+        :param web_server_ip: IP-address of the raspberryPI
         """
         try:
             webserver = WebServer()
             webserver.start()
             # Proves first if file already exists
-            self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
-                              ' || wget http://' + ip + ':' + str(WebServer.PORT_WEBSERVER) +
-                              file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
+            stout = self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
+                                      ' || wget http://' + web_server_ip + ':' + str(WebServer.PORT_WEBSERVER) +
+                                      file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
             webserver.join()
         except Exception as e:
             Logger().error(str(e), 2)

@@ -24,7 +24,8 @@ class Sysupdate(Thread):
         """
         Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         firmware_handler = FirmwareHandler(self.firmware_config['URL'])
-        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config['Release_Model'], self.firmware_config['Download_All'])
+        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config['Release_Model'],
+                                                 self.firmware_config['Download_All'])
         self.router.firmware = firmware
 
 
@@ -33,10 +34,11 @@ class Sysupgrade(Thread):
     Instantiate a NetworkCtrl, proves if the firmware is on the Router(/tmp/<firmware_name>.bin)
     and does a Sysupgrade.
     """""
-    def __init__(self, router: Router, n: bool, debug: bool= False):
+    def __init__(self, router: Router, n: bool, web_server_ip: str, debug: bool= False):
         """
         :param router: Router object
         :param n: reject the last firmware configurations
+        :param web_server_ip: the IP where the Router can download the firmware image (should be the frameworks IP)
         :param debug: if we don't want to realy sysupgrade the firmware
         """
         Thread.__init__(self)
@@ -44,6 +46,7 @@ class Sysupgrade(Thread):
 
         self.router = router
         self.n = n
+        self.web_server_ip = web_server_ip
         self.debug = debug
         self.daemon = True
 
@@ -55,7 +58,7 @@ class Sysupgrade(Thread):
         """
         network_ctrl = NetworkCtrl(self.router)
         network_ctrl.connect_with_remote_system()
-        network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/', self.router.ip)
+        network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/', self.web_server_ip)
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
         if not self.debug:

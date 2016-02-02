@@ -531,13 +531,17 @@ class Server(ServerProxy):
         from util.router_flash_firmware import Sysupgrade
         if upgrade_all:
             for router in cls.get_routers():
-                sysupgrade = Sysupgrade(router, n)
+                # The IP where the Router can download the firmware image (should be the frameworks IP)
+                web_server_ip = cls.nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
+                sysupgrade = Sysupgrade(router, n, web_server_ip)
                 sysupgrade.start()
                 sysupgrade.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                sysupgrade = Sysupgrade(router, n)
+                # The IP where the Router can download the firmware image (should be the frameworks IP)
+                web_server_ip = cls.nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
+                sysupgrade = Sysupgrade(router, n, web_server_ip)
                 sysupgrade.start()
                 sysupgrade.join()
 

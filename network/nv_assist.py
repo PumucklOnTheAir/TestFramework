@@ -46,9 +46,22 @@ class NVAssistent:
         vlan.create_interface()
         self.vlan_dict[vlan.vlan_iface_name] = vlan
 
-        namespace = Namespace(self.ipdb, remote_system.namespace_name)
+        namespace = Namespace(self.ipdb, str(remote_system.namespace_name))
         namespace.encapsulate_interface(vlan.vlan_iface_name)
         self.nsp_dict[namespace.nsp_name] = namespace
+
+    def get_ip_address(self, namespace_name: str, vlan_iface_name: str) -> (str, int):
+        """
+        Returns the the first IP of the VLAN in the IPDB of the Namespace
+
+        :param namespace_name: Namespace name
+        :param vlan_iface_name: VLAN name
+        :return: IP address (ip, mask)
+        """
+        ip_address = self.nsp_dict[namespace_name].ipdb_get_ip(ipdb=False, iface_name=vlan_iface_name).split("/")
+        ip = ip_address[0]
+        mask = int(ip_address[1])
+        return ip, mask
 
     def delete_vlan(self, vlan_iface_name: str):
         self.vlan_dict[vlan_iface_name].delete_interface()

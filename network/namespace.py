@@ -4,8 +4,6 @@ import re
 import sys
 import traceback
 from log.logger import Logger
-import os
-import time
 from pyroute2 import netns
 
 
@@ -66,7 +64,7 @@ class Namespace:
 
         :param iface_name:
         """
-        iface_ip = self._get_ip(True, iface_name)
+        iface_ip = self.ipdb_get_ip(True, iface_name)
         try:
             with self.ipdb.interfaces[iface_name] as iface:
                 iface.net_ns_fd = self.nsp_name
@@ -79,48 +77,7 @@ class Namespace:
             Logger().debug("[-] Couldn't encapsulate the Interface(" + iface_name + ")", 3)
             Logger().error(str(e), 3)
 
-    def set_new_ip(self, dhcp: bool, iface_name: str, new_ip: str=None, new_ip_mask: int=None):
-        """
-        Sets the IP either given by 'new_ip'-parameter or via dhclient.
-
-        :param dhcp: should a dhclient be used?
-        :param iface_name:
-        :param new_ip:
-        :param new_ip_mask:
-        :return: the new IP with the format ip/mask
-        """
-        iface_ip = None
-        if dhcp:
-            try:
-                self._wait_for_ip_assignment(iface_name)
-                iface_ip = self._get_ip(False, iface_name)
-                Logger().debug("[+] New IP " + iface_ip + " for " + iface_name + " by dhcp", 2)
-            except TimeoutError as e:
-                Logger().debug("[-] Couldn't get a new IP for " + iface_name + " by dhcp", 2)
-        else:
-            iface_ip = new_ip+"/"+str(new_ip_mask)
-            Logger().debug("[+] New IP " + iface_ip + " for " + iface_name, 2)
-        return iface_ip
-
-    def _wait_for_ip_assignment(self, iface_name: str):
-        """
-        Waits until the dhcp-client got an ip
-
-        :param iface_name:
-        """
-        Logger().debug("Wait for ip assignment via dhcp for Interface(" + iface_name +
-                       ") in Namespace(" + self.nsp_name + ")...", 3)
-        current_ip = self._get_ip(False, iface_name).split('/')[0]
-        if not self._get_ip(False, iface_name, not_this_ip=current_ip):
-            os.system("ip netns exec " + self.nsp_name + " dhclient " + iface_name)
-            i = 0
-            while self._get_ip(False, iface_name, not_this_ip=current_ip) is None:
-                time.sleep(0.5)
-                i += 1
-                if i == 20:
-                    raise TimeoutError
-
-    def _get_ip(self, ipdb: bool, iface_name: str, not_this_ip: str = None):
+    def ipdb_get_ip(self, ipdb: bool, iface_name: str, not_this_ip: str = None):
         """
         Reads the 'first' IP from the IPDB or if intended from IPDN_NETNS.
 

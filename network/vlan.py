@@ -1,5 +1,4 @@
 from pyroute2.ipdb import IPDB
-import time
 import re
 from log.logger import Logger
 from network.remote_system import RemoteSystem
@@ -40,11 +39,11 @@ class Vlan:
             # Try to assign an IP via dhclient
             if not self._wait_for_ip_assignment():
                 # Otherwise add a static IP
-                iface.add_ip(self._get_matching_ip(self.remote_system.ip),self.remote_system.ip_mask).commit()
+                iface.add_ip(self._get_matching_ip(str(self.remote_system.ip)), self.remote_system.ip_mask).commit()
             iface.mtu = 1400
 
             Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
-                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self._ipdb_get_ip(), 3)
+                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip(), 3)
         except Exception as e:
             Logger().debug("[-] " + self.vlan_iface_name + " couldn't be created", 3)
             Logger().error(str(e), 3)
@@ -86,7 +85,7 @@ class Vlan:
             Logger().error(str(e), 3)
             return False
 
-    def _ipdb_get_ip(self, not_this_ip: str = None):
+    def ipdb_get_ip(self, not_this_ip: str = None):
         """
         Reads the first IP from IPDB.
 
