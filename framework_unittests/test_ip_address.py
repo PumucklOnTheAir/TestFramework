@@ -1,7 +1,7 @@
 from unittest import TestCase
 from router.ip_address import IPv4, IPv6
 
-
+# TODO Kann eigentlich gelöscht werden
 class TestIPAddress(TestCase):
 
     def test_ipv4(self):
