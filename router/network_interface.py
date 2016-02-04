@@ -24,7 +24,6 @@ class NetworkInterface:
         self._name = name
         self._status = Status.unknown
         self._mac = "00:00:00:00:00:00"
-
         self.ipaddress_lst = list()
 
     @property
