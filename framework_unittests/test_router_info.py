@@ -6,6 +6,9 @@ from pyroute2 import netns
 
 
 class TestRouterInfo(TestCase):
+    """
+    This TestModule tests the functionality of the RouterInfo.
+    """""
 
     def test_router_info(self):
         router = self._create_router()
@@ -19,6 +22,9 @@ class TestRouterInfo(TestCase):
         router_info = RouterInfo(router)
         router_info.start()
         router_info.join()
+
+        for interface in router.interfaces.values():
+            print("router: " + str(interface))
 
         # Close Namespaces and VLANs
         nv_assist.close()

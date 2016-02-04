@@ -118,7 +118,7 @@ class RouterInfo(Thread):
                         continue
                     ip = inet.split("/")[0].split("inet ")[1]
                     ip_mask = int(inet.split("/")[1].split(" ")[0])
-                    interface.ipv4_lst.append(IPv4(ip, ip_mask))
+                    interface.add_ip_address(ip, ip_mask)
 
             # IPv6 addresses
             raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet6 '")
@@ -130,7 +130,7 @@ class RouterInfo(Thread):
                         continue
                     ip = inet.split("/")[0].split("inet6 ")[1]
                     ip_prefix_len = int(inet.split("/")[1].split(" ")[0])
-                    interface.ipv6_lst.append(IPv6(ip, ip_prefix_len))
+                    interface.add_ip_address(ip, ip_prefix_len)
             interfaces[iface_name] = interface
         return interfaces
 

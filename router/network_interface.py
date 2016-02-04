@@ -1,4 +1,5 @@
 from enum import Enum
+import ipaddress
 
 
 class Status(Enum):
@@ -23,8 +24,8 @@ class NetworkInterface:
         self._name = name
         self._status = Status.unknown
         self._mac = "00:00:00:00:00:00"
-        self.ipv4_lst = list()
-        self.ipv6_lst = list()
+
+        self.ipaddress_lst = list()
 
     @property
     def name(self) -> str:
@@ -74,13 +75,18 @@ class NetworkInterface:
         assert isinstance(value, str)
         self._mac = value
 
+    def add_ip_address(self, ip: str, ip_mask: int):
+        """
+        Add a new ip address to the interface.
+
+        :param ip: ip address
+        :param ip_mask: ip mask or length prefix-length if IPv6
+        """
+        self.ipaddress_lst.append(ipaddress.ip_interface(ip+"/"+str(ip_mask)))
+
     def __str__(self):
-        ipv4 = "["
-        for ip in self.ipv4_lst:
-            ipv4 = ipv4 + " " + str(ip)
-        ipv4 += " ]"
-        ipv6 = "["
-        for ip in self.ipv6_lst:
-            ipv6 = ipv6 + " " + str(ip)
-        ipv6 += " ]"
-        return self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipv4) + ", " + str(ipv6)
+        ipaddresses = "["
+        for ip in self.ipaddress_lst:
+            ipaddresses = ipaddresses + " " + str(ip)
+        ipaddresses += " ]"
+        return (self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses))
