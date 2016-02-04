@@ -4,7 +4,6 @@ from network.remote_system import RemoteSystemJob
 from router.router import Router
 from log.logger import Logger
 from router.network_interface import NetworkInterface, Status
-from router.ip_address import IPv4, IPv6
 from router.cpu_process import CPUProcess
 from router.memory import RAM
 from typing import Dict, List
@@ -12,6 +11,15 @@ import traceback, sys
 
 
 class RouterInfo(Thread):
+    """
+    This class gets the following information via SSH:
+        1. RouterModel
+        2. MAC-Address
+        3. SSID
+        4. NetworkInterfaces
+        5. CPU-Processes-Information
+        6. Memory-Information
+    """""
 
     def __init__(self, router: Router):
         Thread.__init__(self)
