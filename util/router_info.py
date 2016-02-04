@@ -8,6 +8,7 @@ from router.ip_address import IPv4, IPv6
 from router.cpu_process import CPUProcess
 from router.memory import RAM
 from typing import Dict, List
+import traceback, sys
 
 
 class RouterInfo(Thread):
@@ -41,6 +42,8 @@ class RouterInfo(Thread):
         except Exception as e:
             Logger().warning("[-] Couldn't update all Infos", 2)
             Logger().error(str(e))
+            for tb in traceback.format_tb(sys.exc_info()[2]):
+                Logger().error(tb, 3)
 
     def _get_router_model(self) -> str:
         """
