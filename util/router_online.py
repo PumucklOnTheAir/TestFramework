@@ -2,10 +2,13 @@ from threading import Thread
 from router.router import Router, Mode
 from log.logger import Logger
 from subprocess import Popen, PIPE
-import os
+from network.remote_system import RemoteSystemJob
 
 
 class RouterOnline(Thread):
+    """
+    Checks if the given Router is online and sets the Mode (normal, configuration)
+    """""
 
     def __init__(self, router: Router):
         Thread.__init__(self)
@@ -30,3 +33,29 @@ class RouterOnline(Thread):
 
         Logger().debug("[-] Router is not online", 3)
         self.router.mode = Mode.unknown
+
+
+class RouterOnlineJob(RemoteSystemJob):
+    """
+    Encapsulate  RouterOnline as a job for the Server
+    """""
+    def run(self):
+        router = self.remote_system
+        router_info = RouterOnline(router)
+        router_info.start()
+        router_info.join()
+        self.return_data({'router': router})
+
+    def pre_process(self, server) -> {}:
+        return None
+
+    def post_process(self, data: {}, server) -> None:
+        """
+        Updates the router in the Server with the new information
+
+        :param data: result from run()
+        :param server: the Server
+        :return:
+        """
+        ref_router = server.get_router_by_id(data['router'].id)
+        ref_router.update(data['router'])  # Don't forget to update this method
