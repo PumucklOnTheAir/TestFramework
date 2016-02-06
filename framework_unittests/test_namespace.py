@@ -26,7 +26,7 @@ class TestNamespace(TestCase):
         vlan.create_interface()
 
         # Create Namespace
-        namespace = Namespace(ipdb,router.namespace_name)
+        namespace = Namespace(ipdb, router.namespace_name)
         assert isinstance(namespace, Namespace)
 
         # encapsulate VLAN
