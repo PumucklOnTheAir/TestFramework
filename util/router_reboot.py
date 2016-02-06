@@ -2,6 +2,7 @@ from threading import Thread
 from network.network_ctrl import NetworkCtrl
 from router.router import Router, Mode
 from log.logger import Logger
+from network.remote_system import RemoteSystemJob
 
 
 class RouterReboot(Thread):
@@ -52,3 +53,33 @@ class RouterReboot(Thread):
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
+
+
+class RouterRebootJob(RemoteSystemJob):
+    """
+    Encapsulate  RouterReboot as a job for the Server
+    """""
+    def __init__(self, configmode: bool):
+        super().__init__()
+        self.configmode = configmode
+
+    def run(self):
+        router = self.remote_system
+        router_info = RouterReboot(router, self.configmode)
+        router_info.start()
+        router_info.join()
+        self.return_data({'router': router})
+
+    def pre_process(self, server) -> {}:
+        return None
+
+    def post_process(self, data: {}, server) -> None:
+        """
+        Updates the router in the Server with the new information
+
+        :param data: result from run()
+        :param server: the Server
+        :return:
+        """
+        ref_router = server.get_router_by_id(data['router'].id)
+        ref_router.update(data['router'])  # Don't forget to update this method

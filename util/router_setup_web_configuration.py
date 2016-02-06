@@ -2,6 +2,7 @@ from threading import Thread
 from router.router import Router
 from log.logger import Logger
 from network.web_config_assist import WebConfigurationAssist
+from network.remote_system import RemoteSystemJob
 
 
 class RouterWebConfiguration(Thread):
@@ -9,7 +10,7 @@ class RouterWebConfiguration(Thread):
     The RouterWebConfiguration setup the webinterface of the Router by a given configuration-file.
     """""
 
-    def __init__(self, router: Router, webinterface_config, wizard: bool):
+    def __init__(self, router: Router, webinterface_config: dict, wizard: bool):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
 
@@ -67,5 +68,33 @@ class RouterWebConfiguration(Thread):
             Logger().error(str(e), 2)
             raise e
 
-    def join(self):
-        Thread.join(self)
+
+class RouterWebConfigurationJob(RemoteSystemJob):
+    """
+    Encapsulate  RouterWebConfiguration as a job for the Server
+    """""
+    def __init__(self, webinterface_config: dict, wizard: bool):
+        super().__init__()
+        self.webinterface_config = webinterface_config
+        self.wizard = wizard
+
+    def run(self):
+        router = self.remote_system
+        router_info = RouterWebConfiguration(router, self.webinterface_config, self.wizard)
+        router_info.start()
+        router_info.join()
+        self.return_data({'router': router})
+
+    def pre_process(self, server) -> {}:
+        return None
+
+    def post_process(self, data: {}, server) -> None:
+        """
+        Updates the router in the Server with the new information
+
+        :param data: result from run()
+        :param server: the Server
+        :return:
+        """
+        ref_router = server.get_router_by_id(data['router'].id)
+        ref_router.update(data['router'])  # Don't forget to update this method

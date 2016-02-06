@@ -463,18 +463,14 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_online import RouterOnline
+        from util.router_online import RouterOnlineJob # TODO remove it from here #64
         if all:
             for router in cls.get_routers():
-                sysupdate = RouterOnline(router)
-                sysupdate.start()
-                sysupdate.join()
+                cls.start_job(router, RouterOnlineJob())
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                sysupdate = RouterOnline(router)
-                sysupdate.start()
-                sysupdate.join()
+                cls.start_job(router, RouterOnlineJob())
 
     @classmethod
     def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
@@ -506,18 +502,14 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_flash_firmware import Sysupdate
+        from util.router_flash_firmware import SysupdateJob
         if update_all:
             for router in cls.get_routers():
-                sysupdate = Sysupdate(router,  ConfigManager.get_firmware_dict()[0])
-                sysupdate.start()
-                sysupdate.join()
+                cls.start_job(router, SysupdateJob(ConfigManager.get_firmware_dict()[0]))
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                sysupdate = Sysupdate(router,  ConfigManager.get_firmware_dict()[0])
-                sysupdate.start()
-                sysupdate.join()
+                cls.start_job(router, SysupdateJob(ConfigManager.get_firmware_dict()[0]))
 
     @classmethod
     def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
@@ -528,22 +520,18 @@ class Server(ServerProxy):
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
-        from util.router_flash_firmware import Sysupgrade
+        from util.router_flash_firmware import SysupgradeJob # TODO remove it from here #64
         if upgrade_all:
             for router in cls.get_routers():
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
                 web_server_ip = cls.nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
-                sysupgrade = Sysupgrade(router, n, web_server_ip)
-                sysupgrade.start()
-                sysupgrade.join()
+                cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
                 web_server_ip = cls.nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
-                sysupgrade = Sysupgrade(router, n, web_server_ip)
-                sysupgrade.start()
-                sysupgrade.join()
+                cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
 
     @classmethod
     def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
@@ -555,18 +543,14 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
         """
-        from util.router_setup_web_configuration import RouterWebConfiguration
+        from util.router_setup_web_configuration import RouterWebConfigurationJob # TODO remove it from here #64
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
-                router_web_config = RouterWebConfiguration(router, ConfigManager.get_web_interface_config()[i], wizard)
-                router_web_config.start()
-                router_web_config.join()
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
-                router_web_config = RouterWebConfiguration(router, ConfigManager.get_web_interface_config()[i], wizard)
-                router_web_config.start()
-                router_web_config.join()
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
 
     @classmethod
     def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
@@ -577,18 +561,14 @@ class Server(ServerProxy):
         :param reboot_all: Reboots all Routers
         :param configmode: Reboots Router into configmode
         """
-        from util.router_reboot import RouterReboot
+        from util.router_reboot import RouterRebootJob # TODO remove it from here #64
         if reboot_all:
             for router in cls.get_routers():
-                router_reboot = RouterReboot(router, configmode)
-                router_reboot.start()
-                router_reboot.join()
+                cls.start_job(router, RouterRebootJob(configmode))
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                router_reboot = RouterReboot(router, configmode)
-                router_reboot.start()
-                router_reboot.join()
+                cls.start_job(router, RouterRebootJob(configmode))
 
     @classmethod
     def get_server_version(cls) -> str:
