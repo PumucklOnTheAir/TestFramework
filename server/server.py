@@ -80,7 +80,7 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
-        cls.executor = ProcessPoolExecutor(max_workers=len(cls._routers))
+        cls.executor = ProcessPoolExecutor(max_workers=1)  # TODO restore len(cls._routers)
 
         # Add Namespace and Vlan for each Router
         if cls.VLAN:
@@ -104,7 +104,8 @@ class Server(ServerProxy):
     @classmethod
     def __load_configuration(cls):
         Logger().debug("Load configuration")
-        cls._routers = ConfigManager.get_router_auto_list()
+        cls._routers = ConfigManager.get_router_manual_list()
+        print(cls._routers)
 
     @classmethod
     def stop(cls) -> None:
