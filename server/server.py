@@ -4,16 +4,16 @@ from router.router import Router
 from config.configmanager import ConfigManager
 from typing import List, Union, Dict
 from .test import FirmwareTest
-from concurrent.futures import ProcessPoolExecutor
+from multiprocessing.pool import Pool
 from log.logger import Logger
-from concurrent.futures import Future
+from concurrent.futures import Future, ThreadPoolExecutor
 from unittest.result import TestResult
 from threading import Event, Thread, Semaphore
 import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
-from network.nv_assist import NVAssistent
+
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 RemoteSystemJobClass = type(RemoteSystemJob)
@@ -37,20 +37,24 @@ class Server(ServerProxy):
     VLAN = True
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
+
     _ipc_server = IPC()
 
     # runtime vars
     _routers = []
     _reports = []
+    _stopped = False
+
+    _max_subprocesses = 0
 
     # test/task handling
     _running_task = {}  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
     _waiting_tasks = {}  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
-    executor = None  # ProcessPool
+    _task_pool = None  # ProcessPool
     _semaphore_task_management = Semaphore(1)
 
     # NVAssistent
-    nv_assistent = NVAssistent("eth0")
+    _nv_assistent = None
 
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
@@ -80,14 +84,21 @@ class Server(ServerProxy):
         # load Router configs
         cls.__load_configuration()
 
-        cls.executor = ProcessPoolExecutor(max_workers=1)  # TODO restore len(cls._routers)
+        # start process/thread pool for job and test handling
+        cls._max_subprocesses = (len(cls._routers)+2)
+        cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
+        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(len(cls._routers) + 5))
 
-        # Add Namespace and Vlan for each Router
+        # add Namespace and Vlan for each Router
         if cls.VLAN:
+            # TODO wrong place #70
+            from network.nv_assist import NVAssistent
+            cls._nv_assistent = NVAssistent("eth0")
+
             for router in cls.get_routers():
                 Logger().debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
-                cls.nv_assistent.create_namespace_vlan(router)
-        # Update Router
+                cls._nv_assistent.create_namespace_vlan(router)
+        # update Router
         cls.router_online(None, all=True)
         cls.update_router_info(None, update_all=True)
 
@@ -105,35 +116,35 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         Logger().debug("Load configuration")
         cls._routers = ConfigManager.get_router_manual_list()
-        print(cls._routers)
 
     @classmethod
     def stop(cls) -> None:
         """
         Stops the server, all running tests and closes all connections.
         """
-        cls.executor.shutdown(wait=False)
-        cls.nv_assistent.close()
-        # close open streams and the logger instance
-        Logger().close()
+        if not cls._stopped:
+            cls._stopped = True
+            cls._task_pool.close()
+            if cls.VLAN:
+                cls._nv_assistent.close()
+            # close open streams and the logger instance
+            Logger().close()
 
-        cls._ipc_server.shutdown()
+            cls._ipc_server.shutdown()
 
     @classmethod
     def stop_all_tasks(cls) -> None:
         """
         Stops all running jobs on the RemoteSystems
         """
-        cls.executor.shutdown(wait=False)
-        for router in cls.get_routers():
-            cls.set_running_task(router, None)  # TODO stop all running Futures
-            # cls.get_running_task()
+        cls._task_pool.terminate()
+        cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
 
         Logger().info("Stopped all jobs")
 
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
-        # TODO test verwaltung
+        # TODO test verwaltung #36
         raise NotImplementedError
 
     @classmethod
@@ -232,16 +243,17 @@ class Server(ServerProxy):
                 Logger().debug("Starting task " + str(job), 1)
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
-                    # Task is a test
-                    task = cls.executor.submit(cls._execute_test, job, remote_sys)
-                    task.add_done_callback(cls._test_done)
+                    # task is a test
+                    async_result = cls._task_pool.apply_async(func=cls._execute_test,
+                                                              args=(job, remote_sys))
+                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, async_result)
                 else:
                     # task is a regular job
                     data = job.pre_process(cls)
-                    task = cls.executor.submit(cls._execute_job, job, remote_sys, data)
-                    task.add_done_callback(cls._task_done)
-                task.remote_sys = remote_sys
+                    async_result = cls._task_pool.apply_async(func=cls._execute_job,
+                                                              args=(job, remote_sys, data))
 
+                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, async_result)
                 return True
             else:
                 Logger().debug("Put task in the wait queue. " + str(job), 1)
@@ -259,15 +271,10 @@ class Server(ServerProxy):
         job.prepare(remote_sys, data)
 
         cls.__setns(remote_sys)
-        try:
-            job.start()
-            job.join(6*50)  # TimeOut: 5 minutes
-            result = job.get_return_data()
-        except Exception as e:
-            Logger().error(str(e), 3)
-        finally:
-            pass
-            #  cls.__unsetns(remote_sys) # TODO
+
+        job.start()
+        job.join(6*50)  # TimeOut: 5 minutes
+        result = job.get_return_data()
 
         return result
 
@@ -276,7 +283,7 @@ class Server(ServerProxy):
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
-        Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
+       # Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
         Logger().debug("Execute test cases.. ", 3)
 
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
@@ -296,7 +303,6 @@ class Server(ServerProxy):
             Logger().error("TestCase raised an exception", 3)
             Logger().error(str(e), 3)
         finally:
-            # cls.__unsetns(router) # TODO
 
             # I'm sry for this dirty hack, but if you don't do this you get an
             # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
@@ -307,7 +313,7 @@ class Server(ServerProxy):
             return result
 
     @classmethod
-    def _test_done(cls, task: Future) -> None:
+    def _wait_for_test_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, async_result) -> None:
         """
         Callback function for tests.
         Needed to start the next test/task in the queue.
@@ -315,26 +321,33 @@ class Server(ServerProxy):
 
         :param task: the Future which runs the test
         """
-        Logger().debug("Test done " + str(task), 1)
-        Logger().debug("From " + str(task.remote_sys), 2)
-        cls.set_running_task(task.remote_sys, None)
-        exception = task.exception()
-        if exception is not None:
-            Logger().error("Test raised an Exception: " + str(exception), 1)
+
+        try:
+            result = async_result.get(60*5)
+            Logger().debug("Test done " + str(job), 1)
+            Logger().debug("From " + str(remote_sys), 2)
+            cls._reports.append(result)
+        except Exception as e:
+            # TODO #105
+            Logger().error("Test raised an Exception: " + str(e), 1)
 
             result = TestResult()
+            result._original_stdout = None
+            result._original_stderr = None
             # result.addError(None, (type(exception), exception, None))
             # TODO exception handling for failed Futures/Tests
 
             cls._reports.append(result)
-        else:
-            cls._reports.append(task.result())
 
-        # start next test in the queue
-        cls.__start_task(task.remote_sys, None)
+        finally:
+            cls.set_running_task(remote_sys, None)
+            print(cls._reports)
+            # start next test in the queue
+            cls.__start_task(remote_sys, None)
+
 
     @classmethod
-    def _task_done(cls, task: Future) -> None:
+    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, async_result) -> None:
         """
         Callback function for tests.
         Needed to start the next test/task in the queue.
@@ -342,21 +355,22 @@ class Server(ServerProxy):
 
         :param task: the Future which runs the test
         """
-        Logger().debug("Task done " + str(task), 1)
-        Logger().debug("At " + str(task.remote_sys), 2)
+        Logger().debug("waiting......")
+        result = async_result.get(60*5)
+        Logger().debug("Job done " + str(job), 1)
+        Logger().debug("At " + str(remote_sys), 2)
         try:
-            exception = task.exception()
+            exception = None  # task.exception() # TODO #105
             if exception is not None:
                 Logger().error("Task raised an exception: " + str(exception), 1)
             else:
-                running_task = cls.get_running_task(task.remote_sys)
-                running_task.post_process(task.result(10), cls)  # timeout: 10 seconds
-                running_task.done()
+                job.post_process(result, cls)
+                job.done()
 
         finally:
-            cls.set_running_task(task.remote_sys, None)
+            cls.set_running_task(remote_sys, None)
             # start next test in the queue
-            cls.__start_task(task.remote_sys, None)
+            cls.__start_task(remote_sys, None)
 
     @classmethod
     def __setns(cls, remote_sys: RemoteSystem):  # -> NVAssistent:
@@ -380,7 +394,7 @@ class Server(ServerProxy):
         """
         if cls.VLAN:
             Logger().debug("Remove Namespace and Vlan for the current process(" + str(os.getpid()) + ")", 2)
-            cls.nv_assistent.delete_namespace(remote_sys.namespace_name)
+            cls._nv_assistent.delete_namespace(remote_sys.namespace_name)
 
     @classmethod
     def get_routers(cls) -> List[Router]:
@@ -467,7 +481,7 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_online import RouterOnlineJob # TODO remove it from here #64
+        from util.router_online import RouterOnlineJob  # TODO remove it from here #64
         if all:
             for router in cls.get_routers():
                 cls.start_job(router, RouterOnlineJob())
@@ -528,13 +542,13 @@ class Server(ServerProxy):
         if upgrade_all:
             for router in cls.get_routers():
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
-                web_server_ip = cls.nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
+                web_server_ip = cls._nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
                 cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
-                web_server_ip = cls.nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
+                web_server_ip = cls._nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
                 cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
 
     @classmethod

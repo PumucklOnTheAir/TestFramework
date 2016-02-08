@@ -1,10 +1,19 @@
+
+from framework_unittests.test_Server_2 import ServerCore, block_until_server_is_online
 from server.server import Server
-from framework_unittests.test_Server_2 import ServerTestCase2
+from multiprocessing import Process
+import unittest
 
 
-class ServerTestCaseVLAN(ServerTestCase2):
+class ServerTestCaseVLAN(ServerCore, unittest.TestCase):
 
     proc = None
+
+    @classmethod
+    def setUpClass(cls):
+        #  starts the IPC server in another(!) process
+        cls.proc = Process(target=ServerTestCaseVLAN.serverStartWithParams, args=()).start()
+        block_until_server_is_online()
 
     @staticmethod
     def serverStartWithParams():
