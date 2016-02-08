@@ -23,7 +23,7 @@ class Mode(Enum):
     unknown = 3
 
 
-class Router(ProxyObject, RemoteSystem):
+class Router(RemoteSystem):
     """
     This class represent a Freifunk-Router
     """""
