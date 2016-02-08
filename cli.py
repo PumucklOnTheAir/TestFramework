@@ -3,6 +3,7 @@
 from server.ipc import IPC
 from util.cli_util import CLIUtil
 from log.logger import Logger
+from router import CPUProcess, NetworkInterface
 import argparse
 import time
 import sys
@@ -78,9 +79,25 @@ def print_router_info(router_list, rid):
                 ["username", router.usr_name],
                 ["password", router.usr_password],
                 ["SSID", router.ssid],
-                ["Firmware", router.firmware.name]]
+                ["Firmware", router.firmware.name],
+                ["Power Socket", router.power_socket]]
 
-        util.print_router(info)
+        if_list_headers = ["Name", "MAC", "Status", "IP Addresses"]
+        if_list = []
+        for k, i in router.interfaces:
+            li = [k, i.name, i.mac, i.status, i.ipaddress_lst]
+            ips = ""
+            for ip in i.ipaddress_lst:
+                ips += str(ip) + ", "
+            if_list.append(li)
+
+        proc_list_headers = ["PID", "User", "CPU", "MEM", "Command"]
+        proc_list = []
+        for p in router.cpu_processes:
+            li = [p.pid, p.user, str(p.cpu) + "%", str(p.mem) + "%", p.command]
+            proc_list.append(li)
+
+        util.print_router(info, if_list_headers, if_list, proc_list_headers, proc_list)
 
 
 def create_parsers():

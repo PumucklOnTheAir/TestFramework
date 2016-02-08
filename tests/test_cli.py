@@ -90,6 +90,16 @@ class CLITestClass(TestCaseParser):
         assert args.all
         assert args.mode == "webconfig"
 
+    def connect(self):
+        args = self.parser.parse_args(["connect", "-r", "1", "2", "3"])
+        assert not args.all
+        assert args.routers == [1, 2, 3]
+        assert args.mode == "connect"
+
+        args = self.parser.parse_args(["connect", "-a"])
+        assert args.all
+        assert args.mode == "connect"
+
 
 class TestCLItoServerConnection(unittest.TestCase):
     path_cli = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cli.py')
