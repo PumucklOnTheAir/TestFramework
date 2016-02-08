@@ -1,4 +1,3 @@
-from server.proxyobject import ProxyObject
 from enum import Enum
 from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
@@ -31,7 +30,6 @@ class Router(RemoteSystem):
     def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
                  config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
 
-        ProxyObject.__init__(self)
         RemoteSystem.__init__(self)
 
         self._id = id
