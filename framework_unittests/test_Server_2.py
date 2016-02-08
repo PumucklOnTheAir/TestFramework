@@ -5,6 +5,14 @@ from multiprocessing import Process
 from server.ipc import IPC
 import time
 import os
+import socket
+
+
+def block_until_server_is_online():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    while sock.connect_ex(('localhost', 5000)):
+        time.sleep(3)
+    sock.close()
 
 
 class ServerTestCase2(unittest.TestCase):
@@ -15,7 +23,7 @@ class ServerTestCase2(unittest.TestCase):
     def setUpClass(cls):
         #  starts the IPC server in another(!) process
         cls.proc = Process(target=ServerTestCase2.serverStartWithParams, args=()).start()
-        time.sleep(2)
+        block_until_server_is_online()
 
     @classmethod
     def tearDownClass(cls):

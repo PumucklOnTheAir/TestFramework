@@ -32,7 +32,7 @@ class Server(ServerProxy):
 
         *OSError: [Errno 99] Cannot assign requested address" try to restart the computer TODO #51*
     """""
-    VERSION = "0.1"
+    VERSION = "0.2"
     DEBUG = False
     VLAN = True
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
