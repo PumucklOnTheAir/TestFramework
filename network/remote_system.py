@@ -60,7 +60,7 @@ class RemoteSystemJob(Thread, metaclass=ABCMeta):
         self.__return_data = None
 
     def __str__(self):
-        return "TODO: __str__ remotesystemjob"
+        return self.__class__.__name__ + "TODO: __str__ remotesystemjob"
 
     def prepare(self, remote_sys: RemoteSystem, data: {} = None) -> None:
         """

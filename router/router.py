@@ -59,7 +59,7 @@ class Router(RemoteSystem):
         self._firmware = Firmware.get_default_firmware()
 
     def __str__(self):
-        return "Router{ID:%s, PS:%s, %s, %s}" % (self.id, self.power_socket, self.wlan_mode, self.mac)
+        return "Router{ID:%s, PS:%s, %s, %s}" % (self.id, self.power_socket, self.mode, self.mac)
 
     def update(self, new_router) -> None:
         """
@@ -70,6 +70,7 @@ class Router(RemoteSystem):
         self._model = new_router.model
         self._mac = new_router.mac
         self._ssid = new_router.ssid
+        self._mode = new_router.mode
 
     @property
     def id(self) -> int:

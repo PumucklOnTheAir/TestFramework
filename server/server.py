@@ -112,6 +112,7 @@ class Server(ServerProxy):
         Stops the server, all running tests and closes all connections.
         """
         cls.executor.shutdown(wait=False)
+        cls.nv_assistent.close()
         # close open streams and the logger instance
         Logger().close()
 
@@ -172,6 +173,7 @@ class Server(ServerProxy):
         assert isinstance(remote_job, RemoteSystemJob)
 
         if wait != -1:
+            raise NotImplementedError  # TODO #102
             done_event = Event()
             remote_job.set_done_event(done_event)
 
@@ -226,7 +228,7 @@ class Server(ServerProxy):
                         job = cls.get_waiting_tasks(remote_sys).pop(0)
 
             if cls.get_running_task(remote_sys) is None:
-                Logger().debug("Starting test " + str(job), 1)
+                Logger().debug("Starting task " + str(job), 1)
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # Task is a test
@@ -235,13 +237,13 @@ class Server(ServerProxy):
                 else:
                     # task is a regular job
                     data = job.pre_process(cls)
-                    task = cls.executor.submit(cls._execute_task, job, remote_sys, data)
+                    task = cls.executor.submit(cls._execute_job, job, remote_sys, data)
                     task.add_done_callback(cls._task_done)
                 task.remote_sys = remote_sys
 
                 return True
             else:
-                Logger().debug("Put test in the wait queue. " + str(job), 1)
+                Logger().debug("Put task in the wait queue. " + str(job), 1)
                 cls.get_waiting_tasks(remote_sys).append(job)
 
                 return False
@@ -249,21 +251,22 @@ class Server(ServerProxy):
             cls._semaphore_task_management.release()
 
     @classmethod
-    def _execute_task(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
+    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
-        Logger().debug("Execute task " + str(job) + " on " + str(remote_sys), 2)
+        Logger().debug("Execute job " + str(job) + " on " + str(remote_sys), 2)
         Thread.__init__(job)
         job.prepare(remote_sys, data)
 
         cls.__setns(remote_sys)
         try:
             job.start()
-            job.join(60*5)  # TimeOut: 5 minutes
+            job.join(6*50)  # TimeOut: 5 minutes
             result = job.get_return_data()
         except Exception as e:
             Logger().error(str(e), 3)
         finally:
-            cls.__unsetns(remote_sys)
+            pass
+            #  cls.__unsetns(remote_sys) # TODO
 
         return result
 
@@ -292,7 +295,7 @@ class Server(ServerProxy):
             Logger().error("TestCase raised an exception", 3)
             Logger().error(str(e), 3)
         finally:
-            cls.__unsetns(router)
+            # cls.__unsetns(router) # TODO
 
             # I'm sry for this dirty hack, but if you don't do this you get an
             # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
@@ -346,7 +349,7 @@ class Server(ServerProxy):
                 Logger().error("Task raised an exception: " + str(exception), 1)
             else:
                 running_task = cls.get_running_task(task.remote_sys)
-                running_task.post_process(task.result(10), cls)
+                running_task.post_process(task.result(10), cls)  # timeout: 10 seconds
                 running_task.done()
 
         finally:
