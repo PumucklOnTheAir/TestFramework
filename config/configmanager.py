@@ -85,7 +85,7 @@ class ConfigManager:
     @staticmethod
     def get_router_auto_list(count: int = 0) -> []:
         """
-        Read the Router Manual Config file
+        Read the Router Auto Config file
 
         :param count: Count of the Router
         :return: List with any Router objects from the file

@@ -1,4 +1,3 @@
-from server.proxyobject import ProxyObject
 from enum import Enum
 from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
@@ -23,7 +22,7 @@ class Mode(Enum):
     unknown = 3
 
 
-class Router(ProxyObject, RemoteSystem):
+class Router(RemoteSystem):
     """
     This class represent a Freifunk-Router
     """""
@@ -31,7 +30,6 @@ class Router(ProxyObject, RemoteSystem):
     def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
                  config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
 
-        ProxyObject.__init__(self)
         RemoteSystem.__init__(self)
 
         self._id = id
@@ -59,7 +57,7 @@ class Router(ProxyObject, RemoteSystem):
         self._firmware = Firmware.get_default_firmware()
 
     def __str__(self):
-        return "Router{ID:%s, PS:%s, %s, %s}" % (self.id, self.power_socket, self.wlan_mode, self.mac)
+        return "Router{ID:%s, PS:%s, %s, %s}" % (self.id, self.power_socket, self.mode, self.mac)
 
     def update(self, new_router) -> None:
         """
@@ -70,6 +68,7 @@ class Router(ProxyObject, RemoteSystem):
         self._model = new_router.model
         self._mac = new_router.mac
         self._ssid = new_router.ssid
+        self._mode = new_router.mode
 
     @property
     def id(self) -> int:

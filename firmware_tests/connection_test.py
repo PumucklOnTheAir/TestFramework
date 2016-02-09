@@ -35,33 +35,14 @@ class VeryLongTest(FirmwareTest):
     def test_very_long_test(self):
         lol = True
         assert lol
-        #time.sleep(20)
         assert not not lol
-        # assert not lol
 
     def test_buzz1(self):
-        # print("buzz1")
         lol = True
         assert lol
         assert not not lol
-        # assert not lol
 
     def test_foo2(self):
-        # print("foo2")
         lol = True
         assert lol
         assert not not lol
-        # assert not lol
-
-
-class GeneralJobTest(RemoteSystemJob):
-    def run(self):
-        print("Hi")
-
-    @staticmethod
-    def pre_process(self, server) -> {}:
-        return None
-
-    @staticmethod
-    def post_process(self, data: {}, server) -> None:
-        pass
