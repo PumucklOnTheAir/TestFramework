@@ -74,7 +74,7 @@ def print_router_info(router_list, rid):
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
                 ["VLan ID", router.vlan_iface_id],
-                ["WLAN Modus", router.wlan_mode],
+                ["Modus", router.mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
                 ["SSID", router.ssid],
