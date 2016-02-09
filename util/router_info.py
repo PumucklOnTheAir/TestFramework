@@ -77,7 +77,6 @@ class RouterInfo(Thread):
         """
         interfaces = dict()
         raw_iface_lst = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'")
-        raw_iface_lst = raw_iface_lst.replace("[", "").replace("]", "").split("\\n'")[0:-1]
         iface_names = list()
         iface_id_lst = list()
 
@@ -86,7 +85,7 @@ class RouterInfo(Thread):
         # into '2'; 'enp0s25' and lists it.
         for raw_iface in raw_iface_lst:
             # Iface Id
-            iface_id = int(raw_iface.split(":")[0].split("'")[1])
+            iface_id = int(raw_iface.split(":")[0])
             if iface_names.count(iface_id) == 0:
                 iface_id_lst.append(iface_id)
 
@@ -101,54 +100,34 @@ class RouterInfo(Thread):
         for i, iface_id in enumerate(iface_id_lst):
             iface_name = iface_names[i]
             interface = NetworkInterface(iface_id, iface_name)
+            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name)
+            for raw_iface_info in raw_iface_infos:
+                # Status
+                raw_status = raw_iface_info.split("state")
+                if len(raw_status) > 1:
+                    status = raw_status[1].split(" ")[1]
+                    # Status: UP | DOWN | UNKNOWN
+                    if status == "UP":
+                        interface.status = Status.up
+                    elif status == "DOWN":
+                        interface.status = Status.down
+                    else:
+                        interface.status = Status.unknown
 
-            # MAC
-            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'link/ether'")
-            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
-            if len(raw_iface_infos) > 0:
-                raw_mac = raw_iface_infos.split(" ")
-                i = raw_mac.count("")
-                for i in range(0, i):
-                    raw_mac.remove("")
-                interface.mac = raw_mac[1]
+                # MAC
+                raw_mac = raw_iface_info.split("link/ether")
+                if len(raw_mac) > 1:
+                    raw_mac = raw_mac[1].split(" ")
+                    i = raw_mac.count("")
+                    for i in range(0, i):
+                        raw_mac.remove("")
+                    interface.mac = raw_mac[0]
 
-            # Status
-            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep " + iface_name)
-            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
-            raw_status = raw_iface_infos.split("state")
-            if len(raw_status) > 1:
-                status = raw_status[1].split(" ")[1]
-                # Status: UP | DOWN | UNKNOWN
-                if status == "UP":
-                    interface.status = Status.up
-                elif status == "DOWN":
-                    interface.status = Status.down
-                else:
-                    interface.status = Status.unknown
-
-            # IPv4 addresses
-            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet '")
-            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
-            if len(raw_iface_infos) > 0:
-                inet_lst = raw_iface_infos.split("\\n")
-                for inet in inet_lst:
-                    if not ("inet" in inet):
-                        continue
-                    ip = inet.split("/")[0].split("inet ")[1]
-                    ip_mask = int(inet.split("/")[1].split(" ")[0])
-                    interface.add_ip_address(ip, ip_mask)
-
-            # IPv6 addresses
-            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'inet6 '")
-            raw_iface_infos = raw_iface_infos.replace("[", "").replace("]", "").replace("'", "")
-            if len(raw_iface_infos) > 0:
-                inet_lst = raw_iface_infos.split("\\n")
-                for inet in inet_lst:
-                    if not ("inet6" in inet):
-                        continue
-                    ip = inet.split("/")[0].split("inet6 ")[1]
-                    ip_prefix_len = int(inet.split("/")[1].split(" ")[0])
-                    interface.add_ip_address(ip, ip_prefix_len)
+                # IP Address
+                raw_ip = raw_iface_info.split("inet")
+                if len(raw_ip) > 1:
+                    raw_ip = raw_ip[1].split(" ")[1].split("/")
+                    interface.add_ip_address(raw_ip[0], int(raw_ip[1]))
             interfaces[iface_name] = interface
         return interfaces
 
