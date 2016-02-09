@@ -35,17 +35,17 @@ class RouterInfo(Thread):
         try:
             self.network_ctrl.connect_with_remote_system()
             # Model
-            #TODO self.router.model = self._get_router_model()
+            self.router.model = self._get_router_model()
             # MAC
-            #self.router.mac = self._get_router_mac()
+            self.router.mac = self._get_router_mac()
             # SSID
-            #self.router.ssid = self._get_router_ssid()
+            self.router.ssid = self._get_router_ssid()
             # NetworkInterfaces
             self.router.interfaces = self._get_router_network_interfaces()
             # CPUProcesses
-            #self.router.cpu_processes = self._get_router_cpu_process()
+            self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
-            #self.router.ram = self._get_router_mem_ram()
+            self.router.ram = self._get_router_mem_ram()
             Logger().debug("[+] Infos updated", 2)
         except Exception as e:
             Logger().warning("[-] Couldn't update all Infos", 2)
