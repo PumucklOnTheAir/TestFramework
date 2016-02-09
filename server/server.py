@@ -280,6 +280,9 @@ class Server(ServerProxy):
 
     @classmethod
     def _execute_test(cls, test: FirmwareTestClass, router: Router) -> TestResult:
+        import time
+        time.sleep(2)  # TODO this is a workaround for async_result.get(), maybe a bug from python?
+
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
@@ -321,9 +324,11 @@ class Server(ServerProxy):
 
         :param task: the Future which runs the test
         """
-
+        Logger().debug("Wait for test" + str(job), 2)
+        Logger().debug(str(async_result.ready()), 1)
+        # Logger().debug(str(async_result.successful()), 2)
         try:
-            result = async_result.get(60*5)
+            result = async_result.get(60)  # 300
             Logger().debug("Test done " + str(job), 1)
             Logger().debug("From " + str(remote_sys), 2)
             cls._reports.append(result)
