@@ -43,9 +43,9 @@ class RouterInfo(Thread):
             # NetworkInterfaces
             self.router.interfaces = self._get_router_network_interfaces()
             # CPUProcesses
-            self.router.cpu_processes = self._get_router_cpu_process()
+            #self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
-            self.router.ram = self._get_router_mem_ram()
+            #self.router.ram = self._get_router_mem_ram()
             Logger().debug("[+] Infos updated", 2)
         except Exception as e:
             Logger().warning("[-] Couldn't update all Infos", 2)
@@ -78,8 +78,7 @@ class RouterInfo(Thread):
         interfaces = dict()
         # Get all network interfaces
         raw_iface_lst = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'")
-        # TODO iface_name überprüfen
-        iface_names = list()
+        iface_names_lst = list()
         iface_id_lst = list()
 
         # Get only the wifi interfaces
@@ -94,19 +93,19 @@ class RouterInfo(Thread):
         for raw_iface in raw_iface_lst:
             # Iface Id
             iface_id = int(raw_iface.split(":")[0])
-            if iface_names.count(iface_id) == 0:
+            if iface_id_lst.count(iface_id) == 0:
                 iface_id_lst.append(iface_id)
 
             # Iface Name
             iface_name = raw_iface.split(":")[1].replace(" ", "")
             if "@" in iface_name:
                 iface_name = iface_name.split("@")[0]
-            if iface_names.count(iface_name) == 0:
-                iface_names.append(iface_name)
+            if iface_names_lst.count(iface_name) == 0:
+                iface_names_lst.append(iface_name)
 
         # Take the information of the interfaces separately
         for i, iface_id in enumerate(iface_id_lst):
-            iface_name = iface_names[i]
+            iface_name = iface_names_lst[i]
             interface = NetworkInterface(iface_id, iface_name)
             raw_iface_info_lst = self.network_ctrl.send_command("ip addr show " + iface_name)
             for raw_iface_info in raw_iface_info_lst:
@@ -138,12 +137,18 @@ class RouterInfo(Thread):
                     interface.add_ip_address(raw_ip[0], int(raw_ip[1]))
 
                 # Wifi information
-                if wifi_iface_name_lst.count(iface_name) == 0:
+                if wifi_iface_name_lst.count(iface_name) != 0:
                     interface.wifi_information = self.__get_wifi_information(iface_name)
             interfaces[iface_name] = interface
         return interfaces
 
     def __get_wifi_information(self, iface_name: str) -> WifiInformation:
+        """
+        If the given interface name belongs to an wifi interface, there are some more infomations.
+
+        :param iface_name: Name of the network interface
+        :return: WifiInformation
+        """
         wifi_information = WifiInformation()
         raw_wifi_info_lst = self.network_ctrl.send_command("iw dev")
         right_iface = False
@@ -164,7 +169,7 @@ class RouterInfo(Thread):
 
     def _get_router_cpu_process(self) -> List:
         """
-        :return: the cpu processes of the given Router object
+        :return: The cpu processes of the given Router object
         """
         cpu_processes = list()
         # TODO: send_command gibt eine Liste zurück; sollte genutzt werden
@@ -193,7 +198,7 @@ class RouterInfo(Thread):
 
     def _get_router_mem_ram(self) -> RAM:
         """
-        :return: the RAM of the given Router.
+        :return: The RAM of the given Router.
         """
         ram = None
         raw_mem_lst = self.network_ctrl.send_command("free -m")[1:]
