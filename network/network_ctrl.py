@@ -3,6 +3,7 @@ import paramiko
 from log.logger import Logger
 from network.webserver import WebServer
 from network.remote_system import RemoteSystem
+from typing import List
 
 
 class NetworkCtrl:
@@ -41,7 +42,7 @@ class NetworkCtrl:
             Logger().error("[-] Couldn't connect", 2)
             raise e
 
-    def send_command(self, command) -> str:
+    def send_command(self, command) -> List:
         """
         Sends the given command via SSH to the RemoteSystem.
 

@@ -41,11 +41,11 @@ class RouterInfo(Thread):
             # SSID
             #self.router.ssid = self._get_router_ssid()
             # NetworkInterfaces
-            self.router.interfaces = self._get_router_network_interfaces()
+            #self.router.interfaces = self._get_router_network_interfaces()
             # CPUProcesses
             #self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
-            #self.router.ram = self._get_router_mem_ram()
+            self.router.ram = self._get_router_mem_ram()
             Logger().debug("[+] Infos updated", 2)
         except Exception as e:
             Logger().warning("[-] Couldn't update all Infos", 2)
@@ -57,19 +57,19 @@ class RouterInfo(Thread):
         """
         :return: the Model of the given Router object
         """
-        return self.network_ctrl.send_command('cat /proc/cpuinfo | grep machine').split(":")[1][:-4]
+        return self.network_ctrl.send_command('cat /proc/cpuinfo | grep machine')[0].split(":")[1][:-4]
 
     def _get_router_mac(self) -> str:
         """
         :return: the MAC of the given Router object
         """
-        return self.network_ctrl.send_command('uci show network.client.macaddr').split('=')[1][:-4]
+        return self.network_ctrl.send_command('uci show network.client.macaddr')[0].split('=')[1][:-4]
 
     def _get_router_ssid(self):
         """
         :return: the SSID of the given Router object
         """
-        return self.network_ctrl.send_command('uci show wireless.client_radio0.ssid').split('=')[1][:-4]
+        return self.network_ctrl.send_command('uci show wireless.client_radio0.ssid')[0].split('=')[1][:-4]
 
     def _get_router_network_interfaces(self) -> Dict:
         """
@@ -100,8 +100,8 @@ class RouterInfo(Thread):
         for i, iface_id in enumerate(iface_id_lst):
             iface_name = iface_names[i]
             interface = NetworkInterface(iface_id, iface_name)
-            raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name)
-            for raw_iface_info in raw_iface_infos:
+            raw_iface_info_lst = self.network_ctrl.send_command("ip addr show " + iface_name)
+            for raw_iface_info in raw_iface_info_lst:
                 # Status
                 raw_status = raw_iface_info.split("state")
                 if len(raw_status) > 1:
@@ -136,14 +136,11 @@ class RouterInfo(Thread):
         :return: the cpu processes of the given Router object
         """
         cpu_processes = list()
-        raw_cpu_process_info = self.network_ctrl.send_command("top -n 1")
-        raw_cpu_process_info = raw_cpu_process_info.replace("[", "").replace("]", "").replace("'", "")
-        raw_cpu_process_info = raw_cpu_process_info.replace(",", "").replace("%", "")
-        raw_cpu_process_info = raw_cpu_process_info.split("\\n")
+        # TODO: send_command gibt eine Liste zurück; sollte genutzt werden
+        raw_cpu_process_lst = str(self.network_ctrl.send_command("top -n 1"))
         # A line looks like:
         # 1051  1020 root     R     1388   5%   9% firefox
-        for cpu_process_info_line in raw_cpu_process_info[4:]:
-
+        for cpu_process_info_line in raw_cpu_process_lst[4:]:
             # Split and remove the spaces
             cpu_process_info_lst = cpu_process_info_line.split(" ")
             i = cpu_process_info_lst.count("")
@@ -168,10 +165,8 @@ class RouterInfo(Thread):
         :return: the RAM of the given Router.
         """
         ram = None
-        raw_mem_infos = self.network_ctrl.send_command("free -m")
-        raw_mem_infos = raw_mem_infos.replace("[", "").replace("]", "").replace("'", "").replace(",", "")
-        raw_mem_infos = raw_mem_infos.split("\\n")
-        for ram_info_line in raw_mem_infos:
+        raw_mem_lst = self.network_ctrl.send_command("free -m")[1:]
+        for ram_info_line in raw_mem_lst:
             if "Mem" in ram_info_line:
                 # Split and remove the spaces
                 ram_info_lst = ram_info_line.split(" ")
