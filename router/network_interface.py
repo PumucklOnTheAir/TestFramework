@@ -13,7 +13,7 @@ class Status(Enum):
 
 class NetworkInterface:
     """
-    This class represents a Network Interface, with a name, a mac address and two lists of IPs.
+    This class represents a Network Interface, with an id, a name, a status, a mac address and a list of IPs.
     """""
 
     def __init__(self, id: int, name: str):
@@ -26,6 +26,7 @@ class NetworkInterface:
         self._status = Status.unknown
         self._mac = "00:00:00:00:00:00"
         self.ipaddress_lst = list()
+        self._wifi_information = None
 
     @property
     def id(self) -> str:
@@ -92,9 +93,161 @@ class NetworkInterface:
         """
         self.ipaddress_lst.append(ipaddress.ip_interface(ip+"/"+str(ip_mask)))
 
+    @property
+    def wifi_information(self) -> WifiInformation:
+        """
+        Some informations that only the wlan interfaces do have.
+
+        :return: WifiInformation
+        """
+        return self._wifi_information
+
+    @wifi_information.setter
+    def wifi_information(self, value: WifiInformation):
+        """
+        :type value: WifiInformation
+        """
+        assert isinstance(value, WifiInformation)
+        self._wifi_information = value
+
     def __str__(self):
         ipaddresses = "["
         for ip in self.ipaddress_lst:
             ipaddresses = ipaddresses + " " + str(ip)
         ipaddresses += " ]"
-        return (str(self.id) + ": " + self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses))
+        return (str(self.id) + ": " + self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses) +
+                "\n" + str(self.wifi_information))
+
+
+class WlanType(Enum):
+    """
+    The Wifi can be in six modes or is unknown
+    """""
+    ap = 1
+    managed = 2
+    monitor = 3
+    ibss = 4
+    wds = 5
+    mesh = 6
+    unkown = 7
+
+
+class WifiInformation:
+    """
+    Some informations that only the wlan interfaces do have.
+    """""
+
+    def __init__(self):
+        """
+        :param wdev: Another identifier for the wireless interface
+        :param type: Wlan Mode
+        :param channel: Wifi Channel from 1 to 14
+        :param channel_width: 20 MHZ or 40 MHZ
+        :param channel_center1: center of the channel in MHZ
+        :return:
+        """
+        self._wdev = ""
+        self._type = WlanType.unkown
+        self._channel = 1
+        self._channel_width = 20
+        self._channel_cernter1 = 2412
+
+    @property
+    def wdev(self) -> str:
+        """
+        Another identifier for the wireless interface
+        :return: str
+        """
+        return self._wdev
+
+    @wdev.setter
+    def wdev(self, value: str):
+        """
+        :type value: str
+        """
+        assert isinstance(value, str)
+        self._wdev = value
+
+    @property
+    def type(self) -> WlanType:
+        """
+        Wlan Mode
+        :return: WlanType
+        """
+        return self._type
+
+    @type.setter
+    def type(self, value):
+        """
+        :type value: WlanType or str
+        """
+        if isinstance(value, WlanType):
+            self._type = value
+        else:
+            if value == "ap":
+                self._type = WlanType.ap
+            if value == "managed":
+                self._type = WlanType.managed
+            if value == "monitor":
+                self._type = WlanType.monitor
+            if value == "ibss":
+                self._type = WlanType.ibss
+            if value == "wds":
+                self._type = WlanType.wds
+            if value == "mesh":
+                self._type = WlanType.mesh
+            else:
+                self.type = WlanType.unkown
+
+
+    @property
+    def channel(self) -> int:
+        """
+        Wifi Channel from 1 to 14
+        :return: int
+        """
+        return self._channel
+
+    @channel.setter
+    def channel(self, value: int):
+        """
+        :type value: int
+        """
+        assert isinstance(value, int)
+        self._channel = value
+
+    @property
+    def channel_width(self) -> int:
+        """
+        20 MHZ or 40 MHZ
+        :return: int
+        """
+        return self._channel_width
+
+    @channel_width.setter
+    def channel_width(self, value: int):
+        """
+        :type value: int
+        """
+        assert isinstance(value, int)
+        self._channel_width = value
+
+    @property
+    def channel_center1(self) -> int:
+        """
+        Center of the channel in MHZ
+        :return: int
+        """
+        return self._channel_center1
+
+    @channel_center1.setter
+    def channel_center1(self, value: int):
+        """
+        :type value: int
+        """
+        assert isinstance(value, int)
+        self._channel_center1 = value
+
+    def __str__(self):
+        return (self.wdev + ": " + str(self.type) + ", " + str(self.channel) + ", " +
+                str(self.channel_width) + ", " + str(self.channel_center1))

@@ -3,7 +3,7 @@ from network.network_ctrl import NetworkCtrl
 from network.remote_system import RemoteSystemJob
 from router.router import Router
 from log.logger import Logger
-from router.network_interface import NetworkInterface, Status
+from router.network_interface import NetworkInterface, Status, WifiInformation
 from router.cpu_process import CPUProcess
 from router.memory import RAM
 from typing import Dict, List
@@ -41,9 +41,9 @@ class RouterInfo(Thread):
             # SSID
             #self.router.ssid = self._get_router_ssid()
             # NetworkInterfaces
-            #self.router.interfaces = self._get_router_network_interfaces()
+            self.router.interfaces = self._get_router_network_interfaces()
             # CPUProcesses
-            #self.router.cpu_processes = self._get_router_cpu_process()
+            self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
             self.router.ram = self._get_router_mem_ram()
             Logger().debug("[+] Infos updated", 2)
@@ -76,9 +76,17 @@ class RouterInfo(Thread):
         :return: the network interfaces of the given Router object
         """
         interfaces = dict()
+        # Get all network interfaces
         raw_iface_lst = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'")
+        # TODO iface_name überprüfen
         iface_names = list()
         iface_id_lst = list()
+
+        # Get only the wifi interfaces
+        raw_wifi_inface_name_lst = self.network_ctrl.send_command("iw dev | grep Interface")
+        wifi_iface_name_lst = list()
+        for raw_wifi_iface_name in raw_wifi_inface_name_lst:
+            wifi_iface_name_lst.append(raw_wifi_iface_name.split("Interface ")[1])
 
         # transform a line tmp:
         # '2: enp0s25: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state DOWN group default qlen 1000'
@@ -119,7 +127,7 @@ class RouterInfo(Thread):
                 if len(raw_mac) > 1:
                     raw_mac = raw_mac[1].split(" ")
                     i = raw_mac.count("")
-                    for i in range(0, i):
+                    for j in range(0, i):
                         raw_mac.remove("")
                     interface.mac = raw_mac[0]
 
@@ -128,8 +136,31 @@ class RouterInfo(Thread):
                 if len(raw_ip) > 1:
                     raw_ip = raw_ip[1].split(" ")[1].split("/")
                     interface.add_ip_address(raw_ip[0], int(raw_ip[1]))
+
+                # Wifi information
+                if wifi_iface_name_lst.count(iface_name) == 0:
+                    interface.wifi_information = self.__get_wifi_information(iface_name)
             interfaces[iface_name] = interface
         return interfaces
+
+    def __get_wifi_information(self, iface_name: str) -> WifiInformation:
+        wifi_information = WifiInformation()
+        raw_wifi_info_lst = self.network_ctrl.send_command("iw dev")
+        right_iface = False
+
+        for raw_wifi_info in raw_wifi_info_lst:
+            if "Interface" in raw_wifi_info:
+                right_iface = True if iface_name in raw_wifi_info else False
+            elif right_iface:
+                if "wdev" in raw_wifi_info:
+                    wifi_information.wdev = raw_wifi_info.split(" ")[1]
+                elif "type" in raw_wifi_info:
+                    wifi_information.type = raw_wifi_info.split(" ")[1]
+                elif "channel" in raw_wifi_info:
+                    wifi_information.channel = raw_wifi_info.split(" ")[1]
+                    wifi_information.channel_width = raw_wifi_info.split(" ")[4]
+                    wifi_information.channel_center1 = raw_wifi_info.split(" ")[7]
+        return wifi_information
 
     def _get_router_cpu_process(self) -> List:
         """
