@@ -16,15 +16,24 @@ class NetworkInterface:
     This class represents a Network Interface, with a name, a mac address and two lists of IPs.
     """""
 
-    def __init__(self, name: str):
+    def __init__(self, id: int, name: str):
         """
         This class represents a Network Interface.
         :param name: The name of the interface
         """
+        self._id = id
         self._name = name
         self._status = Status.unknown
         self._mac = "00:00:00:00:00:00"
         self.ipaddress_lst = list()
+
+    @property
+    def id(self) -> str:
+        """
+        The id of the network interface
+        :return: int
+        """
+        return self._id
 
     @property
     def name(self) -> str:
@@ -88,4 +97,4 @@ class NetworkInterface:
         for ip in self.ipaddress_lst:
             ipaddresses = ipaddresses + " " + str(ip)
         ipaddresses += " ]"
-        return (self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses))
+        return (str(self.id) + ": " + self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses))

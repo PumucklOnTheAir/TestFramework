@@ -24,7 +24,7 @@ class TestRouterInfo(TestCase):
         router_info.join()
 
         for interface in router.interfaces.values():
-            print("router: " + str(interface))
+            print("interface: " + str(interface))
 
         # Close Namespaces and VLANs
         nv_assist.close()

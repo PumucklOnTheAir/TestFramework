@@ -35,17 +35,17 @@ class RouterInfo(Thread):
         try:
             self.network_ctrl.connect_with_remote_system()
             # Model
-            self.router.model = self._get_router_model()
+            #TODO self.router.model = self._get_router_model()
             # MAC
-            self.router.mac = self._get_router_mac()
+            #self.router.mac = self._get_router_mac()
             # SSID
-            self.router.ssid = self._get_router_ssid()
+            #self.router.ssid = self._get_router_ssid()
             # NetworkInterfaces
             self.router.interfaces = self._get_router_network_interfaces()
             # CPUProcesses
-            self.router.cpu_processes = self._get_router_cpu_process()
+            #self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
-            self.router.ram = self._get_router_mem_ram()
+            #self.router.ram = self._get_router_mem_ram()
             Logger().debug("[+] Infos updated", 2)
         except Exception as e:
             Logger().warning("[-] Couldn't update all Infos", 2)
@@ -76,21 +76,31 @@ class RouterInfo(Thread):
         :return: the network interfaces of the given Router object
         """
         interfaces = dict()
-        raw_iface_names = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'").split("\\n'")[0:-1]
+        raw_iface_lst = self.network_ctrl.send_command("ip a | grep '^[0-9]*:*:'")
+        raw_iface_lst = raw_iface_lst.replace("[", "").replace("]", "").split("\\n'")[0:-1]
         iface_names = list()
+        iface_id_lst = list()
 
         # transform a line tmp:
         # '2: enp0s25: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state DOWN group default qlen 1000'
-        # into 'enp0s25' and lists it.
-        for raw_iface_name in raw_iface_names:
-            iface_name = raw_iface_name.split(":")[1].replace(" ", "")
+        # into '2'; 'enp0s25' and lists it.
+        for raw_iface in raw_iface_lst:
+            # Iface Id
+            iface_id = int(raw_iface.split(":")[0].split("'")[1])
+            if iface_names.count(iface_id) == 0:
+                iface_id_lst.append(iface_id)
+
+            # Iface Name
+            iface_name = raw_iface.split(":")[1].replace(" ", "")
             if "@" in iface_name:
                 iface_name = iface_name.split("@")[0]
             if iface_names.count(iface_name) == 0:
                 iface_names.append(iface_name)
 
-        for iface_name in iface_names:
-            interface = NetworkInterface(iface_name)
+        # Take the information of the interfaces separately
+        for i, iface_id in enumerate(iface_id_lst):
+            iface_name = iface_names[i]
+            interface = NetworkInterface(iface_id, iface_name)
 
             # MAC
             raw_iface_infos = self.network_ctrl.send_command("ip addr show " + iface_name + " | grep 'link/ether'")
