@@ -3,15 +3,6 @@ from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
 from router.memory import RAM, Flashdriver
 
-
-class WlanMode(Enum):
-    master = 1
-    managed = 2
-    ad_hoc = 3
-    monitor = 4
-    unknown = 5
-
-
 class Mode(Enum):
     """
     The Router can be in two modes: normal and configuration.
@@ -48,7 +39,6 @@ class Router(RemoteSystem):
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
-        self._wlan_mode = WlanMode.unknown
         self._ssid = ''
         self.interfaces = dict()
         self.cpu_processes = list()
@@ -174,23 +164,6 @@ class Router(RemoteSystem):
         """
         assert isinstance(value, str)
         self._ssid = value
-
-    @property
-    def wlan_mode(self) -> Mode:
-        """
-        The WLAN mode of the router. Value could be outdated.
-
-        :return:
-        """
-        return self._wlan_mode
-
-    @wlan_mode.setter
-    def wlan_mode(self, value: Mode):
-        """
-        :type value: str
-        """
-        assert isinstance(value, WlanMode)
-        self._wlan_mode = value
 
     @property
     def model(self) -> str:
