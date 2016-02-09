@@ -3,6 +3,7 @@ from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
 from router.memory import RAM, Flashdriver
 
+
 class Mode(Enum):
     """
     The Router can be in two modes: normal and configuration.
