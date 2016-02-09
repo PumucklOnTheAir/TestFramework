@@ -52,7 +52,7 @@ class NetworkCtrl:
             stdin, stdout, stderr = self.ssh.exec_command(command)
             output = stdout.readlines()
             Logger().debug("[+] Sent the command (" + command + ") to the RemoteSystem", 2)
-            return str(output)
+            return output
         except Exception as e:
             Logger().error("[-] Couldn't send the command (" + command + ")", 2)
             raise e
