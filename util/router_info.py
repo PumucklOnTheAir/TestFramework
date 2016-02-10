@@ -160,6 +160,8 @@ class RouterInfo(Thread):
             elif right_iface:
                 if "wdev" in raw_wifi_info:
                     wifi_information.wdev = raw_wifi_info.split(" ")[1]
+                elif "ssid" in raw_wifi_info:
+                    wifi_information.ssid = raw_wifi_info.split(" ")[1]
                 elif "type" in raw_wifi_info:
                     wifi_information.type = raw_wifi_info.split(" ")[1]
                 elif "channel" in raw_wifi_info:

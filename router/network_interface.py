@@ -40,6 +40,7 @@ class WifiInformation:
         channel_center1: center of the channel in MHZ
         """
         self._wdev = ""
+        self._ssid = ""
         self._type = WlanType.unkown
         self._channel = None
         self._channel_width = None
@@ -60,6 +61,22 @@ class WifiInformation:
         """
         assert isinstance(value, str)
         self._wdev = value
+
+    @property
+    def ssid(self) -> str:
+        """
+        SSID: Service Set Identifier
+        :return: str
+        """
+        return self._ssid
+
+    @ssid.setter
+    def ssid(self, value: str):
+        """
+        :type value: str
+        """
+        assert isinstance(value, str)
+        self._ssid = value
 
     @property
     def type(self) -> WlanType:
@@ -141,8 +158,8 @@ class WifiInformation:
         self._channel_center1 = value
 
     def __str__(self):
-        return ("wifi information: " + self.wdev + ": " + str(self.type) + ", " + str(self.channel) + ", " +
-                str(self.channel_width) + ", " + str(self.channel_center1))
+        return ("wifi information: " + self.wdev + ": " + self.ssid + ", " + str(self.type) + ", " + str(self.channel) +
+                ", " + str(self.channel_width) + ", " + str(self.channel_center1))
 
 
 class NetworkInterface:
