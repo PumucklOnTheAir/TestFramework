@@ -100,7 +100,7 @@ class WifiInformation:
                 self._type = WlanType.managed
             elif value == "monitor":
                 self._type = WlanType.monitor
-            elif value == "IBSS":
+            elif value == "IBSS" or value == "adhoc":
                 self._type = WlanType.ibss
             elif value == "wds" or value == "WDS":
                 self._type = WlanType.wds
