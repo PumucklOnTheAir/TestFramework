@@ -4,7 +4,6 @@ from network.nv_assist import NVAssistent
 from router.router import Router, Mode
 from pyroute2 import netns
 import os
-from log.logger import Logger
 
 
 class TestNetworkCtrl(TestCase):
@@ -70,4 +69,3 @@ class TestNetworkCtrl(TestCase):
         router.mode = Mode.configuration
         assert isinstance(router, Router)
         return router
-

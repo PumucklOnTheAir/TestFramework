@@ -33,7 +33,8 @@ class NetworkCtrl:
         """
         Logger().info("Connect with RemoteSystem ...", 1)
         try:
-            self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            self.ssh.set_missing_host_key_policy(paramiko.WarningPolicy())
+            #TODO print(str(self.ssh.get_host_keys().keys()))
             self.ssh.connect(str(self.remote_system.ip), port=22,
                              username=str(self.remote_system.usr_name),
                              password=str(self.remote_system.usr_password))
