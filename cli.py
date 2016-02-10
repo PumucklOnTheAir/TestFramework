@@ -39,7 +39,7 @@ def print_routers(routers):
     """
 
     # Headers for table
-    headers = ["ID", "Router Model/Vers", "VLAN ID", "Router Name", "IP", "MAC"]
+    headers = ["ID", "Router Model/Vers", "VLAN ID", "Mode", "IP", "MAC"]
     string_list = []
 
     # Collect info on routers
@@ -47,7 +47,7 @@ def print_routers(routers):
         string_list.append([routers[i].id,
                             routers[i].model,
                             routers[i].vlan_iface_id,
-                            routers[i].wlan_mode,
+                            routers[i].mode,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
 
@@ -74,7 +74,7 @@ def print_router_info(router_list, rid):
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
                 ["VLan ID", router.vlan_iface_id],
-                ["Modus", router.mode],
+                ["Mode", router.mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
                 ["SSID", router.ssid],
