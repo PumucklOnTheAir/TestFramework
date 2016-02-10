@@ -41,9 +41,9 @@ class WifiInformation:
         """
         self._wdev = ""
         self._type = WlanType.unkown
-        self._channel = 1
-        self._channel_width = 20
-        self._channel_center1 = 2412
+        self._channel = None
+        self._channel_width = None
+        self._channel_center1 = None
 
     @property
     def wdev(self) -> str:
@@ -77,13 +77,13 @@ class WifiInformation:
         if isinstance(value, WlanType):
             self._type = value
         else:
-            if value == "ap":
+            if value == "AP":
                 self._type = WlanType.ap
             elif value == "managed":
                 self._type = WlanType.managed
             elif value == "monitor":
                 self._type = WlanType.monitor
-            elif value == "ibss":
+            elif value == "IBSS":
                 self._type = WlanType.ibss
             elif value == "wds":
                 self._type = WlanType.wds

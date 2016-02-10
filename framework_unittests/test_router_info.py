@@ -35,6 +35,6 @@ class TestRouterInfo(TestCase):
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         # Has to be matched with the current mode (normal, configuration)
-        router.mode = Mode.configuration
+        router.mode = Mode.normal
         assert isinstance(router, Router)
         return router

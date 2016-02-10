@@ -154,7 +154,7 @@ class RouterInfo(Thread):
         right_iface = False
 
         for raw_wifi_info in raw_wifi_info_lst:
-            raw_wifi_info = raw_wifi_info.replace("\n","")
+            raw_wifi_info = raw_wifi_info.replace("\n", "")
             if "Interface" in raw_wifi_info:
                 right_iface = True if iface_name in raw_wifi_info else False
             elif right_iface:
@@ -163,9 +163,9 @@ class RouterInfo(Thread):
                 elif "type" in raw_wifi_info:
                     wifi_information.type = raw_wifi_info.split(" ")[1]
                 elif "channel" in raw_wifi_info:
-                    wifi_information.channel = raw_wifi_info.split(" ")[1]
-                    wifi_information.channel_width = raw_wifi_info.split(" ")[4]
-                    wifi_information.channel_center1 = raw_wifi_info.split(" ")[7]
+                    wifi_information.channel = int(raw_wifi_info.split(" ")[1])
+                    wifi_information.channel_width = int(raw_wifi_info.split(" ")[5])
+                    wifi_information.channel_center1 = int(raw_wifi_info.split(" ")[8])
         return wifi_information
 
     def _get_router_cpu_process(self) -> List:
