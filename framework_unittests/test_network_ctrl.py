@@ -46,7 +46,7 @@ class TestNetworkCtrl(TestCase):
     def _test_send_command(self):
         # Test if the command 'uname' could be send via ssh
         output = self.network_ctrl.send_command("uname")
-        self.assertEqual(output, "['Linux\\n']")
+        self.assertEqual(str(output), "['Linux\\n']")
 
     def _test_router_wget(self):
         # Create test file 'test_wget.txt'
@@ -58,7 +58,7 @@ class TestNetworkCtrl(TestCase):
                                                                            self.router.vlan_iface_name)[0])
         # Tests if the file has successful downloaded
         output = self.network_ctrl.send_command("test -f '/tmp/test_wget.txt' && echo True")
-        self.assertEqual(output, "['True\\n']")
+        self.assertEqual(str(output), "['True\\n']")
 
     @classmethod
     def _create_router(cls):
@@ -67,7 +67,7 @@ class TestNetworkCtrl(TestCase):
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         # Has to be matched with the current mode (normal, configuration)
-        router.mode = Mode.normal
+        router.mode = Mode.configuration
         assert isinstance(router, Router)
         return router
 
