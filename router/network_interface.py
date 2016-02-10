@@ -79,15 +79,15 @@ class WifiInformation:
         else:
             if value == "ap":
                 self._type = WlanType.ap
-            if value == "managed":
+            elif value == "managed":
                 self._type = WlanType.managed
-            if value == "monitor":
+            elif value == "monitor":
                 self._type = WlanType.monitor
-            if value == "ibss":
+            elif value == "ibss":
                 self._type = WlanType.ibss
-            if value == "wds":
+            elif value == "wds":
                 self._type = WlanType.wds
-            if value == "mesh":
+            elif value == "mesh":
                 self._type = WlanType.mesh
             else:
                 self.type = WlanType.unkown

@@ -85,7 +85,7 @@ class RouterInfo(Thread):
         raw_wifi_inface_name_lst = self.network_ctrl.send_command("iw dev | grep Interface")
         wifi_iface_name_lst = list()
         for raw_wifi_iface_name in raw_wifi_inface_name_lst:
-            wifi_iface_name_lst.append(raw_wifi_iface_name.split("Interface ")[1])
+            wifi_iface_name_lst.append(raw_wifi_iface_name.split("Interface ")[1].replace("\n", ""))
 
         # transform a line tmp:
         # '2: enp0s25: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc fq_codel state DOWN group default qlen 1000'
@@ -154,6 +154,7 @@ class RouterInfo(Thread):
         right_iface = False
 
         for raw_wifi_info in raw_wifi_info_lst:
+            raw_wifi_info = raw_wifi_info.replace("\n","")
             if "Interface" in raw_wifi_info:
                 right_iface = True if iface_name in raw_wifi_info else False
             elif right_iface:
