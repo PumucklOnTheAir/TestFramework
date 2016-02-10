@@ -39,8 +39,8 @@ class WifiInformation:
         channel_width: 20 MHZ or 40 MHZ
         channel_center1: center of the channel in MHZ
         """
-        self._wdev = ""
-        self._ssid = ""
+        self._wdev = None
+        self._ssid = None
         self._type = WlanType.unkown
         self._channel = None
         self._channel_width = None
@@ -158,8 +158,8 @@ class WifiInformation:
         self._channel_center1 = value
 
     def __str__(self):
-        return ("wifi information: " + self.wdev + ": " + self.ssid + ", " + str(self.type) + ", " + str(self.channel) +
-                ", " + str(self.channel_width) + ", " + str(self.channel_center1))
+        return ("wifi information: " + str(self.wdev) + ": " + str(self.ssid) + ", " + str(self.type) + ", " +
+                str(self.channel) + ", " + str(self.channel_width) + ", " + str(self.channel_center1))
 
 
 class NetworkInterface:
