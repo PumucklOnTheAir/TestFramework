@@ -102,7 +102,7 @@ class WifiInformation:
                 self._type = WlanType.monitor
             elif value == "IBSS":
                 self._type = WlanType.ibss
-            elif value == "wds":
+            elif value == "wds" or value == "WDS":
                 self._type = WlanType.wds
             elif value == "mesh":
                 self._type = WlanType.mesh
