@@ -10,10 +10,12 @@ import socket
 
 def block_until_server_is_online():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    while sock.connect_ex(('localhost', 5000)):
+    print("wait", flush=True)
+    while not not sock.connect_ex(('localhost', 5000)):
         time.sleep(3)
+        print('.', end="", flush=True)
     sock.close()
-    print("server is online")
+    print("server is online", flush=True)
 
 
 class ServerCore(object):
@@ -30,8 +32,9 @@ class ServerCore(object):
         for i in range(2):  # do it two times to be sure
             routers = server_proxy.get_routers()
             for router in routers:
-                while len(server_proxy.get_routers_task_queue(router.id)):
+                while not not server_proxy.get_routers_task_queue_size(router.id):
                     time.sleep(2)
+                    print('.', end="", flush=True)
 
         server_proxy.stop()
 
@@ -44,8 +47,9 @@ class ServerCore(object):
         for i in range(2):  # do it two times to be sure
             routers = self.server_proxy.get_routers()
             for router in routers:
-                while len(self.server_proxy.get_routers_task_queue(router.id)):
+                while not not self.server_proxy.get_routers_task_queue_size(router.id):
                     time.sleep(2)
+                    print('.', end="", flush=True)
 
     def test_get_routers(self):
         routers = self.server_proxy.get_routers()
@@ -60,18 +64,22 @@ class ServerCore(object):
         # wait until tests are done, assumes that exactly two tests are already finished
         while not self.server_proxy.get_reports():
             time.sleep(2)
+            print('.', end="", flush=True)
 
         reports = self.server_proxy.get_reports()
         assert len(reports) != 0
         assert len(reports[-1].errors) == 0  # check last report
 
     def test_long_self_check(self):
-        started = self.server_proxy.start_test(0, "VeryLongTest")
+        started = self.server_proxy.start_test(0, "ConnectionTest")
         assert started
-        if started:
+        started2 = self.server_proxy.start_test(0, "VeryLongTest")
+        assert not started2
+        if started and not started2:
 
-            while not len(self.server_proxy.get_reports()) == 2:
+            while not len(self.server_proxy.get_reports()) == 3:
                 time.sleep(2)
+                print('.', end="", flush=True)
 
             self.server_proxy.stop_all_tasks()
 

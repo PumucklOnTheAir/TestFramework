@@ -27,7 +27,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_routers_task_queue(self, router_id: int) -> List[str]:
+    def get_routers_task_queue_size(self, router_id: int) -> int:
         """
         returns current task queue at the first place and after that the task queue of the router
         :param router_id: ID of the router

@@ -13,6 +13,7 @@ import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
+from collections import deque
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -48,13 +49,15 @@ class Server(ServerProxy):
     _max_subprocesses = 0
 
     # test/task handling
-    _running_task = {}  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
-    _waiting_tasks = {}  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
+    _running_task = []  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
+    _waiting_tasks = []  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
     _task_pool = None  # ProcessPool
     _semaphore_task_management = Semaphore(1)
 
     # NVAssistent
     _nv_assistent = None
+
+    _pid = None
 
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
@@ -78,11 +81,18 @@ class Server(ServerProxy):
             debug_mode = True
         cls.DEBUG = debug_mode
 
+        cls._pid = os.getpid()
+
         # create instance and give params to the logger object
         Logger().setup(log_level, log_level, log_level)
 
         # load Router configs
         cls.__load_configuration()
+
+        for router in cls.get_routers():
+            cls._running_task.append(None)
+            cls._waiting_tasks.append(deque())
+
 
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers)+2)
@@ -98,9 +108,12 @@ class Server(ServerProxy):
             for router in cls.get_routers():
                 Logger().debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
                 cls._nv_assistent.create_namespace_vlan(router)
-        # update Router
-        cls.router_online(None, all=True)
-        cls.update_router_info(None, update_all=True)
+
+            # update Router
+            cls.router_online(None, all=True)
+            cls.update_router_info(None, update_all=True)
+
+
 
         Logger().info("Runtime Server started")
 
@@ -149,25 +162,22 @@ class Server(ServerProxy):
 
     @classmethod
     def get_running_task(cls, remote_system: RemoteSystem) -> Union[RemoteSystemJob, RemoteSystemJobClass]:
-        return cls._running_task.get(remote_system.id)
+        return cls._running_task[remote_system.id]
 
     @classmethod
     def set_running_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]):
         cls._running_task[remote_system.id] = task
 
     @classmethod
-    def get_waiting_tasks(cls, remote_system: RemoteSystem) -> Dict[int, List[Union[RemoteSystemJob, RemoteSystemJobClass]]]:
-        result = cls._waiting_tasks.get(remote_system.id)
-        if result is None:
-            result = []
-            cls._waiting_tasks[remote_system.id] = result
-
+    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Dict[int, List[Union[RemoteSystemJob, RemoteSystemJobClass]]]:
+        result = cls._waiting_tasks[remote_system.id]
         return result
 
     @classmethod
     def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
-        queue = cls.get_waiting_tasks(remote_system.id)
-        queue.append(task)
+        queue = cls.get_waiting_task_queue(remote_system)
+        queue.appendleft(task)
+        Logger().debug(len(queue), 3)
 
     @classmethod
     def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
@@ -223,12 +233,14 @@ class Server(ServerProxy):
 
     @classmethod
     def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
-
+        assert(cls._pid == os.getpid())
         cls._semaphore_task_management.acquire(blocking=True)
+        Logger().debug(str(cls._waiting_tasks[0]), 3)
+        Logger().debug(cls._running_task, 3)
         try:
             if job is None:  # no job given? look up for the next job in the queue
                 Logger().debug("Lookup for next task", 1)
-                if not len(cls.get_waiting_tasks(remote_sys)):
+                if not len(cls.get_waiting_task_queue(remote_sys)):
                     Logger().debug("No tasks in the queue to run.", 2)
                     return False
                 else:
@@ -237,16 +249,16 @@ class Server(ServerProxy):
                         return False
                     else:
                         Logger().debug("Get next task from the queue", 3)
-                        job = cls.get_waiting_tasks(remote_sys).pop(0)
+                        job = cls.get_waiting_task_queue(remote_sys).pop()
 
             if cls.get_running_task(remote_sys) is None:
                 Logger().debug("Starting task " + str(job), 1)
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # task is a test
-                    async_result = cls._task_pool.apply_async(func=cls._execute_test,
-                                                              args=(job, remote_sys))
-                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, async_result)
+                    # async_result = cls._task_pool.apply_async(func=cls._execute_test,
+                                                             # args=(job, remote_sys))
+                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys)
                 else:
                     # task is a regular job
                     data = job.pre_process(cls)
@@ -257,11 +269,17 @@ class Server(ServerProxy):
                 return True
             else:
                 Logger().debug("Put task in the wait queue. " + str(job), 1)
-                cls.get_waiting_tasks(remote_sys).append(job)
+                cls.set_waiting_task(remote_sys, job)
 
                 return False
+
+        except Exception as e:
+            Logger().error(str(e), 2)
+
         finally:
             cls._semaphore_task_management.release()
+            Logger().debug(cls._waiting_tasks, 3)
+            Logger().debug(cls._running_task, 3)
 
     @classmethod
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
@@ -273,7 +291,7 @@ class Server(ServerProxy):
         cls.__setns(remote_sys)
 
         job.start()
-        job.join(6*50)  # TimeOut: 5 minutes
+        job.join(300)  # Timeout: 5 minutes
         result = job.get_return_data()
 
         return result
@@ -316,7 +334,7 @@ class Server(ServerProxy):
             return result
 
     @classmethod
-    def _wait_for_test_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, async_result) -> None:
+    def _wait_for_test_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> None:
         """
         Callback function for tests.
         Needed to start the next test/task in the queue.
@@ -325,10 +343,11 @@ class Server(ServerProxy):
         :param task: the Future which runs the test
         """
         Logger().debug("Wait for test" + str(job), 2)
-        Logger().debug(str(async_result.ready()), 1)
+        # Logger().debug(str(async_result.ready()), 1)
         # Logger().debug(str(async_result.successful()), 2)
         try:
-            result = async_result.get(60)  # 300
+            result = cls._task_pool.apply(func=cls._execute_test, args=(job, remote_sys))
+            # result = async_result.get(60)  # 300
             Logger().debug("Test done " + str(job), 1)
             Logger().debug("From " + str(remote_sys), 2)
             cls._reports.append(result)
@@ -414,22 +433,19 @@ class Server(ServerProxy):
         return cls._routers.copy()
 
     @classmethod
-    def get_routers_task_queue(cls, router_id: int) -> List[str]:
+    def get_routers_task_queue_size(cls, router_id: int) -> int:
         """
         returns current task queue at the first place and after that the task queue of the router
         :param router_id: ID of the router
         :return: task queue + current active task as a string
         """
         remote_sys = cls.get_router_by_id(router_id)
-        result = []
+        result = 0
         if cls.get_running_task(remote_sys) is not None:
-            result.append(str(cls.get_running_task(remote_sys)))
+            result = 1
 
-        task_queue = cls.get_waiting_tasks(remote_sys)
-
-        for task in task_queue:
-            result.append(str(task))
-        return result
+        task_queue = cls.get_waiting_task_queue(remote_sys)
+        return len(task_queue) + result
 
     @classmethod
     def get_running_tests(cls) -> List[FirmwareTestClass]:
