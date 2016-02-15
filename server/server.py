@@ -278,8 +278,8 @@ class Server(ServerProxy):
 
         finally:
             cls._semaphore_task_management.release()
-            Logger().debug(cls._waiting_tasks, 3)
-            Logger().debug(cls._running_task, 3)
+            Logger().debug(str(cls._waiting_tasks), 3)
+            Logger().debug(str(cls._running_task), 3)
 
     @classmethod
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
