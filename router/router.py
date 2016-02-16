@@ -43,12 +43,10 @@ class Router(RemoteSystem):
         self._ssid = ''
         self.interfaces = dict()
         self.cpu_processes = list()
+        self.sockets = list()
         self._ram = None
         self._flashdriver = None
         self._firmware = Firmware.get_default_firmware()
-
-    def __str__(self):
-        return "Router{ID:%s, PS:%s, %s, %s}" % (self.id, self.power_socket, self.mode, self.mac)
 
     def update(self, new_router) -> None:
         """
@@ -280,3 +278,25 @@ class Router(RemoteSystem):
         """
         assert isinstance(value, Flashdriver)
         self._flashdriver = value
+
+    def __str__(self):
+        string = "\nRouter: \n"
+        string += "ID: " + str(self.id) + "\n"
+        string += "MAC: " + self.mac + "\n"
+        string += "Model:" + self.model + "\n"
+        string += "Namespace: " + self.namespace_name + "\n"
+        string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
+        string += "IP: " + self.ip + "/" + str(self.ip_mask) + "\n"
+        string += "Power Socket: " + str(self.power_socket) + "\n"
+        string += "User Name: " + self.usr_name + ", Password: " + self._usr_password +  "\n"
+        string += "\nInterfaces: \n"
+        for interface in self.interfaces.values():
+            string += str(interface) + "\n"
+        string += "\nSockets: \n"
+        for socket in self.sockets:
+            string += str(socket) + "\n"
+        string += "\nCPU Processes: \n"
+        for cpu_process in self.cpu_processes:
+            string += str(cpu_process) + "\n"
+        string += "\nMemory: " + str(self.ram) + "\n"
+        return string
