@@ -158,7 +158,7 @@ class WifiInformation:
         self._channel_center1 = value
 
     def __str__(self):
-        return ("wifi information: " + str(self.wdev) + ": " + str(self.ssid) + ", " + str(self.type) + ", " +
+        return (str(self.wdev) + ": " + str(self.ssid) + ", " + str(self.type) + ", " +
                 str(self.channel) + ", " + str(self.channel_width) + ", " + str(self.channel_center1))
 
 
@@ -267,4 +267,4 @@ class NetworkInterface:
             ipaddresses = ipaddresses + " " + str(ip)
         ipaddresses += " ]"
         return (str(self.id) + ": " + self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses) +
-                "\n" + str(self.wifi_information))
+                "\n Wifi info: " + str(self.wifi_information))
