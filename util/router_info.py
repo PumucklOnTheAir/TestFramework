@@ -6,6 +6,7 @@ from log.logger import Logger
 from router.network_interface import NetworkInterface, Status, WifiInformation
 from router.cpu_process import CPUProcess
 from router.memory import RAM
+from router.socket import InternetSocket
 from typing import Dict, List
 import traceback, sys
 
@@ -46,6 +47,8 @@ class RouterInfo(Thread):
             self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
             self.router.ram = self._get_router_mem_ram()
+            # Sockets
+            self.router.sockets = self._get_router_sockets()
             Logger().debug("[+] Infos updated", 2)
         except Exception as e:
             Logger().warning("[-] Couldn't update all Infos", 2)
@@ -124,6 +127,7 @@ class RouterInfo(Thread):
                 # MAC
                 raw_mac = raw_iface_info.split("link/ether")
                 if len(raw_mac) > 1:
+                    # TODO split() reicht
                     raw_mac = raw_mac[1].split(" ")
                     i = raw_mac.count("")
                     for j in range(0, i):
@@ -181,6 +185,7 @@ class RouterInfo(Thread):
         # 1051  1020 root     R     1388   5%   9% firefox
         for cpu_process_info_line in raw_cpu_process_lst[4:]:
             # Split and remove the spaces
+            # TODO split() reicht
             cpu_process_info_lst = cpu_process_info_line.split(" ")
             i = cpu_process_info_lst.count("")
             for i in range(0, i):
@@ -208,6 +213,7 @@ class RouterInfo(Thread):
         for ram_info_line in raw_mem_lst:
             if "Mem" in ram_info_line:
                 # Split and remove the spaces
+                # TODO split() reicht
                 ram_info_lst = ram_info_line.split(" ")
                 i = ram_info_lst.count("")
                 for i in range(0, i):
@@ -220,6 +226,35 @@ class RouterInfo(Thread):
                 buffers = int(ram_info_lst[5])
                 ram = RAM(total, used, free, shared, buffers)
         return ram
+
+    def _get_router_sockets(self) -> List:
+        """
+        :return: The Sockets of the Router.
+        """
+        socket_lst = list();
+        raw_socket_lst = self.network_ctrl.send_command("netstat -taupn")[2:]
+        for raw_socket in raw_socket_lst:
+            # raw_socket looks like:
+            # tcp        0     32 192.168.1.1:22          192.168.1.239:51891     ESTABLISHED 1067/dropbear
+            raw_socket = raw_socket.split()
+            socket = InternetSocket()
+            socket.protocol = raw_socket[0]
+            raw_local_address = raw_socket[3].split(":")
+            socket.local_address = raw_local_address[0] if len(raw_local_address) == 2 else "::"
+            socket.local_port = raw_local_address[-1]
+            raw_foreign_address = raw_socket[4].split(":")
+            socket.foreign_address = raw_foreign_address[0] if len(raw_foreign_address) == 2 else "::"
+            socket.foreign_port = raw_foreign_address[-1]
+            raw_process = "-1/error"
+            if raw_socket[0] == "tcp":
+                socket.state = raw_socket[5]
+                raw_process = raw_socket[6].split("/")
+            elif raw_socket[0] == "udp":
+                raw_process = raw_socket[5].split("/")
+            socket.pid = int(raw_process[0])
+            socket.program_name = raw_process[1]
+            socket_lst.append(socket)
+        return socket_lst
 
 
 class RouterInfoJob(RemoteSystemJob):

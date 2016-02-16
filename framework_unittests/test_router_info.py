@@ -3,7 +3,7 @@ from router.router import Router, Mode
 from util.router_info import RouterInfo
 from network.nv_assist import NVAssistent
 from pyroute2 import netns
-
+from log.logger import Logger
 
 class TestRouterInfo(TestCase):
     """
@@ -23,8 +23,7 @@ class TestRouterInfo(TestCase):
         router_info.start()
         router_info.join()
 
-        for interface in router.interfaces.values():
-            print("interface: " + str(interface))
+        Logger().debug(str(router),0)
 
         # Close Namespaces and VLANs
         nv_assist.close()
