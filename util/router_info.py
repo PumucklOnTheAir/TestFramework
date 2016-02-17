@@ -231,7 +231,7 @@ class RouterInfo(Thread):
         """
         :return: The Sockets of the Router.
         """
-        socket_lst = list();
+        socket_lst = list()
         raw_socket_lst = self.network_ctrl.send_command("netstat -taupn")[2:]
         for raw_socket in raw_socket_lst:
             # raw_socket looks like:
