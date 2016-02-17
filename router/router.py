@@ -36,7 +36,7 @@ class Router(RemoteSystem):
 
         # Optional values
         self._mode = Mode.unknown
-        self._model = None
+        self._model = ""
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
