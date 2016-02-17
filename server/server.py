@@ -111,7 +111,8 @@ class Server(ServerProxy):
 
             # update Router
             cls.router_online(None, all=True)
-            cls.update_router_info(None, update_all=True)
+            # TODO Hat error verursacht
+            # cls.update_router_info(None, update_all=True)
 
 
 
@@ -263,7 +264,7 @@ class Server(ServerProxy):
                     # task is a regular job
                     data = job.pre_process(cls)
                     async_result = cls._task_pool.apply_async(func=cls._execute_job,
-                                                              args=(job, remote_sys, data))
+                                                              args=(job, remote_sys, data,))
 
                     cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, async_result)
                 return True
@@ -284,14 +285,21 @@ class Server(ServerProxy):
     @classmethod
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
         # proofed: this method runs in other process as the server
-        Logger().debug("Execute job " + str(job) + " on " + str(remote_sys), 2)
-        Thread.__init__(job)
+        Logger().debug("Execute job " + str(job) + " on Router(" + str(remote_sys.id) + ")", 2)
+        #Alt:
+        #Thread.__init__(job)
         job.prepare(remote_sys, data)
 
         cls.__setns(remote_sys)
 
-        job.start()
-        job.join(300)  # Timeout: 5 minutes
+        #Alt: remote_system kein Thread mehr
+        #job.start()
+        #job.join(300)  # Timeout: 5 minutes
+        #Neu:
+        try:
+            job.run()
+        except Exception:
+            Logger().debug("Error while exectue job " + str(job))
         result = job.get_return_data()
 
         return result
@@ -380,9 +388,9 @@ class Server(ServerProxy):
         :param task: the Future which runs the test
         """
         Logger().debug("waiting......")
-        result = async_result.get(60*5)
+        result = async_result.get(timeout=60*5)
         Logger().debug("Job done " + str(job), 1)
-        Logger().debug("At " + str(remote_sys), 2)
+        Logger().debug("At Router(" + str(remote_sys.id) + ")", 2)
         try:
             exception = None  # task.exception() # TODO #105
             if exception is not None:
@@ -490,7 +498,7 @@ class Server(ServerProxy):
         routers = cls.get_routers()
         for router in routers:
             if router.id == router_id:
-                Logger().debug("get_router_by_id: " + str(router), 4)
+                Logger().debug("get_router_by_id: " + str(router.id), 4)
                 return router
         return None
 
