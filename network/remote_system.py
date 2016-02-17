@@ -43,7 +43,7 @@ class RemoteSystem(metaclass=ABCMeta):
         pass
 
 
-class RemoteSystemJob(Thread, metaclass=ABCMeta):
+class RemoteSystemJob(metaclass=ABCMeta):
     """
     An extended Thread for job which are associated with an RemoteSystem.
     The Server handles the job and is working in the following order:
