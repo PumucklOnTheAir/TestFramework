@@ -52,6 +52,7 @@ class Server(ServerProxy):
     _running_task = []  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
     _waiting_tasks = []  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
     _task_pool = None  # ProcessPool
+    _job_wait_executor = None
     _semaphore_task_management = Semaphore(1)
 
     # NVAssistent
@@ -97,7 +98,7 @@ class Server(ServerProxy):
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers)+2)
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
-        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(len(cls._routers) + 5))
+        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses + 5))
 
         # add Namespace and Vlan for each Router
         if cls.VLAN:
@@ -113,8 +114,6 @@ class Server(ServerProxy):
             cls.router_online(None, all=True)
             # TODO Hat error verursacht
             # cls.update_router_info(None, update_all=True)
-
-
 
         Logger().info("Runtime Server started")
 
@@ -188,7 +187,7 @@ class Server(ServerProxy):
             If you want, that this method wait until the job is executed, you have to set the wait param.
             Think about that your job has maybe to wait in the queue.
 
-        :param remote_sys: The RemoteSystem on which the job will run
+        :param remote_sys: The RemoteSystem on which the job will run. If none then the job will be executed on all routers
         :param remote_job: The name of the test to execute
         :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if job was successful added in the queue
@@ -199,12 +198,18 @@ class Server(ServerProxy):
             raise NotImplementedError  # TODO #102
             done_event = Event()
             remote_job.set_done_event(done_event)
-
+            # TODO all routers if remote_sys == None
             result = cls.__start_task(remote_sys, remote_job)
             done_event.wait(wait)
             return result
         else:
-            return cls.__start_task(remote_sys, remote_job)
+            if remote_sys is None:
+                result = True
+                for router in cls.get_routers():
+                    result = result and cls.__start_task(router, remote_job)
+                return result
+            else:
+                return cls.__start_task(remote_sys, remote_job)
 
     @classmethod
     def start_test(cls, router_id: int, test_name: str) -> bool:
@@ -257,8 +262,6 @@ class Server(ServerProxy):
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # task is a test
-                    # async_result = cls._task_pool.apply_async(func=cls._execute_test,
-                                                             # args=(job, remote_sys))
                     cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys)
                 else:
                     # task is a regular job
@@ -307,7 +310,7 @@ class Server(ServerProxy):
     @classmethod
     def _execute_test(cls, test: FirmwareTestClass, router: Router) -> TestResult:
         import time
-        time.sleep(2)  # TODO this is a workaround for async_result.get(), maybe a bug from python?
+        #time.sleep(2)  # TODO this is a workaround for async_result.get(), maybe a bug from python?
 
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
