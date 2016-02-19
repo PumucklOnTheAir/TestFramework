@@ -1,8 +1,10 @@
 from threading import Thread
-from router.router import Router
+from router.router import Router, Mode
 from log.logger import Logger
 from network.web_config_assist import WebConfigurationAssist
 from network.remote_system import RemoteSystemJob
+from util.dhclient import Dhclient
+import time
 
 
 class RouterWebConfiguration(Thread):
@@ -48,6 +50,14 @@ class RouterWebConfiguration(Thread):
         except Exception as e:
             Logger().error(str(e), 2)
             raise e
+        # The Router should reboot
+        Logger().info("Wait until Router rebooted (45sec) ...")
+        time.sleep(45)
+        if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+            self.router.mode = Mode.normal
+            Logger().info("[+] Router was set into normal mode", 2)
+        else:
+            Logger().warning("[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")")
 
     def _wca_setup_expert(self, config):
         """

@@ -3,6 +3,8 @@ from network.network_ctrl import NetworkCtrl
 from router.router import Router, Mode
 from log.logger import Logger
 from network.remote_system import RemoteSystemJob
+from util.dhclient import Dhclient
+import time
 
 
 class RouterReboot(Thread):
@@ -42,19 +44,29 @@ class RouterReboot(Thread):
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
                 network_ctrl.send_command("uci commit")
                 network_ctrl.send_command("reboot")
-                self.router.mode = Mode.configuration
+                Logger().info("Wait until Router rebooted (45sec) ...")
+                time.sleep(45)
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+                    self.router.mode = Mode.configuration
+                    Logger().info("[+] Router was set into configuration mode", 2)
+                else:
+                    raise Exception
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into configuration mode", 2)
                 Logger().error(str(e), 2)
-            Logger().info("[+] Router was set into configuration mode", 2)
         else:
             if self.router.mode == Mode.normal:
                 Logger().info("[+] Router is already in normal mode", 2)
                 return
             try:
                 network_ctrl.send_command("reboot")
-                self.router.mode = Mode.normal
-                Logger().info("[+] Router was set into normal mode", 2)
+                Logger().info("Wait until Router rebooted (45sec) ...")
+                time.sleep(45)
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+                    self.router.mode = Mode.normal
+                    Logger().info("[+] Router was set into normal mode", 2)
+                else:
+                    raise Exception
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
