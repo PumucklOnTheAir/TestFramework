@@ -127,11 +127,7 @@ class RouterInfo(Thread):
                 # MAC
                 raw_mac = raw_iface_info.split("link/ether")
                 if len(raw_mac) > 1:
-                    # TODO split() reicht
-                    raw_mac = raw_mac[1].split(" ")
-                    i = raw_mac.count("")
-                    for j in range(0, i):
-                        raw_mac.remove("")
+                    raw_mac = raw_mac[1].split()
                     interface.mac = raw_mac[0]
 
                 # IP Address
@@ -179,24 +175,18 @@ class RouterInfo(Thread):
         :return: The cpu processes of the given Router object
         """
         cpu_processes = list()
-        # TODO: send_command gibt eine Liste zurück; sollte genutzt werden
-        raw_cpu_process_lst = str(self.network_ctrl.send_command("top -n 1"))
+        raw_cpu_process_lst = self.network_ctrl.send_command("top -n 1")
         # A line looks like:
         # 1051  1020 root     R     1388   5%   9% firefox
         for cpu_process_info_line in raw_cpu_process_lst[4:]:
-            # Split and remove the spaces
-            # TODO split() reicht
-            cpu_process_info_lst = cpu_process_info_line.split(" ")
-            i = cpu_process_info_lst.count("")
-            for i in range(0, i):
-                cpu_process_info_lst.remove("")
+            cpu_process_info_lst = cpu_process_info_line.split()
 
             if len(cpu_process_info_lst) > 7:
                 # Get the infos
                 pid = int(cpu_process_info_lst[0])
                 user = cpu_process_info_lst[2]
-                mem = float(cpu_process_info_lst[5])
-                cpu = float(cpu_process_info_lst[6])
+                mem = float(cpu_process_info_lst[5].replace("%",""))
+                cpu = float(cpu_process_info_lst[6].replace("%",""))
                 command = ""
                 for i in range(7, len(cpu_process_info_lst)):
                     command += cpu_process_info_lst[i]
@@ -213,11 +203,7 @@ class RouterInfo(Thread):
         for ram_info_line in raw_mem_lst:
             if "Mem" in ram_info_line:
                 # Split and remove the spaces
-                # TODO split() reicht
-                ram_info_lst = ram_info_line.split(" ")
-                i = ram_info_lst.count("")
-                for i in range(0, i):
-                    ram_info_lst.remove("")
+                ram_info_lst = ram_info_line.split()
                 # Get the infos
                 total = int(ram_info_lst[1])
                 used = int(ram_info_lst[2])

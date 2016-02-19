@@ -5,6 +5,7 @@ from network.nv_assist import NVAssistent
 from pyroute2 import netns
 from log.logger import Logger
 
+
 class TestRouterInfo(TestCase):
     """
     This TestModule tests the functionality of the RouterInfo.
