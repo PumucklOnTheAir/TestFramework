@@ -2,7 +2,7 @@ from pyroute2.ipdb import IPDB
 import re
 from log.logger import Logger
 from network.remote_system import RemoteSystem
-import os
+from util.dhclient import Dhclient
 
 
 class Vlan:
@@ -76,9 +76,13 @@ class Vlan:
         """
         Logger().debug("Wait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...", 3)
         try:
-            stout = os.system('dhclient ' + self.vlan_iface_name)
-            return stout == 0
-        except KeyboardInterrupt:
+            ret = Dhclient.update_ip(self.vlan_iface_name)
+            if ret == 2:
+                Logger().warning("[!] dhclient already exists")
+            elif ret == 1:
+                Logger().debug("[-] Couldn't get an IP via dhclient")
+            else:
+                return True
             return False
         except Exception as e:
             Logger().debug("[-] Couldn't get an IP via dhclient")
@@ -109,7 +113,7 @@ class Vlan:
         :param ip: IP address
         :return: New IP address
         """
-        Logger().debug("")
+        Logger().debug("Set static IP for VLAN(" + str(self.vlan_iface_id)) + ")"
         last_numer = int(ip.split(".")[-1])
         new_numer = last_numer
         if last_numer < 254:
