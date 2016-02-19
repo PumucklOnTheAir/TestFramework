@@ -113,7 +113,7 @@ class Server(ServerProxy):
             # update Router
             cls.router_online(None, all=True)
             # TODO Hat error verursacht
-            # cls.update_router_info(None, update_all=True)
+            #cls.update_router_info(None, update_all=True)
 
         Logger().info("Runtime Server started")
 
@@ -552,14 +552,18 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_flash_firmware import SysupdateJob
+        from util.router_flash_firmware import SysupdateJob, Sysupdate
         if update_all:
             for router in cls.get_routers():
-                cls.start_job(router, SysupdateJob(ConfigManager.get_firmware_dict()[0]))
+                sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
+                sysupdate.start()
+                sysupdate.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                cls.start_job(router, SysupdateJob(ConfigManager.get_firmware_dict()[0]))
+                sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
+                sysupdate.start()
+                sysupdate.join()
 
     @classmethod
     def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
