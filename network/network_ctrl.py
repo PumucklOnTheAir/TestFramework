@@ -97,16 +97,17 @@ class NetworkCtrl:
         :param remote_path: like /tmp/
         :param web_server_ip: IP-address of the raspberryPI
         """
+        webserver = WebServer()
         try:
-            webserver = WebServer()
             webserver.start()
             # Proves first if file already exists
             stout = self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
                                       ' || wget http://' + web_server_ip + ':' + str(WebServer.PORT_WEBSERVER) +
                                       file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
-            webserver.join()
         except Exception as e:
             Logger().error(str(e), 2)
+        finally:
+            webserver.join()
 
     def test_connection(self) -> bool:
         """
