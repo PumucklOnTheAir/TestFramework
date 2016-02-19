@@ -28,7 +28,12 @@ class RouterReboot(Thread):
         """
         Logger().info("Reboot the Router(" + str(self.router.id) + ") ...", 1)
         network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.connect_with_remote_system()
+        try:
+            network_ctrl.connect_with_remote_system()
+        except Exception as e:
+            Logger().warning("[-] Couldn't reboot Router(" + str(self.router.id) + ")")
+            Logger().warning(str(e))
+            return
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 Logger().info("[+] Router is already in configuration mode", 2)

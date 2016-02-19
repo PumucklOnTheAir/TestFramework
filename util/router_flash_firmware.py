@@ -87,7 +87,12 @@ class Sysupgrade(Thread):
         :return:
         """
         network_ctrl = NetworkCtrl(self.router)
-        network_ctrl.connect_with_remote_system()
+        try:
+            network_ctrl.connect_with_remote_system()
+        except Exception as e:
+            Logger().warning("[-] Couldn't sysupgrade the Router(" + str(self.router.id) + ")")
+            Logger().warning(str(e))
+            return
         network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/', self.web_server_ip)
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
