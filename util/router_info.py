@@ -20,6 +20,7 @@ class RouterInfo(Thread):
         4. NetworkInterfaces
         5. CPU-Processes-Information
         6. Memory-Information
+        7. Sockets
     """""
 
     def __init__(self, router: Router):
@@ -35,6 +36,7 @@ class RouterInfo(Thread):
         Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
         try:
             self.network_ctrl.connect_with_remote_system()
+
             # Model
             self.router.model = self._get_router_model()
             # MAC
@@ -60,19 +62,19 @@ class RouterInfo(Thread):
         """
         :return: the Model of the given Router object
         """
-        return self.network_ctrl.send_command('cat /proc/cpuinfo | grep machine')[0].split(":")[1][:-4]
+        return self.network_ctrl.send_command('cat /proc/cpuinfo | grep machine')[0].split(":")[1][1:-1]
 
     def _get_router_mac(self) -> str:
         """
         :return: the MAC of the given Router object
         """
-        return self.network_ctrl.send_command('uci show network.client.macaddr')[0].split('=')[1][:-4]
+        return self.network_ctrl.send_command('uci show network.client.macaddr')[0].split('=')[1][:-1]
 
     def _get_router_ssid(self):
         """
         :return: the SSID of the given Router object
         """
-        return self.network_ctrl.send_command('uci show wireless.client_radio0.ssid')[0].split('=')[1][:-4]
+        return self.network_ctrl.send_command('uci show wireless.client_radio0.ssid')[0].split('=')[1][:-1]
 
     def _get_router_network_interfaces(self) -> Dict:
         """

@@ -552,7 +552,7 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_flash_firmware import SysupdateJob, Sysupdate
+        from util.router_flash_firmware import Sysupdate
         if update_all:
             for router in cls.get_routers():
                 sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
