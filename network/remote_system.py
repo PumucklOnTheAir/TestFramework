@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractproperty, abstractmethod, abstractstaticmethod
 from log.logger import Logger
-from threading import Thread, Event
+from threading import Event
 # from server.server import Server
 
 

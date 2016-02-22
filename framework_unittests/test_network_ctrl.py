@@ -33,7 +33,7 @@ class TestNetworkCtrl(TestCase):
             self._test_connection()
             self._test_send_command()
             self._test_router_wget()
-        except Exception as e:
+        except Exception:
             raise
         finally:
             self.nv_assist.close()
