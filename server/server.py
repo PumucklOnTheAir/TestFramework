@@ -2,13 +2,13 @@ from .serverproxy import ServerProxy
 from .ipc import IPC
 from router.router import Router
 from config.configmanager import ConfigManager
-from typing import List, Union, Dict
+from typing import List, Union, Iterable, Optional
 from .test import FirmwareTest
 from multiprocessing.pool import Pool
 from log.logger import Logger
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
-from threading import Event, Thread, Semaphore
+from threading import Event, Semaphore
 import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
@@ -42,17 +42,17 @@ class Server(ServerProxy):
     _ipc_server = IPC()
 
     # runtime vars
-    _routers = []
-    _reports = []
-    _stopped = False
+    _routers = []  # all registered routers on the system
+    _reports = []  # all test reports
+    _stopped = False  # marks if the server is still running
 
     _max_subprocesses = 0
 
     # test/task handling
-    _running_task = []  # Dict[int, type(Union[RemoteSystemJobClass, RemoteSystemJob])]
-    _waiting_tasks = []  # Dict[int, List[Union[RemoteSystemJobClass, RemoteSystemJob]]]
-    _task_pool = None  # ProcessPool
-    _job_wait_executor = None
+    _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
+    _waiting_tasks = []  # List[deque[Union[RemoteSystemJobClass, RemoteSystemJob]]]
+    _task_pool = None  # multiprocessing.pool.Pool for task execution
+    _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
 
     # NVAssistent
@@ -93,7 +93,6 @@ class Server(ServerProxy):
         for router in cls.get_routers():
             cls._running_task.append(None)
             cls._waiting_tasks.append(deque())
-
 
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers)+2)
@@ -161,31 +160,53 @@ class Server(ServerProxy):
         raise NotImplementedError
 
     @classmethod
-    def get_running_task(cls, remote_system: RemoteSystem) -> Union[RemoteSystemJob, RemoteSystemJobClass]:
+    def get_running_task(cls, remote_system: RemoteSystem) -> Optional[Union[RemoteSystemJob, RemoteSystemJobClass]]:
+        """
+        Returns which task is running on the given RemoteSystem
+        :param remote_system: the RemoteSystem
+        :return: if no job is running, it returns None
+        """
         return cls._running_task[remote_system.id]
 
     @classmethod
-    def set_running_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]):
+    def set_running_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
+        """
+        Sets internally which RemoteSystem executes which Task.
+        It doesn't run or starts the job on the RemoteSystem!
+        :param remote_system: the RemoteSystem
+        :param task: the Task
+        """
         cls._running_task[remote_system.id] = task
 
     @classmethod
-    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Dict[int, List[Union[RemoteSystemJob, RemoteSystemJobClass]]]:
+    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Iterable[Union[RemoteSystemJobClass, RemoteSystemJob]]:
+        """
+        Returns the waiting task queue
+        :param remote_system: the associated RemoteSystem of the queue
+        :return: Returns the queue as a collections.deque, filled with RemoteSystemJobClass and RemoteSystemJob
+        """
         result = cls._waiting_tasks[remote_system.id]
         return result
 
     @classmethod
     def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
+        """
+        Add a task to the waiting Queue of a specific RemoteSystem
+        :param remote_system: the associated RemoteSystem of the queue
+        :param task: task which has to wait
+        """
         queue = cls.get_waiting_task_queue(remote_system)
         queue.appendleft(task)
-        Logger().debug(len(queue), 3)
+        Logger().debug("Added " + str(task) + " to queue of " + remote_system + ". Queue length: " + len(queue), 3)
 
     @classmethod
     def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
-        """Starts an specific job on a RemoteSystem.
-            The job will be executed asynchronous this means the method is not blocking.
-            It add only the job to the task queue from RemoteSystem.
-            If you want, that this method wait until the job is executed, you have to set the wait param.
-            Think about that your job has maybe to wait in the queue.
+        """
+        Starts an specific job on a RemoteSystem.
+        The job will be executed asynchronous this means the method is not blocking.
+        It add only the job to the task queue from RemoteSystem.
+        If you want, that this method wait until the job is executed, you have to set the wait param.
+        Think about that your job has maybe to wait in the queue.
 
         :param remote_sys: The RemoteSystem on which the job will run. If none then the job will be executed on all routers
         :param remote_job: The name of the test to execute
@@ -213,8 +234,8 @@ class Server(ServerProxy):
 
     @classmethod
     def start_test(cls, router_id: int, test_name: str) -> bool:
-        """Start an specific test on an router
-
+        """
+        Start an specific test on a router
         :param router_id: The id of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if test was successful added in the queue
@@ -239,10 +260,18 @@ class Server(ServerProxy):
 
     @classmethod
     def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
+        """
+        Apply a job or a test to the ProcessPool, execute it in the right network namespace with
+        the matching VLAN from RemoteSystem and insert a method for result/post process handling.
+        This method is thread-safe but not multi process safe.
+        :param remote_sys: the RemoteSystem
+        :param job: the Job
+        :return: true if job directly started, false if
+        """
         assert(cls._pid == os.getpid())
-        cls._semaphore_task_management.acquire(blocking=True)
-        Logger().debug(str(cls._waiting_tasks[0]), 3)
-        Logger().debug(cls._running_task, 3)
+        # Check if it is the the same PID as the PID Process which started the ProcessPool
+
+        cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
         try:
             if job is None:  # no job given? look up for the next job in the queue
                 Logger().debug("Lookup for next task", 1)
@@ -282,41 +311,29 @@ class Server(ServerProxy):
 
         finally:
             cls._semaphore_task_management.release()
-            Logger().debug(str(cls._waiting_tasks), 3)
-            Logger().debug(str(cls._running_task), 3)
+            # Logger().debug(str(cls._waiting_tasks), 3)
+            # Logger().debug(str(cls._running_task), 3)
 
     @classmethod
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
-        # proofed: this method runs in other process as the server
         Logger().debug("Execute job " + str(job) + " on Router(" + str(remote_sys.id) + ")", 2)
-        #Alt:
-        #Thread.__init__(job)
         job.prepare(remote_sys, data)
 
         cls.__setns(remote_sys)
-
-        #Alt: remote_system kein Thread mehr
-        #job.start()
-        #job.join(300)  # Timeout: 5 minutes
-        #Neu:
         try:
             job.run()
         except Exception:
-            Logger().debug("Error while exectue job " + str(job))
+            Logger().debug("Error while execute job " + str(job))
         result = job.get_return_data()
 
         return result
 
     @classmethod
     def _execute_test(cls, test: FirmwareTestClass, router: Router) -> TestResult:
-        import time
-        #time.sleep(2)  # TODO this is a workaround for async_result.get(), maybe a bug from python?
-
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
-       # Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
-        Logger().debug("Execute test cases.. ", 3)
+        Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
 
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
 
@@ -345,22 +362,21 @@ class Server(ServerProxy):
             return result
 
     @classmethod
-    def _wait_for_test_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> None:
+    def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router) -> None:
         """
-        Callback function for tests.
-        Needed to start the next test/task in the queue.
-        Adds the test result to the reports.
-
-        :param task: the Future which runs the test
+        Wait 5 minutes until the test is done.
+        Handles the result from the tests.
+        Triggers the next job/test.
+        :param test: test to execute
+        :param router: the Router
         """
-        Logger().debug("Wait for test" + str(job), 2)
-        # Logger().debug(str(async_result.ready()), 1)
-        # Logger().debug(str(async_result.successful()), 2)
+        Logger().debug("Wait for test" + str(test), 2)
         try:
-            result = cls._task_pool.apply(func=cls._execute_test, args=(job, remote_sys))
-            # result = async_result.get(60)  # 300
-            Logger().debug("Test done " + str(job), 1)
-            Logger().debug("From " + str(remote_sys), 2)
+            async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router))
+            result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
+            Logger().debug("Test done " + str(test), 1)
+            Logger().debug("From " + str(router), 2)
+
             cls._reports.append(result)
         except Exception as e:
             # TODO #105
@@ -370,16 +386,15 @@ class Server(ServerProxy):
             result._original_stdout = None
             result._original_stderr = None
             # result.addError(None, (type(exception), exception, None))
-            # TODO exception handling for failed Futures/Tests
+            # TODO exception handling for failed Tests
 
             cls._reports.append(result)
 
         finally:
-            cls.set_running_task(remote_sys, None)
-            print(cls._reports)
+            cls.set_running_task(router, None)
+            # Logger().debug(str(cls._reports))
             # start next test in the queue
-            cls.__start_task(remote_sys, None)
-
+            cls.__start_task(router, None)
 
     @classmethod
     def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, async_result) -> None:
@@ -390,7 +405,6 @@ class Server(ServerProxy):
 
         :param task: the Future which runs the test
         """
-        Logger().debug("waiting......")
         result = async_result.get(timeout=60*5)
         Logger().debug("Job done " + str(job), 1)
         Logger().debug("At Router(" + str(remote_sys.id) + ")", 2)
