@@ -1,7 +1,6 @@
 from unittest import TestCase
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
-from server.proxyobject import ProxyObject
 import time
 from threading import Timer, Event
 
@@ -41,8 +40,6 @@ class TestIPC(TestCase):
 
         rep = server_proxy.get_reports()
         #  print(rep)
-        assert rep[0] == rep[1].get_id()
-        assert rep[2] == rep[1].get_id()
         assert rep[1].text == "test"
 
         DummyServer.testList.append("test1")
@@ -56,9 +53,8 @@ class TestIPC(TestCase):
         assert testss[2] == "test3"
 
 
-class DummyObject(ProxyObject):
+class DummyObject(object):
     def __init__(self, input_text):
-        ProxyObject.__init__(self)
         self.text = input_text
 
 
@@ -82,7 +78,7 @@ class DummyServer(ServerProxy):
     @classmethod
     def get_reports(cls) -> []:
         d = DummyObject("test")
-        return [id(d), d, d.get_id()]
+        return [id(d), d]
 
     @classmethod
     def get_tests(cls) -> []:
