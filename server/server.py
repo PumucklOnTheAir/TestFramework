@@ -46,7 +46,7 @@ class Server(ServerProxy):
     _reports = []  # all test reports
     _stopped = False  # marks if the server is still running
 
-    _max_subprocesses = 0
+    _max_subprocesses = 0  # will be set at start. describes how many Processes are needed in the Pool
 
     # test/task handling
     _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
@@ -58,7 +58,7 @@ class Server(ServerProxy):
     # NVAssistent
     _nv_assistent = None
 
-    _pid = None
+    _pid = None  # PID of the server
 
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
@@ -166,6 +166,7 @@ class Server(ServerProxy):
     def get_running_task(cls, remote_system: RemoteSystem) -> Optional[Union[RemoteSystemJob, RemoteSystemJobClass]]:
         """
         Returns which task is running on the given RemoteSystem
+
         :param remote_system: the RemoteSystem
         :return: if no job is running, it returns None
         """
@@ -176,6 +177,7 @@ class Server(ServerProxy):
         """
         Sets internally which RemoteSystem executes which Task.
         It doesn't run or starts the job on the RemoteSystem!
+
         :param remote_system: the RemoteSystem
         :param task: the Task
         """
@@ -185,6 +187,7 @@ class Server(ServerProxy):
     def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Iterable[Union[RemoteSystemJobClass, RemoteSystemJob]]:
         """
         Returns the waiting task queue
+
         :param remote_system: the associated RemoteSystem of the queue
         :return: Returns the queue as a collections.deque, filled with RemoteSystemJobClass and RemoteSystemJob
         """
@@ -195,6 +198,7 @@ class Server(ServerProxy):
     def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
         """
         Add a task to the waiting Queue of a specific RemoteSystem
+
         :param remote_system: the associated RemoteSystem of the queue
         :param task: task which has to wait
         """
@@ -239,6 +243,7 @@ class Server(ServerProxy):
     def start_test(cls, router_id: int, test_name: str) -> bool:
         """
         Start an specific test on a router
+
         :param router_id: The id of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if test was successful added in the queue
@@ -267,6 +272,7 @@ class Server(ServerProxy):
         Apply a job or a test to the ProcessPool, execute it in the right network namespace with
         the matching VLAN from RemoteSystem and insert a method for result/post process handling.
         This method is thread-safe but not multi process safe.
+
         :param remote_sys: the RemoteSystem
         :param job: the Job
         :return: true if job directly started, false if
@@ -370,6 +376,7 @@ class Server(ServerProxy):
         Wait 5 minutes until the test is done.
         Handles the result from the tests.
         Triggers the next job/test.
+
         :param test: test to execute
         :param router: the Router
         """
@@ -406,7 +413,7 @@ class Server(ServerProxy):
         Needed to start the next test/task in the queue.
         Calls the post process of the Remote
 
-        :param task: the Future which runs the test
+        :param job: the Future which runs the test
         """
         result = async_result.get(timeout=60*5)
         Logger().debug("Job done " + str(job), 1)
@@ -425,33 +432,33 @@ class Server(ServerProxy):
             cls.__start_task(remote_sys, None)
 
     @classmethod
-    def __setns(cls, remote_sys: RemoteSystem):  # -> NVAssistent:
+    def __setns(cls, remote_sys: RemoteSystem) -> None:
         """
-        Set Namespace and Vlan for the current process.
+        Set Namespace and VLAN for the current process.
 
-        :param remote_sys: The RemoteSystem which you want to connect over vlan
-        :return: NVAssistent
+        :param remote_sys: The RemoteSystem which you want to connect over VLAN
         """
         if cls.VLAN:
-            Logger().debug("Set Namespace and Vlan for the current process(" + str(os.getpid()) + ")", 2)
+            Logger().debug("Set Namespace and VLAN for the current process(" + str(os.getpid()) + ")", 2)
             netns.setns(remote_sys.namespace_name)
 
     @classmethod
-    def __unsetns(cls, remote_sys: RemoteSystem):
+    def __unsetns(cls, remote_sys: RemoteSystem) -> None:
         """
-        Deactivates vlan after you activate it with cls.__activate_vlan
+        Deactivates VLAN after you activate it with cls.__setns
 
-        :param nv_assi: the NVAssistent which handles the vlan
-        :return:
+        :param remote_sys: The RemoteSystem
         """
         if cls.VLAN:
-            Logger().debug("Remove Namespace and Vlan for the current process(" + str(os.getpid()) + ")", 2)
+            Logger().debug("Remove Namespace and VLAN for the current process(" + str(os.getpid()) + ")", 2)
             cls._nv_assistent.delete_namespace(remote_sys.namespace_name)
 
     @classmethod
     def get_routers(cls) -> List[Router]:
         """
-        :return: List of known routers. List is a copy of the original list.
+        List of known routers
+
+        :return: List is a copy of the original list.
         """
 
         # check if list is still valid
@@ -463,9 +470,10 @@ class Server(ServerProxy):
     @classmethod
     def get_routers_task_queue_size(cls, router_id: int) -> int:
         """
-        returns current task queue at the first place and after that the task queue of the router
+        Returns the size of the task queue including the actual running task
+
         :param router_id: ID of the router
-        :return: task queue + current active task as a string
+        :return: queue length
         """
         remote_sys = cls.get_router_by_id(router_id)
         result = 0
@@ -478,7 +486,9 @@ class Server(ServerProxy):
     @classmethod
     def get_running_tests(cls) -> List[FirmwareTestClass]:
         """
-        :return: List of running test on the test server. List is a copy of the original list.
+        List of running test on the test server.
+
+        :return: List as a copy of the original list.
         """
         # FIXME
         raise NotImplementedError
@@ -487,6 +497,8 @@ class Server(ServerProxy):
     @classmethod
     def get_reports(cls) -> []:
         """
+        Returns the test results.
+
         :return: List of reports
         """
         return cls._reports
@@ -591,7 +603,7 @@ class Server(ServerProxy):
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
-        from util.router_flash_firmware import SysupgradeJob # TODO remove it from here #64
+        from util.router_flash_firmware import SysupgradeJob  # TODO remove it from here #64
         if upgrade_all:
             for router in cls.get_routers():
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
@@ -614,7 +626,7 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
         """
-        from util.router_setup_web_configuration import RouterWebConfigurationJob # TODO remove it from here #64
+        from util.router_setup_web_configuration import RouterWebConfigurationJob  # TODO remove it from here #64
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
                 cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
@@ -632,7 +644,7 @@ class Server(ServerProxy):
         :param reboot_all: Reboots all Routers
         :param configmode: Reboots Router into configmode
         """
-        from util.router_reboot import RouterRebootJob # TODO remove it from here #64
+        from util.router_reboot import RouterRebootJob  # TODO remove it from here #64
         if reboot_all:
             for router in cls.get_routers():
                 cls.start_job(router, RouterRebootJob(configmode))
