@@ -35,13 +35,13 @@ Eine vollständiges Testens des Frameworks ist auf dem Raspberry Pi möglich mit
 python3 -m unittest discover -s framework_unittests
 
 ### Ausführen
-Über `python cli.py -h`können alle Subkommandos aufgelistet werden.
+Über `python3 cli.py -h`können alle Subkommandos aufgelistet werden.
 
-`python cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf
+`python3 cli.py status -h` listet alle optionalen Argumente für eine Statusübersicht auf
 
-`python cli.py status -a` zeigt die Übersicht über alle Router an
+`python3 cli.py status -a` zeigt die Übersicht über alle Router an
 
-`python cli.py status -r [Router ID]` zeigt detaillierte Infos zu einem bestimmten Router an (ID über status -a einsehbar)
+`python3 cli.py status -r [Router ID]` zeigt detaillierte Infos zu einem bestimmten Router an (ID über status -a einsehbar)
 
 
 

@@ -1,19 +1,19 @@
 from .serverproxy import ServerProxy
 from .ipc import IPC
+from .test import FirmwareTest
+from typing import List, Union, Iterable, Optional
 from router.router import Router
 from config.configmanager import ConfigManager
-from typing import List, Union, Iterable, Optional
-from .test import FirmwareTest
 from multiprocessing.pool import Pool
 from log.logger import Logger
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 from threading import Event, Semaphore
-import os
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
 from collections import deque
+import os, sys
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -67,6 +67,9 @@ class Server(ServerProxy):
 
         :param config_path: Path to an alternative config directory
         """
+        if not os.geteuid() == 0:
+            sys.exit('Script must be run as root')
+
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
         ConfigManager.set_config_path(config_path)
