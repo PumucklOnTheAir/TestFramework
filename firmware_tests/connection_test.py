@@ -1,12 +1,11 @@
 from server.test import FirmwareTest
-from network.remote_system import RemoteSystemJob
-import time
 import os
-from os import getpid
 
 
 class ConnectionTest(FirmwareTest):
-
+    """
+    This is a demo test - only to test the functionality of the framework itself.
+    """""
     def test_self_router(self):
         # print(str(self.router))
         assert self.remote_system.id == 0

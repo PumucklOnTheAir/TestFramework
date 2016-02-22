@@ -4,7 +4,8 @@ from router.router import Router
 
 
 class ServerProxy(metaclass=ABCMeta):
-    """A proxy model for inter-process communication between the server runtime and clients like CLI and WebServer.
+    """
+    A proxy model for inter-process communication between the server runtime and clients like CLI and WebServer.
     Read the method description carefully! The behaviour may be different as expected.
     Normally the method will be executed remotely on the server and
     the return value is given by copy and not by reference!
