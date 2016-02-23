@@ -13,7 +13,8 @@ from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
 from collections import deque
-import os, sys
+import os
+# import sys
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
