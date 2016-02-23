@@ -42,7 +42,7 @@ class SysupdateJob(RemoteSystemJob):
         router_info = Sysupdate(router, self.firmware_config)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None
@@ -115,7 +115,7 @@ class SysupgradeJob(RemoteSystemJob):
         router_info = Sysupgrade(router, self.n, self.web_server_ip, self.debug)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None

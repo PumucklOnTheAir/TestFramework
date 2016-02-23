@@ -255,7 +255,7 @@ class RouterInfoJob(RemoteSystemJob):
         router_info = RouterInfo(router)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None

@@ -48,30 +48,27 @@ class RemoteSystemJob(metaclass=ABCMeta):
     An extended Thread for job which are associated with an RemoteSystem.
     The Server handles the job and is working in the following order:
         - data = job.pre_process(Server)
-        -    job.prepare(data)
+        -    job.prepare(remote_sys)
         -    executeWithVLAN: result = job.run()
         - job.post_process(result)
 
     """""
     def __init__(self):
         self.remote_system = None
-        self.data = None
         self.__done_event = None
         self.__return_data = None
 
     def __str__(self):
         return self.__class__.__name__  # TODO: __str__ remotesystemjob"
 
-    def prepare(self, remote_sys: RemoteSystem, data: {} = None) -> None:
+    def prepare(self, remote_sys: RemoteSystem) -> None:
         """
         Prepares the system job before the run method will started
 
         :param remote_sys: the RemoteSystem which are connected to this job
-        :param data: Arbitrary data as an dictionary
         """
         Logger().debug("Prepare job", 5)
         self.remote_system = remote_sys
-        self.data = data
 
     def set_done_event(self, done_event: Event = None) -> None:
         """
@@ -84,16 +81,11 @@ class RemoteSystemJob(metaclass=ABCMeta):
     def done(self) -> None:
         """
         Will be called by the Server
+
         :return:
         """
         if self.__done_event is not None:
             self.__done_event.set()
-
-    def return_data(self, return_data: {}):
-        self.__return_data = return_data
-
-    def get_return_data(self) -> {}:
-        return self.__return_data
 
     @abstractstaticmethod
     def pre_process(self, server) -> {}:
