@@ -116,7 +116,7 @@ class Server(ServerProxy):
                 cls._nv_assistent.create_namespace_vlan(router)
 
             # update Router
-            cls.router_online(None, all=True)
+            cls.router_online(None, update_all=True)
             # TODO Hat error verursacht
             # cls.update_router_info(None, update_all=True)
 
