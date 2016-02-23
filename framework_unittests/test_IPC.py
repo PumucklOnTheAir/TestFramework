@@ -53,7 +53,7 @@ class TestIPC(TestCase):
         assert testss[2] == "test3"
 
 
-class DummyObject():
+class DummyObject(object):
     def __init__(self, input_text):
         self.text = input_text
 
