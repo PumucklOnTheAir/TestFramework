@@ -163,7 +163,8 @@ def main():
 
     global util
     util = CLIUtil()
-    util.print_header()
+    # Isn't necessary
+    # util.print_header()
 
     try:
         server_proxy = connect_to_server()

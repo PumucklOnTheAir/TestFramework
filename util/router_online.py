@@ -20,14 +20,14 @@ class RouterOnline(Thread):
         self.router.mode = Mode.normal
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
-        if sterr.decode('utf-8') == "":
+        if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
             return
 
         self.router.mode = Mode.configuration
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
-        if sterr.decode('utf-8') == "":
+        if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
             return
 
