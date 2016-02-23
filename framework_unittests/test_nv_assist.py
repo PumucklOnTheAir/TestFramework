@@ -8,7 +8,7 @@ class TestNVAssist(TestCase):
     def test_create_namespace_vlan_veth(self):
         router = self._create_router()
 
-        for i in range(0,2):
+        for i in range(0, 2):
             print("Test" + str(i) + ":")
             nv_assi = NVAssistent("eth0")
             assert isinstance(nv_assi, NVAssistent)

@@ -101,7 +101,7 @@ class Server(ServerProxy):
             cls._waiting_tasks.append(deque())
 
         # start process/thread pool for job and test handling
-        cls._max_subprocesses = (len(cls._routers)+2)
+        cls._max_subprocesses = (len(cls._routers) + 2)
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
         cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses + 5))
 
@@ -118,7 +118,7 @@ class Server(ServerProxy):
             # update Router
             cls.router_online(None, all=True)
             # TODO Hat error verursacht
-            #cls.update_router_info(None, update_all=True)
+            # cls.update_router_info(None, update_all=True)
 
         Logger().info("Runtime Server started")
 
@@ -418,7 +418,7 @@ class Server(ServerProxy):
 
         :param job: the Future which runs the test
         """
-        result = async_result.get(timeout=60*5)
+        result = async_result.get(timeout=60 * 5)
         Logger().debug("Job done " + str(job), 1)
         Logger().debug("At Router(" + str(remote_sys.id) + ")", 2)
         try:

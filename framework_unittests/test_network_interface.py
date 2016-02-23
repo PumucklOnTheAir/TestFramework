@@ -1,5 +1,4 @@
 from unittest import TestCase
-from router.ip_address import IPv4, IPv6
 from router.network_interface import NetworkInterface, Status, WifiInformation, WlanType
 
 

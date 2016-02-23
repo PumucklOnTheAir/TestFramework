@@ -242,7 +242,7 @@ class NetworkInterface:
         :param ip: ip address
         :param ip_mask: ip mask or length prefix-length if IPv6
         """
-        self.ipaddress_lst.append(ipaddress.ip_interface(ip+"/"+str(ip_mask)))
+        self.ipaddress_lst.append(ipaddress.ip_interface(ip + "/"+str(ip_mask)))
 
     @property
     def wifi_information(self) -> WifiInformation:

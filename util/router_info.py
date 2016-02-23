@@ -8,7 +8,8 @@ from router.cpu_process import CPUProcess
 from router.memory import RAM
 from router.socket import InternetSocket
 from typing import Dict, List
-import traceback, sys
+import traceback
+import sys
 
 
 class RouterInfo(Thread):
@@ -187,8 +188,8 @@ class RouterInfo(Thread):
                 # Get the infos
                 pid = int(cpu_process_info_lst[0])
                 user = cpu_process_info_lst[2]
-                mem = float(cpu_process_info_lst[5].replace("%",""))
-                cpu = float(cpu_process_info_lst[6].replace("%",""))
+                mem = float(cpu_process_info_lst[5].replace("%", ""))
+                cpu = float(cpu_process_info_lst[6].replace("%", ""))
                 command = ""
                 for i in range(7, len(cpu_process_info_lst)):
                     command += cpu_process_info_lst[i]
