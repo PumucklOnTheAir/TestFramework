@@ -1,6 +1,6 @@
 import unittest
-from log.loggersetup import LoggerSetup
 import logging
+from log.loggersetup import LoggerSetup
 
 
 class MyTestCase(unittest.TestCase):
@@ -48,7 +48,7 @@ class MyTestCase(unittest.TestCase):
         """
         LoggerSetup.setup(10)
 
-        logging.info("Debug")
+        logging.debug("Debug")
 
         self.assertEqual(True, LoggerSetup.is_setup_loaded())
 
@@ -61,7 +61,7 @@ class MyTestCase(unittest.TestCase):
         """
         LoggerSetup.setup(10)
 
-        logging.info("Warning")
+        logging.warning("Warning")
 
         self.assertEqual(True, LoggerSetup.is_setup_loaded())
 
@@ -74,7 +74,7 @@ class MyTestCase(unittest.TestCase):
         """
         LoggerSetup.setup(10)
 
-        logging.info("Error")
+        logging.error("Error")
 
         self.assertEqual(True, LoggerSetup.is_setup_loaded())
 
@@ -87,7 +87,7 @@ class MyTestCase(unittest.TestCase):
         """
         LoggerSetup.setup(10)
 
-        logging.info("Critical")
+        logging.critical("Critical")
 
         self.assertEqual(True, LoggerSetup.is_setup_loaded())
 
@@ -99,10 +99,10 @@ class MyTestCase(unittest.TestCase):
         :return: Test results
         """
         LoggerSetup.setup(10, "logger.log", "", 5, None)
-        level = LoggerSetup._max_detail_log_level
+        deep = LoggerSetup._max_log_deep
         LoggerSetup.shutdown()
 
-        self.assertEqual(True, level == 5)
+        self.assertEqual(True, deep == 5)
 
     def test_log_level_tab(self):
         """
@@ -111,7 +111,8 @@ class MyTestCase(unittest.TestCase):
         """
         LoggerSetup.setup(10)
 
-        logging.info("%sInfo deep 2", LoggerSetup.get_log_level_tab(2))
+        logging.info("%sInfo deep 2", LoggerSetup.get_log_deep(2))
+        logging.info("%sInfo deep 3 with - as char", LoggerSetup.get_log_deep(3, '-'))
 
         self.assertEqual(True, LoggerSetup.is_setup_loaded())
 

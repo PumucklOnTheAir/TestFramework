@@ -14,7 +14,7 @@ class ColoredFormatter(logging.Formatter):
     RESET_SEQ = "\033[0m"
     COLOR_SEQ = "\033[0;%dm"
 
-    # Colors: 30=black ,31=rot ,32=green ,33=orange ,34=blue ,35=rosa, 36=cyan ,37= white/gray
+    # Colors: 30=black ,31=rot ,32=green ,33=orange ,34=blue ,35=rosa, 36=cyan ,37=white/gray
     COLORS = {
         'WARNING': 33,
         'INFO': 37,
@@ -82,6 +82,8 @@ class LoggerSetup:
     LoggerSetup class to log messages in a log file and on the console and SyslogHandler of the system
 
     USE:
+    import logging
+    from log.loggersetup import LoggerSetup
 
     LoggerSetup.setup()
 
@@ -91,8 +93,11 @@ class LoggerSetup:
     logging.error('ERROR-MSG')
     logging.critical('CRITICAL-MSG')
 
-    logging.Level order
-    0 < 10 < 20 < 30 < 40 < 50
+    message with log level deep:
+    logging.info("%sInfo deep 2", LoggerSetup.get_log_deep(2))
+
+    logging.Level order:
+    0      < 10    < 20   < 30      < 40    < 50
     NOTSET < DEBUG < INFO < WARNING < ERROR < CRITICAL
 
     LoggerSetup.close()
@@ -102,7 +107,7 @@ class LoggerSetup:
     LOG_PATH = os.path.join(BASE_DIR, 'log')  # Join Project Root with log
 
     _is_setup_loaded = False
-    _max_detail_log_level = 0
+    _max_log_deep = 0
 
     @staticmethod
     def is_setup_loaded() -> bool:
@@ -114,13 +119,13 @@ class LoggerSetup:
 
     @staticmethod
     def setup(log_level: int = logging.DEBUG, log_file_path: str = "logger.log", log_format: str = "",
-              max_detail_log_level: int = 5, log_filter: logging.Filter = None) -> None:
+              max_log_deep: int = 5, log_filter: logging.Filter = None) -> None:
         """
         Create and initialize a new logging.Logger and create a new file and stream handler with the params
         :param log_level: Logging level
         :param log_file_path: Path for the log file
         :param log_format: Formatter for the output
-        :param max_detail_log_level: Define the max level, how deep goes a detail of a log
+        :param max_log_deep: Define the max level, how deep goes a detail of a log
         :param log_filter: filter for filter the log output
         :return: None
         """
@@ -134,10 +139,14 @@ class LoggerSetup:
                 logging.error("Path of the log file is an empty string")
                 return
 
-            if log_file_path == "logger.log":
-                file_handler = logging.FileHandler(os.path.join(LoggerSetup.LOG_PATH, 'logger.log'))
-            else:
-                file_handler = logging.FileHandler(log_file_path)
+            file_handler = None
+            try:
+                if log_file_path == "logger.log":
+                    file_handler = logging.FileHandler(os.path.join(LoggerSetup.LOG_PATH, 'logger.log'))
+                else:
+                    file_handler = logging.FileHandler(log_file_path)
+            except Exception as ex:
+                logging.warning("Logger can not create {0}: {1}".format(log_file_path, ex))
 
             # create StreamHandler
             stream_handler = logging.StreamHandler()
@@ -159,18 +168,20 @@ class LoggerSetup:
             # create a logging format
             if log_format == "":
                 log_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
-            file_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
+            if file_handler is not None:
+                file_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
             stream_handler.setFormatter(ColoredFormatter(log_format))
             if console_handler is not None:
                 console_handler.setFormatter(ColoredFormatter(log_format))
             if syslog_handler is not None:
-                syslog_handler.setFormatter(ColoredFormatter(log_format))
+                syslog_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
 
             # add the handlers to the logger
             logger = logging.getLogger()
             if logger.hasHandlers():
                 logger.handlers.clear()
-            logger.addHandler(file_handler)
+            if file_handler is not None:
+                logger.addHandler(file_handler)
             logger.addHandler(stream_handler)
             if console_handler is not None:
                 logger.addHandler(console_handler)
@@ -183,8 +194,10 @@ class LoggerSetup:
                     logger.filters.clear()
                 logger.addFilter(log_filter)
 
-            LoggerSetup._max_detail_log_level = max_detail_log_level
+            # set LoggerSetup variables
+            LoggerSetup._max_log_deep = max_log_deep
             LoggerSetup._is_setup_loaded = True
+
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 
@@ -198,16 +211,17 @@ class LoggerSetup:
         LoggerSetup._is_setup_loaded = False
 
     @staticmethod
-    def get_log_level_tab(log_level_deep: int = 0) -> str:
+    def get_log_deep(deep: int = 0, deep_char: chr = '\t') -> str:
         """
         Return an string with tabulators. Count of tabulators are depend on log_level.
         log_level = 0 returns empty string
-        :param log_level_deep: deep of the level mode
+        :param deep: deep of the level mode
+        :param deep_char: the character to show the deep
         :return: String with tabulators
         """
-        if log_level_deep > LoggerSetup._max_detail_log_level:
-            log_level_deep = LoggerSetup._max_detail_log_level
+        if deep > LoggerSetup._max_log_deep:
+            deep = LoggerSetup._max_log_deep
         temp_str = ""
-        for x in range(0, log_level_deep):
-            temp_str += '\t'
+        for x in range(0, deep):
+            temp_str += deep_char
         return temp_str
