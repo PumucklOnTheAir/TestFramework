@@ -306,11 +306,7 @@ class Server(ServerProxy):
                     cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys)
                 else:
                     # task is a regular job
-                    data = job.pre_process(cls)
-                    async_result = cls._task_pool.apply_async(func=cls._execute_job,
-                                                              args=(job, remote_sys, data,))
-
-                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, async_result)
+                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, data)
                 return True
             else:
                 Logger().debug("Put task in the wait queue. " + str(job), 1)
@@ -410,7 +406,7 @@ class Server(ServerProxy):
             cls.__start_task(router, None)
 
     @classmethod
-    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, async_result) -> None:
+    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> None:
         """
         Callback function for tests.
         Needed to start the next test/task in the queue.
@@ -418,7 +414,8 @@ class Server(ServerProxy):
 
         :param job: the Future which runs the test
         """
-        result = async_result.get(timeout=60 * 5)
+        async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, data,))
+        result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
         Logger().debug("Job done " + str(job), 1)
         Logger().debug("At Router(" + str(remote_sys.id) + ")", 2)
         try:
