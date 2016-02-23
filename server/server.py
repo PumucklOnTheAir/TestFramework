@@ -14,7 +14,7 @@ from unittest import defaultTestLoader
 from pyroute2 import netns
 from collections import deque
 import os
-# import sys
+import sys
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -68,9 +68,10 @@ class Server(ServerProxy):
 
         :param config_path: Path to an alternative config directory
         """
-        #if not os.geteuid() == 0:
-        #    sys.exit('Script must be run as root')
-        # test if this caused an error in travis
+
+        # server has to be run with root rights - except on travi CI
+        if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
+            sys.exit('Script must be run as root')
 
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
