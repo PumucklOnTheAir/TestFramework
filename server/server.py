@@ -67,8 +67,9 @@ class Server(ServerProxy):
 
         :param config_path: Path to an alternative config directory
         """
-        if not os.geteuid() == 0:
-            sys.exit('Script must be run as root')
+        #if not os.geteuid() == 0:
+        #    sys.exit('Script must be run as root')
+        # test if this caused an error in travis
 
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
