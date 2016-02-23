@@ -37,7 +37,7 @@ class Vlan:
             iface = self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface,
                                      vlan_id=self.vlan_iface_id).commit()
             # Try to assign an IP via dhclient
-            if not self._wait_for_ip_assignment():
+            if (not self._wait_for_ip_assignment()) or (self.ipdb_get_ip() == ""):
                 # Otherwise add a static IP
                 iface.add_ip(self._get_matching_ip(str(self.remote_system.ip)), self.remote_system.ip_mask).commit()
             iface.mtu = 1400
@@ -113,7 +113,7 @@ class Vlan:
         :param ip: IP address
         :return: New IP address
         """
-        Logger().debug("Set static IP for VLAN(" + str(self.vlan_iface_id)) + ")"
+        Logger().debug("Set static IP for VLAN(" + str(self.vlan_iface_id) + ")")
         last_numer = int(ip.split(".")[-1])
         new_numer = last_numer
         if last_numer < 254:

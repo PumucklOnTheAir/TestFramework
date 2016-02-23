@@ -1,5 +1,6 @@
 from unittest import TestCase
 from router.network_interface import NetworkInterface, Status, WifiInformation, WlanType
+import ipaddress
 
 
 class TestNetworkInterface(TestCase):
@@ -10,11 +11,8 @@ class TestNetworkInterface(TestCase):
 
         network_interface.mac = "d8:31:26:45:56:2f"
 
-        ipv4 = IPv4("192.168.1.1", 24)
-        network_interface.ipaddress_lst.append(ipv4)
-
-        ipv6 = IPv6("fe80::a11:96ff:fe05:3024", 64)
-        network_interface.ipaddress_lst.append(ipv6)
+        network_interface.add_ip_address("192.168.1.1", 24)
+        network_interface.add_ip_address("fe80::a11:96ff:fe05:3024", 64)
 
         network_interface.status = Status.up
 
@@ -23,8 +21,8 @@ class TestNetworkInterface(TestCase):
         self.assertEqual("eth0", network_interface.name)
         self.assertEqual("d8:31:26:45:56:2f", network_interface.mac)
         self.assertEqual(Status.up, network_interface.status)
-        self.assertEqual(ipv4, network_interface.ipaddress_lst[0])
-        self.assertEqual(ipv6, network_interface.ipaddress_lst[1])
+        self.assertEqual(ipaddress.ip_interface("192.168.1.1/24"), network_interface.ipaddress_lst[0])
+        self.assertEqual(ipaddress.ip_interface("fe80::a11:96ff:fe05:3024/64"), network_interface.ipaddress_lst[1])
         self.assertEqual("0x1", network_interface.wifi_information.wdev)
         self.assertEqual(WlanType.managed, network_interface.wifi_information.type)
         self.assertEqual(1, network_interface.wifi_information.channel)

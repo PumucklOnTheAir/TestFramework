@@ -33,4 +33,4 @@ script:
   - python -m pytest --cov-append --cov=./ framework_unittests/test_IPC.py
   - python -m pytest --ff -n 2 --cov-append --cov=./ framework_unittests/test_Router.py framework_unittests/test_Yaml.py framework_unittests/test_Logger.py framework_unittests/test_firmware_handler.py
 
-  - "python -m pep8 --exclude=migrations --ignore=E501,E225 */*.py *.py"
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225,E126 */*.py *.py"

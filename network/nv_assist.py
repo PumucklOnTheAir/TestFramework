@@ -3,7 +3,6 @@ from network.namespace import Namespace
 from pyroute2.ipdb import IPDB
 from network.remote_system import RemoteSystem
 from log.logger import Logger
-import os
 
 
 class NVAssistent:
@@ -83,5 +82,5 @@ class NVAssistent:
         for nsp in self.nsp_dict:
             self.delete_namespace(nsp)
         self.ipdb.release()
-        Logger().debug("Kill dhclient ...", 2)
-        os.system('pkill dhclient')
+        # Logger().debug("Kill dhclient ...", 2)
+        # os.system('pkill dhclient')

@@ -93,7 +93,7 @@ class RouterWebConfigurationJob(RemoteSystemJob):
         router_info = RouterWebConfiguration(router, self.webinterface_config, self.wizard)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None
