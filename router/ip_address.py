@@ -1,6 +1,6 @@
 from abc import ABCMeta
 
-
+# TODO Kann eigentlich gelöscht werden
 class IPAddress(metaclass=ABCMeta):
     """
     This abstract class represents the IP address as an object.

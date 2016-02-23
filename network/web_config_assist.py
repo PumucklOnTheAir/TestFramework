@@ -1,6 +1,5 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from log.logger import Logger
-from router.router import Mode
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
 
 
@@ -107,7 +106,6 @@ class WebConfigurationAssist:
         contact_field_element.send_keys(self.config['contact'])
 
         safe_restart_button_element.click()
-        self.router.mode = Mode.normal
 
     def setup_expert_private_wlan(self):
         """

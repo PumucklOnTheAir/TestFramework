@@ -85,10 +85,22 @@ class CLITestClass(TestCaseParser):
         assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.mode == "webconfig"
+        assert not args.wizard
 
-        args = self.parser.parse_args(["webconfig", "-a"])
+        args = self.parser.parse_args(["webconfig", "-a", "-w"])
         assert args.all
         assert args.mode == "webconfig"
+        assert args.wizard
+
+    def test_update_info(self):
+        args = self.parser.parse_args(["update_info", "-r", "1", "2", "3"])
+        assert not args.all
+        assert args.routers == [1, 2, 3]
+        assert args.mode == "update_info"
+
+        args = self.parser.parse_args(["update_info", "-a"])
+        assert args.all
+        assert args.mode == "update_info"
 
 
 class TestCLItoServerConnection(unittest.TestCase):

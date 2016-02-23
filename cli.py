@@ -39,7 +39,7 @@ def print_routers(routers):
     """
 
     # Headers for table
-    headers = ["ID", "Router Model/Vers", "VLAN ID", "Router Name", "IP", "MAC"]
+    headers = ["ID", "Router Model/Vers", "VLAN ID", "Mode", "IP", "MAC"]
     string_list = []
 
     # Collect info on routers
@@ -47,7 +47,7 @@ def print_routers(routers):
         string_list.append([routers[i].id,
                             routers[i].model,
                             routers[i].vlan_iface_id,
-                            routers[i].wlan_mode,
+                            routers[i].mode,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
 
@@ -74,7 +74,7 @@ def print_router_info(router_list, rid):
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
                 ["VLan ID", router.vlan_iface_id],
-                ["WLAN Modus", router.wlan_mode],
+                ["Mode", router.mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
                 ["SSID", router.ssid],
@@ -136,6 +136,15 @@ def create_parsers():
                                   default=[], action="store", help="List of routers to be configured", nargs="+")
     parser_webconfig.add_argument("-a", "--all", action="store_true", default=False,
                                   help="Apply to all routers")
+    parser_webconfig.add_argument("-w", "--wizard", action="store_true", default=False,
+                                  help="start in Wizard Mode, if False start in Expert Mode")
+
+    # subparser for update_info
+    parser_update_info = subparsers.add_parser("update_info", help="Updates the router info")
+    parser_update_info.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                    default=[], action="store", help="List of routers", nargs="+")
+    parser_update_info.add_argument("-a", "--all", action="store_true", default=False,
+                                    help="Apply to all routers")
 
     return parser
 
@@ -214,8 +223,17 @@ def main():
         subparse: webconfig
         """
         config_all = args.all
+        toggle_wizard = args.wizard
 
-        server_proxy.setup_web_configuration(args.routers, config_all)
+        server_proxy.setup_web_configuration(args.routers, config_all, toggle_wizard)
+
+    elif args.mode == "update_info":
+        """
+        subparse: update_info
+        """
+        update_all = args.all
+
+        server_proxy.update_router_info(args.routers, update_all)
 
     else:
         Logger().info("Check --help for help")
