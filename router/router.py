@@ -288,7 +288,7 @@ class Router(RemoteSystem):
         string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
         string += "IP: " + self.ip + "/" + str(self.ip_mask) + "\n"
         string += "Power Socket: " + str(self.power_socket) + "\n"
-        string += "User Name: " + self.usr_name + ", Password: " + self._usr_password +  "\n"
+        string += "User Name: " + self.usr_name + ", Password: " + self._usr_password + "\n"
         string += "\nInterfaces: \n"
         for interface in self.interfaces.values():
             string += str(interface) + "\n"

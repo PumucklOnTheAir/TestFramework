@@ -304,7 +304,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         if info_level <= self._max_detail_log_level:
             print(msg)
-            #self._logger.info("{0}{1}".format(self.get_log_level_tab(info_level), msg), *args, **kwargs)
+            # self._logger.info("{0}{1}".format(self.get_log_level_tab(info_level), msg), *args, **kwargs)
 
     def debug(self, msg: str = "", debug_level: int = 0, *args, **kwargs) -> None:
         """
@@ -324,7 +324,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         if debug_level <= self._max_detail_log_level:
             print(msg)
-            #self._logger.debug("{0}{1}".format(self.get_log_level_tab(debug_level), msg), *args, **kwargs)
+            # self._logger.debug("{0}{1}".format(self.get_log_level_tab(debug_level), msg), *args, **kwargs)
 
     def warning(self, msg: str = "", warning_level: int = 0, *args, **kwargs) -> None:
         """
@@ -344,7 +344,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         if warning_level <= self._max_detail_log_level:
             print(msg)
-            #self._logger.warning("{0}{1}".format(self.get_log_level_tab(warning_level), msg), *args, **kwargs)
+            # self._logger.warning("{0}{1}".format(self.get_log_level_tab(warning_level), msg), *args, **kwargs)
 
     def error(self, msg: str = "", error_level: int = 0, *args, **kwargs) -> None:
         """
@@ -364,7 +364,7 @@ class Logger(metaclass=Singleton):
             self.setup()
         if error_level <= self._max_detail_log_level:
             print(msg)
-            #self._logger.error("{0}{1}".format(self.get_log_level_tab(error_level), msg), *args, **kwargs)
+            # self._logger.error("{0}{1}".format(self.get_log_level_tab(error_level), msg), *args, **kwargs)
 
     def critical(self, msg: str = "", critical_level: int = 0, *args, **kwargs) -> None:
         """

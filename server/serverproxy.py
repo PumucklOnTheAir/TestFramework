@@ -12,8 +12,9 @@ class ServerProxy(metaclass=ABCMeta):
     """""
     @abstractclassmethod
     def start_test(self, router_id, test_name) -> bool:
-        """Start an specific test on an router
-            
+        """
+        Start an specific test on an router
+
         :param router_id: The (vlan)ID of the router on which the test will run
         :param test_name: The name of the test to execute
         :return: True if start was successful

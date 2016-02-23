@@ -94,7 +94,7 @@ class Veth:
             except TimeoutError:
                 Logger().debug("[-] Couldn't get a new IP for " + iface_name + " by dhcp", 2)
         else:
-            iface_ip = new_ip+"/"+str(new_ip_mask)
+            iface_ip = new_ip + "/"+str(new_ip_mask)
             Logger().debug("[+] New IP " + iface_ip + " for " + iface_name, 2)
         return iface_ip
 

@@ -24,7 +24,7 @@ class TestRouterInfo(TestCase):
         router_info.start()
         router_info.join()
 
-        Logger().debug(str(router),0)
+        Logger().debug(str(router), 0)
 
         # Close Namespaces and VLANs
         nv_assist.close()
