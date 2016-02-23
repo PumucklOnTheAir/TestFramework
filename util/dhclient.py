@@ -1,5 +1,7 @@
 from subprocess import Popen, PIPE
-import socket, struct, fcntl
+import socket
+import struct
+import fcntl
 import time
 
 
