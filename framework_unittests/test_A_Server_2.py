@@ -86,6 +86,9 @@ class ServerCore(object):
             reports = self.server_proxy.get_reports()
             assert reports[-1].wasSuccessful()  # check last report
 
+    # def test_jobs(self):
+    #    raise NotImplemented
+
 
 class ServerTestCase2(ServerCore, unittest.TestCase):
     proc = None
