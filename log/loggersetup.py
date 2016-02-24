@@ -1,10 +1,8 @@
 import logging
-import logging.handlers
-import os
-import threading
-import multiprocessing
-import sys
-import traceback
+from logging import handlers
+from os import path
+from threading import Thread
+from multiprocessing import Queue
 
 
 class ColoredFormatter(logging.Formatter):
@@ -27,7 +25,7 @@ class ColoredFormatter(logging.Formatter):
         'ERROR': 31,
     }
 
-    def __init__(self, fmt: str = "", use_color: bool = True) -> None:
+    def __init__(self, fmt: str = "", use_color: bool = True):
         """
         Initialize the formatter with specified format strings.
 
@@ -83,12 +81,12 @@ class ColoredFormatter(logging.Formatter):
 
 class MultiProcessingHandler(logging.Handler):
 
-    def __init__(self, name: str="", sub_handler: logging.Handler=None) -> None:
+    def __init__(self, name: str="", sub_handler: logging.Handler=None):
         """
-
-        :param name:
-        :param sub_handler:
-        :return:
+        Create new multiprocess handler instance
+        :param name: name of the handler
+        :param sub_handler: logging handler e.g. FileHandler
+        :return: MultiProcessingHandler
         """
         super(MultiProcessingHandler, self).__init__()
 
@@ -96,27 +94,27 @@ class MultiProcessingHandler(logging.Handler):
             sub_handler = logging.StreamHandler()
 
         self.sub_handler = sub_handler
-        self.queue = multiprocessing.Queue(-1)
+        self.queue = Queue(-1)
         self.setLevel(self.sub_handler.level)
         self.setFormatter(self.sub_handler.formatter)
         # The thread handles receiving records asynchronously.
-        t = threading.Thread(target=self.receive, name=name)
+        t = Thread(target=self.receive, name=name)
         t.daemon = True
         t.start()
 
     def setFormatter(self, fmt: logging.Formatter=None) -> None:
         """
-
-        :param fmt:
-        :return:
+        Set formatter
+        :param fmt: formatter
+        :return: None
         """
         logging.Handler.setFormatter(self, fmt)
         self.sub_handler.setFormatter(fmt)
 
     def receive(self) -> None:
         """
-
-        :return:
+        Receive a message from the queue
+        :return: None
         """
         while True:
             try:
@@ -126,18 +124,21 @@ class MultiProcessingHandler(logging.Handler):
                 raise
             except EOFError:
                 break
-            # except:
-            #     traceback.print_exc(file=sys.stderr)
 
     def send(self, s: logging.LogRecord=None) -> None:
         """
-
-        :param s:
-        :return:
+        Set a message at the queue
+        :param s: LogRecord with the message info
+        :return: None
         """
         self.queue.put_nowait(s)
 
     def _format_record(self, record: logging.LogRecord=None) -> logging.LogRecord:
+        """
+        Formatted the LogRecord
+        :param record: LogRecord with the message info
+        :return: LogRecord with formatted message
+        """
         # ensure that exc_info and args
         # have been stringified. Removes any chance of
         # unpickleable things inside and possibly reduces
@@ -152,15 +153,25 @@ class MultiProcessingHandler(logging.Handler):
         return record
 
     def emit(self, record: logging.LogRecord=None) -> None:
+        """
+        Do whatever it takes to actually log the specified logging record.
+
+        This version is intended to be implemented by subclasses and so
+        raises a NotImplementedError.
+        :param record: LogRecord with the message info
+        :return: None
+        """
         try:
             s = self._format_record(record)
             self.send(s)
         except (KeyboardInterrupt, SystemExit):
             raise
-        # except Exception as ex:
-        #     self.handleError(record)
 
     def close(self) -> None:
+        """
+        Close the handler
+        :return: None
+        """
         self.sub_handler.close()
         logging.Handler.close(self)
 
@@ -191,8 +202,8 @@ class LoggerSetup:
     LoggerSetup.close()
     """
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-    LOG_PATH = os.path.join(BASE_DIR, 'log')  # Join Project Root with log
+    BASE_DIR = path.dirname(path.dirname(__file__))  # This is your Project Root
+    LOG_PATH = path.join(BASE_DIR, 'log')  # Join Project Root with log
 
     _is_setup_loaded = False
     _max_log_deep = 0
@@ -230,8 +241,7 @@ class LoggerSetup:
             file_handler = None
             try:
                 if log_file_path == "logger.log":
-                    file_handler = logging.handlers.RotatingFileHandler(os.path.join(LoggerSetup.LOG_PATH,
-                                                                                     log_file_path))
+                    file_handler = logging.handlers.RotatingFileHandler(path.join(LoggerSetup.LOG_PATH, log_file_path))
                 else:
                     file_handler = logging.handlers.RotatingFileHandler(log_file_path)
             except Exception as ex:
@@ -299,7 +309,7 @@ class LoggerSetup:
         Close open streams and handlers
         :return: None
         """
-        LoggerSetup.de_register_multiprocess_handlers()
+        LoggerSetup.un_register_multiprocess_handlers()
         logging.shutdown()
         LoggerSetup._is_setup_loaded = False
 
@@ -324,7 +334,7 @@ class LoggerSetup:
         """
         Wraps the handlers in the given Logger with an MultiProcessingHandler.
         :param logger: whose handlers to wrap. By default, the root logger.
-        :return:
+        :return: None
         """
         if logger is None:
             logger = logging.getLogger()
@@ -335,11 +345,11 @@ class LoggerSetup:
             logger.addHandler(handler)
 
     @staticmethod
-    def de_register_multiprocess_handlers(logger: logging=None) -> None:
+    def un_register_multiprocess_handlers(logger: logging=None) -> None:
         """
-
-        :param logger:
-        :return:
+        Un register the multiprocess handler
+        :param logger: logging.logger
+        :return: None
         """
         if logger is None:
             logger = logging.getLogger()

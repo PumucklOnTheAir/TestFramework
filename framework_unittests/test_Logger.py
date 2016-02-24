@@ -5,7 +5,11 @@ from multiprocessing import Process
 import time
 
 
-def worker1():
+def worker1() -> None:
+    """
+    Worker class for Process 1
+    :return: None
+    """
     x = 10
     while x > 0:
         logging.info('Info from Process1 {0}'.format(x))
@@ -13,7 +17,11 @@ def worker1():
         x -= 1
 
 
-def worker2():
+def worker2() -> None:
+    """
+    Worker class for Process 2
+    :return: None
+    """
     x = 10
     while x > 0:
         logging.info('Info from Process2 {0}'.format(x))
@@ -25,8 +33,8 @@ class MyTestCase(unittest.TestCase):
 
     def test_multiprocessing(self):
         """
-
-        :return:
+        Tests the logging from different Processes
+        :return: Test result
         """
 
         LoggerSetup.setup()
@@ -45,6 +53,8 @@ class MyTestCase(unittest.TestCase):
         p2.join()
 
         LoggerSetup.shutdown()
+
+        self.assertEqual(True, True)
 
     def test_setup(self):
         """
