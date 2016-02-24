@@ -1,6 +1,6 @@
 from threading import Thread
 from router.router import Router, Mode
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
 import logging
 from subprocess import Popen, PIPE
 from network.remote_system import RemoteSystemJob
@@ -17,23 +17,22 @@ class RouterOnline(Thread):
         self.daemon = True
 
     def run(self):
-        # Logger().debug("Check if Router is online ...", 2)
-        logging.debug("Check if Router is online ...")
+        logging.debug("%sCheck if Router is online ...", LoggerSetup.get_log_deep(2))
         self.router.mode = Mode.normal
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
-            Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
+            logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
             return
 
         self.router.mode = Mode.configuration
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
         if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
-            Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
+            logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
             return
 
-        Logger().debug("[-] Router is not online", 3)
+        logging.debug("%s[-] Router is not online", LoggerSetup.get_log_deep(3))
         self.router.mode = Mode.unknown
 
 

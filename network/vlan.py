@@ -1,6 +1,7 @@
 from pyroute2.ipdb import IPDB
 import re
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from network.remote_system import RemoteSystem
 from util.dhclient import Dhclient
 
@@ -28,7 +29,7 @@ class Vlan:
         """
          Creats a virtual interface on a existing interface (like eth0)
         """
-        Logger().debug("Create VLAN Interface ...", 2)
+        logging.debug("%sCreate VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
             # Get the real link interface
             link_iface = self.ipdb.interfaces[self.link_iface_name]
@@ -42,11 +43,12 @@ class Vlan:
                 iface.add_ip(self._get_matching_ip(str(self.remote_system.ip)), self.remote_system.ip_mask).commit()
             iface.mtu = 1400
 
-            Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
-                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip(), 3)
+            logging.debug("%s[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
+                          ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip(),
+                          LoggerSetup.get_log_deep(3))
         except Exception as e:
-            Logger().debug("[-] " + self.vlan_iface_name + " couldn't be created", 3)
-            Logger().error(str(e), 3)
+            logging.debug("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def delete_interface(self, close_ipdb: bool=False):
         """
@@ -54,19 +56,21 @@ class Vlan:
 
         :param close_ipdb: If also the IPDB should be closed.
         """
-        Logger().debug("Delete VLAN Interface ...", 2)
+        logging.debug("%sDelete VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
             if close_ipdb:
                 self.ipdb.release()
-            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
+            logging.debug("%s[+] Interface(" + self.vlan_iface_name + ") successfully deleted",
+                          LoggerSetup.get_log_deep(3))
         except KeyError:
-            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
+            logging.debug("%s[+] Interface(" + self.vlan_iface_name + ") is already deleted",
+                          LoggerSetup.get_log_deep(3))
             return
         except Exception as e:
-            Logger().debug("[-] Interface(" + self.vlan_iface_name +
-                           ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
-            Logger().error(str(e), 3)
+            logging.debug("%s[-] Interface(" + self.vlan_iface_name +
+                          ") couldn't be deleted. Try 'ip link delete <vlan_name>'", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def _wait_for_ip_assignment(self) -> bool:
         """
@@ -74,19 +78,20 @@ class Vlan:
 
         :return: True if we got a IP via dhclient
         """
-        Logger().debug("Wait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...", 3)
+        logging.debug("%sWait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...",
+                      LoggerSetup.get_log_deep(3))
         try:
             ret = Dhclient.update_ip(self.vlan_iface_name)
             if ret == 2:
-                Logger().warning("[!] dhclient already exists")
+                logging.warning("[!] dhclient already exists")
             elif ret == 1:
-                Logger().debug("[-] Couldn't get an IP via dhclient")
+                logging.debug("[-] Couldn't get an IP via dhclient")
             else:
                 return True
             return False
         except Exception as e:
-            Logger().debug("[-] Couldn't get an IP via dhclient")
-            Logger().error(str(e), 3)
+            logging.debug("[-] Couldn't get an IP via dhclient")
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
             return False
 
     def ipdb_get_ip(self, not_this_ip: str = None):
@@ -113,7 +118,7 @@ class Vlan:
         :param ip: IP address
         :return: New IP address
         """
-        Logger().debug("Set static IP for VLAN(" + str(self.vlan_iface_id) + ")")
+        logging.debug("Set static IP for VLAN(" + str(self.vlan_iface_id) + ")")
         last_numer = int(ip.split(".")[-1])
         new_numer = last_numer
         if last_numer < 254:

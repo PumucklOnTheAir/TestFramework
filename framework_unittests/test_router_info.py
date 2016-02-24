@@ -3,7 +3,7 @@ from router.router import Router, Mode
 from util.router_info import RouterInfo
 from network.nv_assist import NVAssistent
 from pyroute2 import netns
-from log.logger import Logger
+import logging
 
 
 class TestRouterInfo(TestCase):
@@ -24,7 +24,7 @@ class TestRouterInfo(TestCase):
         router_info.start()
         router_info.join()
 
-        Logger().debug(str(router), 0)
+        logging.debug(str(router))
 
         # Close Namespaces and VLANs
         nv_assist.close()

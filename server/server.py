@@ -6,6 +6,7 @@ from router.router import Router
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
 from log.loggersetup import LoggerSetup
+import logging
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 from threading import Event, Semaphore
@@ -91,7 +92,7 @@ class Server(ServerProxy):
         cls._pid = os.getpid()
 
         # create instance and give params to the logger object
-        Logger().setup(log_level, log_level, log_level)
+        LoggerSetup.setup(log_level)
 
         # load Router configs
         cls.__load_configuration()
@@ -112,7 +113,7 @@ class Server(ServerProxy):
             cls._nv_assistent = NVAssistent("eth0")
 
             for router in cls.get_routers():
-                Logger().debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
+                logging.debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
                 cls._nv_assistent.create_namespace_vlan(router)
 
             # update Router
@@ -120,19 +121,19 @@ class Server(ServerProxy):
             # TODO Hat error verursacht
             # cls.update_router_info(None, update_all=True)
 
-        Logger().info("Runtime Server started")
+        logging.info("Runtime Server started")
 
         try:
             cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
         except (KeyboardInterrupt, SystemExit):
-            Logger().info("Received an interrupt signal")
+            logging.info("Received an interrupt signal")
             cls.stop()
 
         # at this point following code will be ignored
 
     @classmethod
     def __load_configuration(cls):
-        Logger().debug("Load configuration")
+        logging.debug("Load configuration")
         cls._routers = ConfigManager.get_router_manual_list()
 
     @classmethod
@@ -146,7 +147,7 @@ class Server(ServerProxy):
             if cls.VLAN:
                 cls._nv_assistent.close()
             # close open streams and the logger instance
-            Logger().close()
+            LoggerSetup.shutdown()
 
             cls._ipc_server.shutdown()
 
@@ -158,7 +159,7 @@ class Server(ServerProxy):
         cls._task_pool.terminate()
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
 
-        Logger().info("Stopped all jobs")
+        logging.info("Stopped all jobs")
 
     @classmethod
     def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
@@ -187,7 +188,8 @@ class Server(ServerProxy):
         cls._running_task[remote_system.id] = task
 
     @classmethod
-    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Iterable[Union[RemoteSystemJobClass, RemoteSystemJob]]:
+    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Iterable[Union[RemoteSystemJobClass,
+                                                                                   RemoteSystemJob]]:
         """
         Returns the waiting task queue
 
@@ -207,7 +209,8 @@ class Server(ServerProxy):
         """
         queue = cls.get_waiting_task_queue(remote_system)
         queue.appendleft(task)
-        Logger().debug("Added " + str(task) + " to queue of " + remote_system + ". Queue length: " + len(queue), 3)
+        logging.debug("%sAdded " + str(task) + " to queue of " + remote_system + ". Queue length: " + len(queue),
+                      LoggerSetup.get_log_deep(3))
 
     @classmethod
     def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
@@ -218,7 +221,8 @@ class Server(ServerProxy):
         If you want, that this method wait until the job is executed, you have to set the wait param.
         Think about that your job has maybe to wait in the queue.
 
-        :param remote_sys: The RemoteSystem on which the job will run. If none then the job will be executed on all routers
+        :param remote_sys: The RemoteSystem on which the job will run. If none then the job will be executed on all
+        routers
         :param remote_job: The name of the test to execute
         :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if job was successful added in the queue
@@ -253,10 +257,10 @@ class Server(ServerProxy):
         """
         router = cls.get_router_by_id(router_id)
         if router is None:
-            Logger().error("Router ID unknown")
+            logging.error("Router ID unknown")
             return False
 
-        # TODO Testverwaltung - ermittlung des passenden Tests #36
+        # TODO: Testverwaltung - ermittlung des passenden Tests #36
         # cls.get_test_by_name
         from firmware_tests.connection_test import ConnectionTest, VeryLongTest
         if test_name == "ConnectionTest":
@@ -264,7 +268,7 @@ class Server(ServerProxy):
         elif test_name == "VeryLongTest":
             demo_test = VeryLongTest
         else:
-            Logger().error("Testname unknown")
+            logging.error("Testname unknown")
             return False
 
         return cls.__start_task(router, demo_test)
@@ -286,20 +290,20 @@ class Server(ServerProxy):
         cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
         try:
             if job is None:  # no job given? look up for the next job in the queue
-                Logger().debug("Lookup for next task", 1)
+                logging.debug("%sLookup for next task", LoggerSetup.get_log_deep(1))
                 if not len(cls.get_waiting_task_queue(remote_sys)):
-                    Logger().debug("No tasks in the queue to run.", 2)
+                    logging.debug("%sNo tasks in the queue to run.", LoggerSetup.get_log_deep(2))
                     return False
                 else:
                     if cls.get_running_task(remote_sys) is not None:
-                        Logger().debug("Router working. Next task has to wait..", 3)
+                        logging.debug("%sRouter working. Next task has to wait..", LoggerSetup.get_log_deep(3))
                         return False
                     else:
-                        Logger().debug("Get next task from the queue", 3)
+                        logging.debug("%sGet next task from the queue", LoggerSetup.get_log_deep(3))
                         job = cls.get_waiting_task_queue(remote_sys).pop()
 
             if cls.get_running_task(remote_sys) is None:
-                Logger().debug("Starting task " + str(job), 1)
+                logging.debug("%sStarting task " + str(job), LoggerSetup.get_log_deep(1))
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # task is a test
@@ -309,29 +313,30 @@ class Server(ServerProxy):
                     cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys)
                 return True
             else:
-                Logger().debug("Put task in the wait queue. " + str(job), 1)
+                logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
                 cls.set_waiting_task(remote_sys, job)
 
                 return False
 
         except Exception as e:
-            Logger().error(str(e), 2)
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
 
         finally:
             cls._semaphore_task_management.release()
-            # Logger().debug(str(cls._waiting_tasks), 3)
-            # Logger().debug(str(cls._running_task), 3)
+            # logging.debug(str(cls._waiting_tasks), 3)
+            # logging.debug(str(cls._running_task), 3)
 
     @classmethod
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> {}:
-        Logger().debug("Execute job " + str(job) + " on Router(" + str(remote_sys.id) + ")", 2)
+        logging.debug("%sExecute job " + str(job) + " on Router(" + str(remote_sys.id) + ")",
+                      LoggerSetup.get_log_deep(2))
         job.prepare(remote_sys)
 
         cls.__setns(remote_sys)
         try:
             result = job.run()
         except Exception:
-            Logger().debug("Error while execute job " + str(job))
+            logging.debug("Error while execute job " + str(job))
 
         return result
 
@@ -340,13 +345,13 @@ class Server(ServerProxy):
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
-        Logger().debug("Execute test " + str(test) + " on " + str(router), 2)
+        logging.debug("%sExecute test " + str(test) + " on " + str(router), LoggerSetup.get_log_deep(2))
 
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
 
         # prepare all test cases
         for test_case in test_suite:
-            Logger().debug("TestCase " + str(test_case), 4)
+            logging.debug("%sTestCase " + str(test_case), LoggerSetup.get_log_deep(4))
             test_case.prepare(router)
 
         result = TestResult()
@@ -356,8 +361,8 @@ class Server(ServerProxy):
 
             result = test_suite.run(result)  # TODO if debug set, run as debug()
         except Exception as e:
-            Logger().error("TestCase raised an exception", 3)
-            Logger().error(str(e), 3)
+            logging.error("%sTestCase raised an exception", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
         finally:
 
             # I'm sry for this dirty hack, but if you don't do this you get an
@@ -365,7 +370,7 @@ class Server(ServerProxy):
             result._original_stdout = None
             result._original_stderr = None
 
-            Logger().debug("Result from test " + str(result), 3)
+            logging.debug("%sResult from test " + str(result), LoggerSetup.get_log_deep(3))
             return result
 
     @classmethod
@@ -378,17 +383,17 @@ class Server(ServerProxy):
         :param test: test to execute
         :param router: the Router
         """
-        Logger().debug("Wait for test" + str(test), 2)
+        logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
             async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router))
             result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
-            Logger().debug("Test done " + str(test), 1)
-            Logger().debug("From " + str(router), 2)
+            logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
+            logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
 
             cls._reports.append(result)
         except Exception as e:
             # TODO #105
-            Logger().error("Test raised an Exception: " + str(e), 1)
+            logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
 
             result = TestResult()
             result._original_stdout = None
@@ -400,7 +405,7 @@ class Server(ServerProxy):
 
         finally:
             cls.set_running_task(router, None)
-            # Logger().debug(str(cls._reports))
+            # logging.debug(str(cls._reports))
             # start next test in the queue
             cls.__start_task(router, None)
 
@@ -416,12 +421,12 @@ class Server(ServerProxy):
         """
         async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys))
         result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
-        Logger().debug("Job done " + str(job), 1)
-        Logger().debug("At Router(" + str(remote_sys.id) + ")", 2)
+        logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
+        logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
         try:
             exception = None  # task.exception() # TODO #105
             if exception is not None:
-                Logger().error("Task raised an exception: " + str(exception), 1)
+                logging.error("%sTask raised an exception: " + str(exception), LoggerSetup.get_log_deep(1))
             else:
                 job.post_process(result, cls)
                 job.done()
@@ -439,7 +444,8 @@ class Server(ServerProxy):
         :param remote_sys: The RemoteSystem which you want to connect over VLAN
         """
         if cls.VLAN:
-            Logger().debug("Set Namespace and VLAN for the current process(" + str(os.getpid()) + ")", 2)
+            logging.debug("%sSet Namespace and VLAN for the current process(" + str(os.getpid()) + ")",
+                          LoggerSetup.get_log_deep(2))
             netns.setns(remote_sys.namespace_name)
 
     @classmethod
@@ -450,7 +456,8 @@ class Server(ServerProxy):
         :param remote_sys: The RemoteSystem
         """
         if cls.VLAN:
-            Logger().debug("Remove Namespace and VLAN for the current process(" + str(os.getpid()) + ")", 2)
+            logging.debug("%sRemove Namespace and VLAN for the current process(" + str(os.getpid()) + ")",
+                          LoggerSetup.get_log_deep(2))
             cls._nv_assistent.delete_namespace(remote_sys.namespace_name)
 
     @classmethod
@@ -530,7 +537,7 @@ class Server(ServerProxy):
         routers = cls.get_routers()
         for router in routers:
             if router.id == router_id:
-                Logger().debug("get_router_by_id: " + str(router.id), 4)
+                logging.debug("%sget_router_by_id: " + str(router.id), LoggerSetup.get_log_deep(4))
                 return router
         return None
 
@@ -570,7 +577,7 @@ class Server(ServerProxy):
                     router = cls.get_router_by_id(router_id)
                     cls.start_job(router, RouterInfoJob())
         else:
-            Logger().info("set VLAN to true to activate 'update_router_info' it")
+            logging.info("set VLAN to true to activate 'update_router_info' it")
 
     @classmethod
     def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
@@ -625,6 +632,7 @@ class Server(ServerProxy):
 
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
+        :param wizard
         """
         from util.router_setup_web_configuration import RouterWebConfigurationJob  # TODO remove it from here #64
         if setup_all:

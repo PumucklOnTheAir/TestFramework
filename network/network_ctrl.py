@@ -1,6 +1,7 @@
 import os
 import paramiko
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from network.webserver import WebServer
 from network.remote_system import RemoteSystem
 from typing import List
@@ -31,15 +32,15 @@ class NetworkCtrl:
         Connects to the remote_system via SSH(Paramiko).
         Ignores a missing signatur.
         """
-        Logger().info("Connect with RemoteSystem ...", 1)
+        logging.info("%sConnect with RemoteSystem ...", LoggerSetup.get_log_deep(1))
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(str(self.remote_system.ip), port=22,
                              username=str(self.remote_system.usr_name),
                              password=str(self.remote_system.usr_password))
-            Logger().debug("[+] Successfully connected", 2)
+            logging.debug("%s[+] Successfully connected", LoggerSetup.get_log_deep(2))
         except Exception as e:
-            Logger().error("[-] Couldn't connect", 2)
+            logging.error("%s[-] Couldn't connect", LoggerSetup.get_log_deep(2))
             raise e
 
     def send_command(self, command) -> List:
@@ -52,10 +53,10 @@ class NetworkCtrl:
         try:
             stdin, stdout, stderr = self.ssh.exec_command(command, timeout=45)
             output = stdout.readlines()
-            Logger().debug("[+] Sent the command (" + command + ") to the RemoteSystem", 2)
+            logging.debug("%s[+] Sent the command (" + command + ") to the RemoteSystem", LoggerSetup.get_log_deep(2))
             return output
         except Exception as e:
-            Logger().error("[-] Couldn't send the command (" + command + ")", 2)
+            logging.error("%s[-] Couldn't send the command (" + command + ")", LoggerSetup.get_log_deep(2))
             raise e
 
     def send_data(self, local_file: str, remote_file: str):
@@ -81,14 +82,14 @@ class NetworkCtrl:
             scp = SCPClient(self.ssh.get_transport())
             scp.put(local_file, remote_file)
             '''
-            Logger().debug("[+] Sent data '" + local_file + "' to RemoteSystem '" +
-                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) +
-                           ":" + remote_file + "'", 2)
+            logging.debug("%s[+] Sent data '" + local_file + "' to RemoteSystem '" +
+                          str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) +
+                          ":" + remote_file + "'", LoggerSetup.get_log_deep(2))
         except Exception as e:
-            Logger().error("[-] Couldn't send '" + local_file + "' to RemoteSystem '" +
-                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) +
-                           ":" + remote_file + "'", 2)
-            Logger().error(str(e), 2)
+            logging.error("%s[-] Couldn't send '" + local_file + "' to RemoteSystem '" +
+                          str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'",
+                          LoggerSetup.get_log_deep(2))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
 
     def remote_system_wget(self, file: str, remote_path: str, web_server_ip: str):
         """
@@ -105,7 +106,7 @@ class NetworkCtrl:
                               ' || wget http://' + web_server_ip + ':' + str(WebServer.PORT_WEBSERVER) +
                               file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
         except Exception as e:
-            Logger().error(str(e), 2)
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
         finally:
             webserver.join()
 

@@ -1,6 +1,7 @@
 from threading import Thread
 from firmware.firmware_handler import FirmwareHandler
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from network.network_ctrl import NetworkCtrl
 from router.router import Router
 from network.remote_system import RemoteSystemJob
@@ -24,7 +25,7 @@ class Sysupdate(Thread):
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
         :return:
         """
-        Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
+        logging.info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         firmware_handler = FirmwareHandler(self.firmware_config['URL'])
         firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config['Release_Model'],
                                                  self.firmware_config['Download_All'])
@@ -74,7 +75,7 @@ class Sysupgrade(Thread):
         :param debug: if we don't want to realy sysupgrade the firmware
         """
         Thread.__init__(self)
-        Logger().info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
+        logging.info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
 
         self.router = router
         self.n = n
@@ -92,24 +93,24 @@ class Sysupgrade(Thread):
         try:
             network_ctrl.connect_with_remote_system()
         except Exception as e:
-            Logger().warning("[-] Couldn't sysupgrade the Router(" + str(self.router.id) + ")")
-            Logger().warning(str(e))
+            logging.warning("[-] Couldn't sysupgrade the Router(" + str(self.router.id) + ")")
+            logging.warning(str(e))
             return
         network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/', self.web_server_ip)
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
         if not self.debug:
-            Logger().debug("sysupgrade ...")
+            logging.debug("sysupgrade ...")
             try:
                 network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
                 if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
                         self.router.mode = Mode.normal
-                        Logger().info("[+] Router was set into normal mode", 2)
+                        logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
                 else:
                     raise Exception
             except Exception as e:
-                Logger().error("[-] Couldn't sysupgrade the Router")
-                Logger().error(str(e))
+                logging.error("[-] Couldn't sysupgrade the Router")
+                logging.error(str(e))
 
 
 class SysupgradeJob(RemoteSystemJob):
