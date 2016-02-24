@@ -4,6 +4,8 @@ from log.logger import Logger
 from network.network_ctrl import NetworkCtrl
 from router.router import Router
 from network.remote_system import RemoteSystemJob
+from util.dhclient import Dhclient
+from router.router import Mode
 
 
 class Sysupdate(Thread):
@@ -42,7 +44,7 @@ class SysupdateJob(RemoteSystemJob):
         router_info = Sysupdate(router, self.firmware_config)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None
@@ -97,7 +99,17 @@ class Sysupgrade(Thread):
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
         if not self.debug:
-            network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
+            Logger().debug("sysupgrade ...")
+            try:
+                network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+                        self.router.mode = Mode.normal
+                        Logger().info("[+] Router was set into normal mode", 2)
+                else:
+                    raise Exception
+            except Exception as e:
+                Logger().error("[-] Couldn't sysupgrade the Router")
+                Logger().error(str(e))
 
 
 class SysupgradeJob(RemoteSystemJob):
@@ -115,7 +127,7 @@ class SysupgradeJob(RemoteSystemJob):
         router_info = Sysupgrade(router, self.n, self.web_server_ip, self.debug)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None

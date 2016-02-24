@@ -13,7 +13,8 @@ from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
 from collections import deque
-import os, sys
+import os
+import sys
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -67,7 +68,9 @@ class Server(ServerProxy):
 
         :param config_path: Path to an alternative config directory
         """
-        if not os.geteuid() == 0:
+
+        # server has to be run with root rights - except on travi CI
+        if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
 
         cls.CONFIG_PATH = config_path
@@ -98,7 +101,7 @@ class Server(ServerProxy):
             cls._waiting_tasks.append(deque())
 
         # start process/thread pool for job and test handling
-        cls._max_subprocesses = (len(cls._routers)+2)
+        cls._max_subprocesses = (len(cls._routers) + 2)
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
         cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses + 5))
 
@@ -113,9 +116,9 @@ class Server(ServerProxy):
                 cls._nv_assistent.create_namespace_vlan(router)
 
             # update Router
-            cls.router_online(None, all=True)
+            cls.router_online(None, update_all=True)
             # TODO Hat error verursacht
-            #cls.update_router_info(None, update_all=True)
+            # cls.update_router_info(None, update_all=True)
 
         Logger().info("Runtime Server started")
 
@@ -303,11 +306,7 @@ class Server(ServerProxy):
                     cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys)
                 else:
                     # task is a regular job
-                    data = job.pre_process(cls)
-                    async_result = cls._task_pool.apply_async(func=cls._execute_job,
-                                                              args=(job, remote_sys, data,))
-
-                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, async_result)
+                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys)
                 return True
             else:
                 Logger().debug("Put task in the wait queue. " + str(job), 1)
@@ -324,16 +323,15 @@ class Server(ServerProxy):
             # Logger().debug(str(cls._running_task), 3)
 
     @classmethod
-    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, data: {}) -> {}:
+    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> {}:
         Logger().debug("Execute job " + str(job) + " on Router(" + str(remote_sys.id) + ")", 2)
-        job.prepare(remote_sys, data)
+        job.prepare(remote_sys)
 
         cls.__setns(remote_sys)
         try:
-            job.run()
+            result = job.run()
         except Exception:
             Logger().debug("Error while execute job " + str(job))
-        result = job.get_return_data()
 
         return result
 
@@ -407,15 +405,17 @@ class Server(ServerProxy):
             cls.__start_task(router, None)
 
     @classmethod
-    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, async_result) -> None:
+    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> None:
         """
-        Callback function for tests.
-        Needed to start the next test/task in the queue.
-        Calls the post process of the Remote
+        Wait 5 minutes until the job is done.
+        Handles the result from the job with the job.prepare(data) method.
+        Triggers the next job/test.
 
-        :param job: the Future which runs the test
+        :param job: job to execute
+        :param remote_sys: the RemoteSystem
         """
-        result = async_result.get(timeout=60*5)
+        async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys))
+        result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
         Logger().debug("Job done " + str(job), 1)
         Logger().debug("At Router(" + str(remote_sys.id) + ")", 2)
         try:

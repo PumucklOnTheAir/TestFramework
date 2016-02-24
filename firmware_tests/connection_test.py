@@ -11,8 +11,8 @@ class ConnectionTest(FirmwareTest):
         assert self.remote_system.id == 0
 
     def test_ping_static(self):
-        #print("connection test: " + str(getpid()))
-        #os.system("ip a")
+        # print("connection test: " + str(getpid()))
+        # os.system("ip a")
         response = os.system("ping -t 5 -c 1 " + "www.p8h.de")
         assert response == 0  # not working because no normal eth0 stack available
         # from subprocess import Popen, PIPE
@@ -30,7 +30,9 @@ class ConnectionTest(FirmwareTest):
 
 
 class VeryLongTest(FirmwareTest):
-
+    """
+    This is a demo test - only to test the functionality of the framework itself and it is very short..
+    """""
     def test_very_long_test(self):
         lol = True
         assert lol

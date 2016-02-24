@@ -1,6 +1,8 @@
 from pyroute2.ipdb import IPDB
 from log.logger import Logger
-import os, time, struct, fcntl, socket, subprocess, re
+import os
+import time
+import re
 
 
 class Bridge:
@@ -58,10 +60,10 @@ class Bridge:
                 self._wait_for_ip_assignment()
                 iface_ip = self._get_ip()
                 Logger().debug("[+] New IP " + iface_ip + " for " + self.bridge_name + " by dhcp", 2)
-            except TimeoutError as e:
+            except TimeoutError:
                 Logger().debug("[-] Couldn't get a new IP for " + self.bridge_name + " by dhcp", 2)
         else:
-            iface_ip = new_ip+"/"+str(new_ip_mask)
+            iface_ip = new_ip + "/" + str(new_ip_mask)
             Logger().debug("[+] New IP " + iface_ip + " for " + self.bridge_name, 2)
         return iface_ip
 
@@ -109,7 +111,7 @@ class Bridge:
             if close_ipdb:
                 self.ipdb.release()
             Logger().debug("[+] Interface(" + self.bridge_name + ") successfully deleted", 3)
-        except KeyError as ke:
+        except KeyError:
             Logger().debug("[+] Interface(" + self.bridge_name + ") is already deleted", 3)
             return
         except Exception as e:

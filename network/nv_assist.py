@@ -35,7 +35,7 @@ class NVAssistent:
     def create_namespace_vlan(self, remote_system: RemoteSystem):
         """
         Creats a Namespace and a VLAN. Encapsulate the VLAN inside the Namespace.
-        
+
         :param remote_system: Router or powerstrip
         """
         if remote_system.namespace_name in self.nsp_dict.keys():
