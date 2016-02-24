@@ -4,7 +4,7 @@ import unittest
 from server.server import Server
 from multiprocessing import Process
 from server.ipc import IPC
-from framework_unittests.test_Server_2 import block_until_server_is_online
+from framework_unittests.test_A_Server_2 import block_until_server_is_online
 import time
 
 
