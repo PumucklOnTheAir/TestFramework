@@ -14,5 +14,3 @@ class FirmwareTest(TestCase, RemoteSystemJob, metaclass=ABCMeta):
 
     def post_process(self, data) -> None:
         pass
-
-

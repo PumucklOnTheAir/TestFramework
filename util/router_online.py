@@ -20,14 +20,14 @@ class RouterOnline(Thread):
         self.router.mode = Mode.normal
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
-        if sterr.decode('utf-8') == "":
+        if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
             return
 
         self.router.mode = Mode.configuration
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
-        if sterr.decode('utf-8') == "":
+        if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
             return
 
@@ -44,7 +44,7 @@ class RouterOnlineJob(RemoteSystemJob):
         router_info = RouterOnline(router)
         router_info.start()
         router_info.join()
-        self.return_data({'router': router})
+        return {'router': router}
 
     def pre_process(self, server) -> {}:
         return None

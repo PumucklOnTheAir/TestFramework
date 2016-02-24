@@ -67,7 +67,7 @@ class Veth:
             if close_ipdb:
                 self.ipdb.release()
             Logger().debug("[+] Interface(" + self.veth_iface_name1 + ") successfully deleted", 3)
-        except KeyError as ke:
+        except KeyError:
             Logger().debug("[+] Interface(" + self.veth_iface_name1 + ") is already deleted", 3)
             return
         except Exception as e:
@@ -91,10 +91,10 @@ class Veth:
                 self._wait_for_ip_assignment(iface_name)
                 iface_ip = self._get_ip(iface_name)
                 Logger().debug("[+] New IP " + iface_ip + " for " + iface_name + " by dhcp", 2)
-            except TimeoutError as e:
+            except TimeoutError:
                 Logger().debug("[-] Couldn't get a new IP for " + iface_name + " by dhcp", 2)
         else:
-            iface_ip = new_ip+"/"+str(new_ip_mask)
+            iface_ip = new_ip + "/" + str(new_ip_mask)
             Logger().debug("[+] New IP " + iface_ip + " for " + iface_name, 2)
         return iface_ip
 

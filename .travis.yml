@@ -35,4 +35,4 @@ script:
   - python -m pytest --cov-append --cov=./ framework_unittests/test_A_IPC.py
   - python -m pytest --ff -n auto --cov-append --cov=./  framework_unittests/test_AP_*.py
 
-  - "python -m pep8 --exclude=migrations --ignore=E501,E225 */*.py *.py"
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225,E126 */*.py *.py"

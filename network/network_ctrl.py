@@ -50,7 +50,7 @@ class NetworkCtrl:
         :return: The output of the command given by the RemoteSystem
         """
         try:
-            stdin, stdout, stderr = self.ssh.exec_command(command)
+            stdin, stdout, stderr = self.ssh.exec_command(command, timeout=45)
             output = stdout.readlines()
             Logger().debug("[+] Sent the command (" + command + ") to the RemoteSystem", 2)
             return output
@@ -101,9 +101,9 @@ class NetworkCtrl:
         try:
             webserver.start()
             # Proves first if file already exists
-            stout = self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
-                                      ' || wget http://' + web_server_ip + ':' + str(WebServer.PORT_WEBSERVER) +
-                                      file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
+            self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
+                              ' || wget http://' + web_server_ip + ':' + str(WebServer.PORT_WEBSERVER) +
+                              file.replace(WebServer.BASE_DIR, '') + ' -P ' + remote_path)
         except Exception as e:
             Logger().error(str(e), 2)
         finally:

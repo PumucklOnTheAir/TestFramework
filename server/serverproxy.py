@@ -11,41 +11,49 @@ class ServerProxy(metaclass=ABCMeta):
     the return value is given by copy and not by reference!
     """""
     @abstractclassmethod
-    def start_test(self, router_id, test_name) -> bool:
-        """Start an specific test on an router
-            
-        :param router_id: The (vlan)ID of the router on which the test will run
+    def start_test(self, router_id: int, test_name: str) -> bool:
+        """
+        Start an specific test on a router
+
+        :param router_id: The id of the router on which the test will run
         :param test_name: The name of the test to execute
-        :return: True if start was successful
+        :return: True if test was successful added in the queue
         """
         pass
 
     @abstractclassmethod
     def get_routers(self) -> List[Router]:
         """
-        :return: List of known routers
+        List of known routers
+
+        :return: List is a copy of the original list.
         """
         pass
 
     @abstractclassmethod
     def get_routers_task_queue_size(self, router_id: int) -> int:
         """
-        returns current task queue at the first place and after that the task queue of the router
+        Returns the size of the task queue including the actual running task
+
         :param router_id: ID of the router
-        :return: task queue + current active task as a string
+        :return: queue length
         """
         pass
 
     @abstractclassmethod
     def get_running_tests(self) -> []:
         """
-        :return: List of running test on the test server
+        List of running test on the test server.
+
+        :return: List as a copy of the original list.
         """
         pass
 
     @abstractclassmethod
     def get_reports(self) -> []:
         """
+        Returns the test results.
+
         :return: List of reports
         """
         pass
@@ -60,7 +68,7 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def get_firmwares(self) -> []:
         """
-        :return: List of known firmware
+        :return: List of known firmwares
         """
         pass
 
@@ -88,7 +96,7 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def get_router_by_id(self, router_id: int) -> Router:
         """
-        Returns a :py:class:`Router` with the given id.
+        Returns a Router with the given id.
 
         :param router_id:
         :return: Router
@@ -98,7 +106,8 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def sysupdate_firmware(self, router_ids: List[int], update_all: bool) -> None:
         """
-        Downloads and copys the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
+        Downloads and copies the firmware to the :py:class:`Router` given in
+        the List(by a unique id) resp. to all Routers
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
@@ -108,7 +117,7 @@ class ServerProxy(metaclass=ABCMeta):
     @abstractclassmethod
     def sysupgrade_firmware(self, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
         """
-        Upgrades the firmware on the given Router(s)
+        Upgrades the firmware on the given :py:class:`Router` s
 
         :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
@@ -117,7 +126,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
+    def setup_web_configuration(self, router_ids: List[int], setup_all: bool, wizard: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -125,7 +134,6 @@ class ServerProxy(metaclass=ABCMeta):
 
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
-        :param wizard: If True the wizard-page will be configured, otherwise the expert-page
         """
         pass
 
