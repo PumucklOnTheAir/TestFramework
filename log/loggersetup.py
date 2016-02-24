@@ -247,15 +247,15 @@ class LoggerSetup:
             except Exception as ex:
                 logging.warning("Logger can not create {0}: {1}".format(log_file_path, ex))
 
-            # create StreamHandler
-            stream_handler = logging.StreamHandler()
-
             # create ConsoleHandler
             console_handler = None
+            stream_handler = None
             try:
                 console_handler = logging.StreamHandler(open('/dev/console', 'w'))
             except Exception as ex:
                 logging.warning("Logger can not log on {0}: {1}".format('/dev/console', ex))
+                # create StreamHandler because can not register console handler
+                stream_handler = logging.StreamHandler()
 
             # create a SysLogHandler
             syslog_handler = None
@@ -269,7 +269,8 @@ class LoggerSetup:
                 log_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
             if file_handler is not None:
                 file_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
-            stream_handler.setFormatter(ColoredFormatter(log_format))
+            if stream_handler is not None:
+                stream_handler.setFormatter(ColoredFormatter(log_format))
             if console_handler is not None:
                 console_handler.setFormatter(ColoredFormatter(log_format))
             if syslog_handler is not None:
@@ -281,7 +282,8 @@ class LoggerSetup:
                 logger.handlers.clear()
             if file_handler is not None:
                 logger.addHandler(file_handler)
-            logger.addHandler(stream_handler)
+            if stream_handler is not None:
+                logger.addHandler(stream_handler)
             if console_handler is not None:
                 logger.addHandler(console_handler)
             if syslog_handler is not None:
