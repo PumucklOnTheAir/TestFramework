@@ -2,30 +2,23 @@ import unittest
 import logging
 from log.loggersetup import LoggerSetup
 from multiprocessing import Process
-from log.logger import Logger
 import time
 
 
 def worker1():
-    LoggerSetup.setup()
-    x = 100
+    x = 10
     while x > 0:
         logging.info('Info from Process1 {0}'.format(x))
-        # Logger().info('Info from Process1 {0}'.format(x))
         time.sleep(0.25)
         x -= 1
-    LoggerSetup.shutdown()
 
 
 def worker2():
-    LoggerSetup.setup()
-    x = 100
+    x = 10
     while x > 0:
         logging.info('Info from Process2 {0}'.format(x))
-        # Logger().info('Info from Process2 {0}'.format(x))
         time.sleep(0.25)
         x -= 1
-    LoggerSetup.shutdown()
 
 
 class MyTestCase(unittest.TestCase):
@@ -37,23 +30,20 @@ class MyTestCase(unittest.TestCase):
         """
 
         LoggerSetup.setup()
-        # Logger().setup()
 
         p1 = Process(target=worker1)
         p2 = Process(target=worker2)
         p1.start()
         p2.start()
-        x = 100
+        x = 10
         while x > 0:
             logging.info('Info from main {0}'.format(x))
-            # Logger().info('Info from main {0}'.format(x))
             time.sleep(0.25)
             x -= 1
 
         p1.join()
         p2.join()
 
-        # Logger().close()
         LoggerSetup.shutdown()
 
     def test_setup(self):

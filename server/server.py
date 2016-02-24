@@ -5,7 +5,7 @@ from typing import List, Union, Iterable, Optional
 from router.router import Router
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 from threading import Event, Semaphore

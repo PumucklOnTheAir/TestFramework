@@ -15,4 +15,3 @@ pytest-xdist
 codecov
 pycrypto
 ecdsa
-multiprocessing-logging

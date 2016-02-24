@@ -1,6 +1,10 @@
 import logging
 import logging.handlers
 import os
+import threading
+import multiprocessing
+import sys
+import traceback
 
 
 class ColoredFormatter(logging.Formatter):
@@ -79,69 +83,86 @@ class ColoredFormatter(logging.Formatter):
 
 class MultiProcessingHandler(logging.Handler):
 
-    def __init__(self, name, sub_handler=None):
-         super(MultiProcessingHandler, self).__init__()
+    def __init__(self, name: str="", sub_handler: logging.Handler=None) -> None:
+        """
 
+        :param name:
+        :param sub_handler:
+        :return:
+        """
+        super(MultiProcessingHandler, self).__init__()
 
-         if sub_handler is None:
-             sub_handler = logging.StreamHandler()
+        if sub_handler is None:
+            sub_handler = logging.StreamHandler()
 
+        self.sub_handler = sub_handler
+        self.queue = multiprocessing.Queue(-1)
+        self.setLevel(self.sub_handler.level)
+        self.setFormatter(self.sub_handler.formatter)
+        # The thread handles receiving records asynchronously.
+        t = threading.Thread(target=self.receive, name=name)
+        t.daemon = True
+        t.start()
 
-         self.sub_handler = sub_handler
-         self.queue = multiprocessing.Queue(-1)
-         self.setLevel(self.sub_handler.level)
-         self.setFormatter(self.sub_handler.formatter)
-         # The thread handles receiving records asynchronously.
-         t = threading.Thread(target=self.receive, name=name)
-         t.daemon = True
-         t.start()
+    def setFormatter(self, fmt: logging.Formatter=None) -> None:
+        """
 
-    def setFormatter(self, fmt):
-         logging.Handler.setFormatter(self, fmt)
-         self.sub_handler.setFormatter(fmt)
+        :param fmt:
+        :return:
+        """
+        logging.Handler.setFormatter(self, fmt)
+        self.sub_handler.setFormatter(fmt)
 
-    def receive(self):
-         while True:
-             try:
-                 record = self.queue.get()
-                 self.sub_handler.emit(record)
-             except (KeyboardInterrupt, SystemExit):
-                 raise
-             except EOFError:
-                 break
-             except:
-                 traceback.print_exc(file=sys.stderr)
+    def receive(self) -> None:
+        """
 
-    def send(self, s):
-         self.queue.put_nowait(s)
+        :return:
+        """
+        while True:
+            try:
+                record = self.queue.get()
+                self.sub_handler.emit(record)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except EOFError:
+                break
+            # except:
+            #     traceback.print_exc(file=sys.stderr)
 
-    def _format_record(self, record):
-         # ensure that exc_info and args
-         # have been stringified. Removes any chance of
-         # unpickleable things inside and possibly reduces
-         # message size sent over the pipe.
-         if record.args:
-             record.msg = record.msg % record.args
-             record.args = None
-         if record.exc_info:
+    def send(self, s: logging.LogRecord=None) -> None:
+        """
+
+        :param s:
+        :return:
+        """
+        self.queue.put_nowait(s)
+
+    def _format_record(self, record: logging.LogRecord=None) -> logging.LogRecord:
+        # ensure that exc_info and args
+        # have been stringified. Removes any chance of
+        # unpickleable things inside and possibly reduces
+        # message size sent over the pipe.
+        if record.args:
+            record.msg = record.msg % record.args
+            record.args = None
+        if record.exc_info:
             self.format(record)
             record.exc_info = None
 
+        return record
 
-         return record
-
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord=None) -> None:
         try:
-             s = self._format_record(record)
-             self.send(s)
+            s = self._format_record(record)
+            self.send(s)
         except (KeyboardInterrupt, SystemExit):
-             raise
-        except:
-             self.handleError(record)
+            raise
+        # except Exception as ex:
+        #     self.handleError(record)
 
-    def close(self):
-         self.sub_handler.close()
-         logging.Handler.close(self)
+    def close(self) -> None:
+        self.sub_handler.close()
+        logging.Handler.close(self)
 
 
 class LoggerSetup:
@@ -262,11 +283,12 @@ class LoggerSetup:
                     logger.filters.clear()
                 logger.addFilter(log_filter)
 
+            # register multiprocess handlers
+            LoggerSetup.register_multiprocess_handlers(logger)
+
             # set LoggerSetup variables
             LoggerSetup._max_log_deep = max_log_deep
             LoggerSetup._is_setup_loaded = True
-
-            multiprocessing_logging.install_mp_handler(logger)
 
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
@@ -277,6 +299,7 @@ class LoggerSetup:
         Close open streams and handlers
         :return: None
         """
+        LoggerSetup.de_register_multiprocess_handlers()
         logging.shutdown()
         LoggerSetup._is_setup_loaded = False
 
@@ -295,3 +318,32 @@ class LoggerSetup:
         for x in range(0, deep):
             temp_str += deep_char
         return temp_str
+
+    @staticmethod
+    def register_multiprocess_handlers(logger: logging=None)-> None:
+        """
+        Wraps the handlers in the given Logger with an MultiProcessingHandler.
+        :param logger: whose handlers to wrap. By default, the root logger.
+        :return:
+        """
+        if logger is None:
+            logger = logging.getLogger()
+
+        for i, orig_handler in enumerate(list(logger.handlers)):
+            handler = MultiProcessingHandler('mp-handler-{0}'.format(i), sub_handler=orig_handler)
+            logger.removeHandler(orig_handler)
+            logger.addHandler(handler)
+
+    @staticmethod
+    def de_register_multiprocess_handlers(logger: logging=None) -> None:
+        """
+
+        :param logger:
+        :return:
+        """
+        if logger is None:
+            logger = logging.getLogger()
+
+        for handler in logger.handlers:
+            handler.close()
+            logger.removeHandler(handler)
