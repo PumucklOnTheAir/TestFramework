@@ -2,7 +2,8 @@ from threading import Thread
 from network.network_ctrl import NetworkCtrl
 from network.remote_system import RemoteSystemJob
 from router.router import Router
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from router.network_interface import NetworkInterface, Status, WifiInformation
 from router.cpu_process import CPUProcess
 from router.memory import RAM
@@ -34,7 +35,7 @@ class RouterInfo(Thread):
         """
         Runs new thread and gets the information from the Router via ssh
         """
-        Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
+        logging.info("%sUpdate the Infos of the Router(" + str(self.router.id) + ") ...", LoggerSetup.get_log_deep(1))
         try:
             self.network_ctrl.connect_with_remote_system()
 
@@ -52,12 +53,12 @@ class RouterInfo(Thread):
             self.router.ram = self._get_router_mem_ram()
             # Sockets
             self.router.sockets = self._get_router_sockets()
-            Logger().debug("[+] Infos updated", 2)
+            logging.debug("%s[+] Infos updated", LoggerSetup.get_log_deep(2))
         except Exception as e:
-            Logger().warning("[-] Couldn't update all Infos", 2)
-            Logger().error(str(e))
+            logging.warning("%s[-] Couldn't update all Infos", LoggerSetup.get_log_deep(2))
+            logging.error(str(e))
             for tb in traceback.format_tb(sys.exc_info()[2]):
-                Logger().error(tb, 3)
+                logging.error("%s" + tb, LoggerSetup.get_log_deep(3))
 
     def _get_router_model(self) -> str:
         """

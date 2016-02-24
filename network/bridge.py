@@ -1,5 +1,6 @@
 from pyroute2.ipdb import IPDB
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 import os
 import time
 import re
@@ -59,19 +60,22 @@ class Bridge:
             try:
                 self._wait_for_ip_assignment()
                 iface_ip = self._get_ip()
-                Logger().debug("[+] New IP " + iface_ip + " for " + self.bridge_name + " by dhcp", 2)
+                logging.debug("%s[+] New IP " + iface_ip + " for " + self.bridge_name + " by dhcp",
+                              LoggerSetup.get_log_deep(2))
             except TimeoutError:
-                Logger().debug("[-] Couldn't get a new IP for " + self.bridge_name + " by dhcp", 2)
+                logging.debug("%s[-] Couldn't get a new IP for " + self.bridge_name + " by dhcp",
+                              LoggerSetup.get_log_deep(2))
         else:
             iface_ip = new_ip + "/" + str(new_ip_mask)
-            Logger().debug("[+] New IP " + iface_ip + " for " + self.bridge_name, 2)
+            logging.debug("%s[+] New IP " + iface_ip + " for " + self.bridge_name, LoggerSetup.get_log_deep(2))
         return iface_ip
 
     def _wait_for_ip_assignment(self):
         """
         Waits until the dhcp-client got an ip
         """
-        Logger().debug("Wait for ip assignment via dhcp for Bridge Interface(" + self.bridge_name + ") ...", 3)
+        logging.debug("%sWait for ip assignment via dhcp for Bridge Interface(" + self.bridge_name + ") ...",
+                      LoggerSetup.get_log_deep(3))
         current_ip = self._get_ip().split('/')[0]
         if not self._get_ip(not_this_ip=current_ip):
             os.system('dhclient ' + self.bridge_name)
@@ -105,16 +109,16 @@ class Bridge:
 
         :param close_ipdb: If also the IPDB should be closed.
         """
-        Logger().debug("Close Bridge Interface ...", 2)
+        logging.debug("%sClose Bridge Interface ...", LoggerSetup.get_log_deep(2))
         try:
             self.ipdb.interfaces[self.bridge_name].remove().commit()
             if close_ipdb:
                 self.ipdb.release()
-            Logger().debug("[+] Interface(" + self.bridge_name + ") successfully deleted", 3)
+            logging.debug("%s[+] Interface(" + self.bridge_name + ") successfully deleted", LoggerSetup.get_log_deep(3))
         except KeyError:
-            Logger().debug("[+] Interface(" + self.bridge_name + ") is already deleted", 3)
+            logging.debug("%s[+] Interface(" + self.bridge_name + ") is already deleted", LoggerSetup.get_log_deep(3))
             return
         except Exception as e:
-            Logger().debug("[-] Interface(" + self.bridge_name +
-                           ") couldn't be deleted. Try 'ip link delete <bridge_name>'", 3)
-            Logger().error(str(e), 3)
+            logging.debug("%s[-] Interface(" + self.bridge_name +
+                          ") couldn't be deleted. Try 'ip link delete <bridge_name>'", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
