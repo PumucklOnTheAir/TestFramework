@@ -116,7 +116,7 @@ class Server(ServerProxy):
                 cls._nv_assistent.create_namespace_vlan(router)
 
             # update Router
-            cls.router_online(None, all=True)
+            cls.router_online(None, update_all=True)
             # TODO Hat error verursacht
             # cls.update_router_info(None, update_all=True)
 
@@ -535,7 +535,7 @@ class Server(ServerProxy):
         return None
 
     @classmethod
-    def router_online(cls, router_ids: List[int], all: bool) -> None:
+    def router_online(cls, router_ids: List[int], update_all: bool) -> None:
         """
         Tries to connect to the `Router` and updates the Mode of the Router.
 
@@ -543,7 +543,7 @@ class Server(ServerProxy):
         :param update_all: Is True if all Routers should be updated
         """
         from util.router_online import RouterOnlineJob  # TODO remove it from here #64
-        if all:
+        if update_all:
             for router in cls.get_routers():
                 cls.start_job(router, RouterOnlineJob())
         else:

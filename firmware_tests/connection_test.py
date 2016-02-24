@@ -30,7 +30,9 @@ class ConnectionTest(FirmwareTest):
 
 
 class VeryLongTest(FirmwareTest):
-
+    """
+    This is a demo test - only to test the functionality of the framework itself and it is very short..
+    """""
     def test_very_long_test(self):
         lol = True
         assert lol

@@ -50,7 +50,7 @@ class NetworkCtrl:
         :return: The output of the command given by the RemoteSystem
         """
         try:
-            stdin, stdout, stderr = self.ssh.exec_command(command)
+            stdin, stdout, stderr = self.ssh.exec_command(command, timeout=45)
             output = stdout.readlines()
             Logger().debug("[+] Sent the command (" + command + ") to the RemoteSystem", 2)
             return output
