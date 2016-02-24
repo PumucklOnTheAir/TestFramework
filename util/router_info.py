@@ -3,6 +3,7 @@ from network.network_ctrl import NetworkCtrl
 from network.remote_system import RemoteSystemJob
 from router.router import Router
 from log.logger import Logger
+import logging
 from router.network_interface import NetworkInterface, Status, WifiInformation
 from router.cpu_process import CPUProcess
 from router.memory import RAM
@@ -34,7 +35,8 @@ class RouterInfo(Thread):
         """
         Runs new thread and gets the information from the Router via ssh
         """
-        Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
+        logging.info("Update the Infos of the Router(" + str(self.router.id) + ") ...")
+        # Logger().info("Update the Infos of the Router(" + str(self.router.id) + ") ...", 1)
         try:
             self.network_ctrl.connect_with_remote_system()
 

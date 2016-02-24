@@ -1,6 +1,7 @@
 from threading import Thread
 from router.router import Router, Mode
 from log.logger import Logger
+import logging
 from subprocess import Popen, PIPE
 from network.remote_system import RemoteSystemJob
 
@@ -16,7 +17,8 @@ class RouterOnline(Thread):
         self.daemon = True
 
     def run(self):
-        Logger().debug("Check if Router is online ...", 2)
+        # Logger().debug("Check if Router is online ...", 2)
+        logging.debug("Check if Router is online ...")
         self.router.mode = Mode.normal
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()

@@ -174,13 +174,14 @@ class Logger(metaclass=Singleton):
             # set level
             self._logger.setLevel(log_level)
 
+            """
             # create a file handler
             if log_file_path == "":
                 logging.error("Path of the log file is an empty string")
                 return
 
             if log_file_path == "logger.log":
-                file_handler = logging.FileHandler(os.path.join(self.LOG_PATH, 'logger.log'))
+                file_handler = logging.FileHandler(os.path.join(self.LOG_PATH, log_file_path))
             else:
                 file_handler = logging.FileHandler(log_file_path)
 
@@ -238,13 +239,15 @@ class Logger(metaclass=Singleton):
             if syslog_handler is not None:
                 self._logger.addHandler(syslog_handler)
 
-            self._max_detail_log_level = max_detail_log_level
-
             # add Filter to logger
             if log_filter is not None:
                 if len(self._logger.filters) > 0:
                     self._logger.filters.clear()
                 self._logger.addFilter(log_filter)
+            """
+
+            self._max_detail_log_level = max_detail_log_level
+
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 
