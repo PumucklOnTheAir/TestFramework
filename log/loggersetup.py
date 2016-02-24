@@ -297,7 +297,7 @@ class LoggerSetup:
         :return: SyslogHandler
         """
         try:
-            return logging.handlers.SysLogHandler(address='/dev/log')
+            return handlers.SysLogHandler(address='/dev/log')
         except Exception as ex:
             logging.warning("Logger can not log on {0}: {1}".format('/dev/log', ex))
             return None
@@ -325,9 +325,9 @@ class LoggerSetup:
         """
         try:
             if log_file_path == "logger.log":
-                return logging.handlers.RotatingFileHandler(path.join(LoggerSetup.LOG_PATH, log_file_path))
+                return handlers.RotatingFileHandler(path.join(LoggerSetup.LOG_PATH, log_file_path))
             else:
-                return logging.handlers.RotatingFileHandler(log_file_path)
+                return handlers.RotatingFileHandler(log_file_path)
         except Exception as ex:
             logging.warning("Logger can not create {0}: {1}".format(log_file_path, ex))
             return None
