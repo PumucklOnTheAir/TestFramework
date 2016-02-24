@@ -57,25 +57,32 @@ class ColoredFormatter(logging.Formatter):
         """
         record.message = record.getMessage()
         level = record.levelname
+
         if self._use_color and level in self.COLORS:
             msg_color = self.COLOR_SEQ % (self.COLORS[level]) + record.message + self.RESET_SEQ
             record.message = msg_color
+
         if self.usesTime():
             record.asctime = self.formatTime(record, self.datefmt)
+
         s = self.formatMessage(record)
+
         if record.exc_info:
             # Cache the traceback text to avoid converting it multiple times
             # (it's constant anyway)
             if not record.exc_text:
                 record.exc_text = self.formatException(record.exc_info)
+
         if record.exc_text:
             if s[-1:] != "\n":
                 s += "\n"
             s = s + record.exc_text
+
         if record.stack_info:
             if s[-1:] != "\n":
                 s += "\n"
             s = s + self.formatStack(record.stack_info)
+
         return s
 
 
@@ -238,55 +245,33 @@ class LoggerSetup:
                 logging.error("Path of the log file is an empty string")
                 return
 
-            file_handler = None
-            try:
-                if log_file_path == "logger.log":
-                    file_handler = logging.handlers.RotatingFileHandler(path.join(LoggerSetup.LOG_PATH, log_file_path))
-                else:
-                    file_handler = logging.handlers.RotatingFileHandler(log_file_path)
-            except Exception as ex:
-                logging.warning("Logger can not create {0}: {1}".format(log_file_path, ex))
+            file_handler = LoggerSetup.create_file_handler(log_file_path)
 
             # create ConsoleHandler
-            console_handler = None
-            stream_handler = None
-            try:
-                console_handler = logging.StreamHandler(open('/dev/console', 'w'))
-            except Exception as ex:
-                logging.warning("Logger can not log on {0}: {1}".format('/dev/console', ex))
-                # create StreamHandler because can not register console handler
-                stream_handler = logging.StreamHandler()
+            stream_handler = LoggerSetup.create_stream_handler()
 
             # create a SysLogHandler
-            syslog_handler = None
-            try:
-                syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
-            except Exception as ex:
-                logging.warning("Logger can not log on {0}: {1}".format('/dev/log', ex))
+            syslog_handler = LoggerSetup.create_syslog_handler()
 
             # create a logging format
             if log_format == "":
                 log_format = "%(asctime)-23s - %(levelname)-8s : %(message)s"
-            if file_handler is not None:
-                file_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
-            if stream_handler is not None:
-                stream_handler.setFormatter(ColoredFormatter(log_format))
-            if console_handler is not None:
-                console_handler.setFormatter(ColoredFormatter(log_format))
-            if syslog_handler is not None:
-                syslog_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
 
-            # add the handlers to the logger
+            # add the handlers to the logger and add formatter
             logger = logging.getLogger()
             if logger.hasHandlers():
                 logger.handlers.clear()
+
             if file_handler is not None:
+                file_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
                 logger.addHandler(file_handler)
+
             if stream_handler is not None:
+                stream_handler.setFormatter(ColoredFormatter(log_format))
                 logger.addHandler(stream_handler)
-            if console_handler is not None:
-                logger.addHandler(console_handler)
+
             if syslog_handler is not None:
+                syslog_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
                 logger.addHandler(syslog_handler)
 
             # add Filter to logger
@@ -304,6 +289,48 @@ class LoggerSetup:
 
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
+
+    @staticmethod
+    def create_syslog_handler() -> logging.Handler:
+        """
+        Create a SyslogHandler
+        :return: SyslogHandler
+        """
+        try:
+            return logging.handlers.SysLogHandler(address='/dev/log')
+        except Exception as ex:
+            logging.warning("Logger can not log on {0}: {1}".format('/dev/log', ex))
+            return None
+
+    @staticmethod
+    def create_stream_handler() -> logging.Handler:
+        """
+        Create a StreamHandler
+        :return: StreamHandler
+        """
+        try:
+            # console handler
+            return logging.StreamHandler(open('/dev/console', 'w'))
+        except Exception as ex:
+            logging.warning("Logger can not log on {0}: {1}".format('/dev/console', ex))
+            # create StreamHandler because can not register console handler
+            return logging.StreamHandler()
+
+    @staticmethod
+    def create_file_handler(log_file_path: str="") -> logging.Handler:
+        """
+        Create a FileHandler
+        :param log_file_path Path from the file
+        :return: FileHandler
+        """
+        try:
+            if log_file_path == "logger.log":
+                return logging.handlers.RotatingFileHandler(path.join(LoggerSetup.LOG_PATH, log_file_path))
+            else:
+                return logging.handlers.RotatingFileHandler(log_file_path)
+        except Exception as ex:
+            logging.warning("Logger can not create {0}: {1}".format(log_file_path, ex))
+            return None
 
     @staticmethod
     def shutdown() -> None:
