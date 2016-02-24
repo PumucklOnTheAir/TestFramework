@@ -128,7 +128,7 @@ contact: ops@darmstadt.freifunk.net,
 # the WAN interface should not be enabled at the same time.
 private_wlan: False,
 ssid: '',
-ssid_key: '',
+ssid_key: ,
 
 # REMOTE-ACCESS:
 # You can provide your SSH keys here (one per line)
@@ -149,7 +149,7 @@ ipv6_address: '',
 gateway_v6: '',
 
 # At the moment only one dns-server can be added. Later it should be typed like '8.8.8.8, 9.9.9.9'
-static_dns_server: '',
+static_dns_server: ,
 mesh_wan: False,
 mesh_lan: False,
 

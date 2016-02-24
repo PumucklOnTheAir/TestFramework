@@ -2,39 +2,15 @@ from threading import Thread
 from network.network_ctrl import NetworkCtrl
 from router.router import Router, Mode
 from log.logger import Logger
+from network.remote_system import RemoteSystemJob
+from util.dhclient import Dhclient
+import time
 
 
-class RouterReboot:
+class RouterReboot(Thread):
     """
     The RouterInfo collects in a new Thread informations about the Routers
-    """
-
-    @staticmethod
-    def configmode(router: Router):
-        """
-        Reboots the Router into the configuration mode
-
-        :param router: Router objects
-        """
-        Logger().info("Reboot the Router(" + str(router.id) + ") into Configmode ...", 1)
-        worker = Worker(router, True)
-        worker.start()
-        worker.join()
-
-    @staticmethod
-    def normal(router: Router):
-        """
-        Reboots the router
-
-        :param router: Router objects
-        """
-        Logger().info("Reboot the Router(" + str(router.id) + ") ...", 1)
-        worker = Worker(router, False)
-        worker.start()
-        worker.join()
-
-
-class Worker(Thread):
+    """""
 
     def __init__(self, router: Router, configmode: bool):
         """
@@ -52,36 +28,75 @@ class Worker(Thread):
         """
         Runs new thread and trys to send a command via ssh to reboot the Router.
         """
-        network_ctrl = NetworkCtrl(self.router, 'eth0')
-        network_ctrl.connect_with_remote_system()
+        Logger().info("Reboot the Router(" + str(self.router.id) + ") ...", 1)
+        network_ctrl = NetworkCtrl(self.router)
+        try:
+            network_ctrl.connect_with_remote_system()
+        except Exception as e:
+            Logger().warning("[-] Couldn't reboot Router(" + str(self.router.id) + ")")
+            Logger().warning(str(e))
+            return
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 Logger().info("[+] Router is already in configuration mode", 2)
-                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
                 network_ctrl.send_command("uci commit")
                 network_ctrl.send_command("reboot")
-                self.router.mode = Mode.configuration
+                Logger().info("Wait until Router rebooted (45sec) ...")
+                time.sleep(45)
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+                    self.router.mode = Mode.configuration
+                    Logger().info("[+] Router was set into configuration mode", 2)
+                else:
+                    raise Exception
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into configuration mode", 2)
                 Logger().error(str(e), 2)
-            Logger().info("[+] Router was set into configuration mode", 2)
         else:
             if self.router.mode == Mode.normal:
                 Logger().info("[+] Router is already in normal mode", 2)
-                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("reboot")
-                self.router.mode = Mode.normal
-                Logger().info("[+] Router was set into normal mode", 2)
+                Logger().info("Wait until Router rebooted (45sec) ...")
+                time.sleep(45)
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+                    self.router.mode = Mode.normal
+                    Logger().info("[+] Router was set into normal mode", 2)
+                else:
+                    raise Exception
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
 
-        network_ctrl.exit()
 
-    def join(self):
-        Thread.join(self)
+class RouterRebootJob(RemoteSystemJob):
+    """
+    Encapsulate  RouterReboot as a job for the Server
+    """""
+    def __init__(self, configmode: bool):
+        super().__init__()
+        self.configmode = configmode
+
+    def run(self):
+        router = self.remote_system
+        router_info = RouterReboot(router, self.configmode)
+        router_info.start()
+        router_info.join()
+        return {'router': router}
+
+    def pre_process(self, server) -> {}:
+        return None
+
+    def post_process(self, data: {}, server) -> None:
+        """
+        Updates the router in the Server with the new information
+
+        :param data: result from run()
+        :param server: the Server
+        :return:
+        """
+        ref_router = server.get_router_by_id(data['router'].id)
+        ref_router.update(data['router'])  # Don't forget to update this method

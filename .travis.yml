@@ -28,10 +28,9 @@ before_script:
 
 #run tests
 script:
-  - python -m pytest --cov-append --cov=./ tests/test_Server_2.py
-  - python -m pytest --cov-append --cov=./ tests/test_Server.py
-  - python -m pytest --cov-append --cov=./ tests/test_cli.py
-  - python -m pytest --ff -n 2 --cov-append --cov=./  tests/test_cli_util.py
-  - python -m pytest --ff -n 2 --cov-append --cov=./  tests/test_IPC.py tests/test_Router.py tests/test_Yaml.py tests/test_Logger.py tests/test_firmware_handler.py tests/test_cpu_process.py tests/test_router_memory.py tests/test_ip_address.py tests/test_network_interface.py
+  - python -m pytest --cov-append --cov=./ framework_unittests/test_Server_2.py
+  - python -m pytest --cov-append --cov=./ framework_unittests/test_Server.py
+  - python -m pytest --cov-append --cov=./ framework_unittests/test_IPC.py
+  - python -m pytest --ff -n 2 --cov-append --cov=./ framework_unittests/test_Router.py framework_unittests/test_Yaml.py framework_unittests/test_Logger.py framework_unittests/test_firmware_handler.py
 
-  - "python -m pep8 --exclude=migrations --ignore=E501,E225 */*.py *.py"
+  - "python -m pep8 --exclude=migrations --ignore=E501,E225,E126 */*.py *.py"
