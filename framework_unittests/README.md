@@ -1,8 +1,8 @@
 # Framework UnitTests
 Here a placed all unittest which are asserts the functionality of the TestFramework.
 
-Under the subdirectory */config* you can find prepared config files for special cases like running without namespace/VLAN capabilities. 
-This is recommended if you what to run the server on Travis CI. 
+Under the subdirectory */config* you can find prepared config files for special cases like running without namespace/VLAN capabilities.
+This is recommended if you what to run the server on Travis CI.
 
 We are using py.test as default testing tool.
 
@@ -17,7 +17,7 @@ Automated test has to be run on Travis CI _AND_ on a real system.
 
 `test_A_xyz.py`
 
-### Unittest for Travis CI
+### Unittest for real systems
 Unittest which are running on a real system which meets the requirements but are not executable on Travis CI.
 
 `test_R_xyz.py`
