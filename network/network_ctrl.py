@@ -1,6 +1,9 @@
 import os
 import paramiko
+from paramiko.buffered_pipe import PipeTimeout
+import socket
 from log.logger import Logger
+import logging
 from network.webserver import WebServer
 from network.remote_system import RemoteSystem
 from typing import List
@@ -42,18 +45,22 @@ class NetworkCtrl:
             Logger().error("[-] Couldn't connect", 2)
             raise e
 
-    def send_command(self, command) -> List:
+    def send_command(self, command: str, timeout: int=90) -> List:
         """
         Sends the given command via SSH to the RemoteSystem.
 
         :param command: like "ping 8.8.8.8"
+        :param timeout: timeout in sec
         :return: The output of the command given by the RemoteSystem
         """
         try:
-            stdin, stdout, stderr = self.ssh.exec_command(command, timeout=45)
+            stdin, stdout, stderr = self.ssh.exec_command(command, timeout=timeout)
             output = stdout.readlines()
             Logger().debug("[+] Sent the command (" + command + ") to the RemoteSystem", 2)
             return output
+        except (PipeTimeout, socket.timeout):
+            logging.warning("[!] Timeout: No response from RemoteSystem")
+            raise TimeoutError
         except Exception as e:
             Logger().error("[-] Couldn't send the command (" + command + ")", 2)
             raise e
@@ -119,3 +126,6 @@ class NetworkCtrl:
             return True
         else:
             return False
+
+    def exit(self):
+        self.ssh.close()
