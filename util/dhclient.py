@@ -3,7 +3,7 @@ import socket
 import struct
 import fcntl
 import time
-
+from log.logger import Logger
 
 class Dhclient:
     """
@@ -19,6 +19,7 @@ class Dhclient:
         :return: 0 = no error; 1 = error; 2 = a dhclient is already running
         """
         try:
+            Logger().debug("Update IP via dhclient ...", 2)
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             while Dhclient.get_ip(interface) is None:
