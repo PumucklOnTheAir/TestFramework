@@ -35,10 +35,12 @@ class RouterReboot(Thread):
         except Exception as e:
             Logger().warning("[-] Couldn't reboot Router(" + str(self.router.id) + ")")
             Logger().warning(str(e))
+            network_ctrl.exit()
             return
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 Logger().info("[+] Router is already in configuration mode", 2)
+                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
@@ -50,6 +52,7 @@ class RouterReboot(Thread):
                     self.router.mode = Mode.configuration
                     Logger().info("[+] Router was set into configuration mode", 2)
                 else:
+                    network_ctrl.exit()
                     raise Exception
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into configuration mode", 2)
@@ -57,6 +60,7 @@ class RouterReboot(Thread):
         else:
             if self.router.mode == Mode.normal:
                 Logger().info("[+] Router is already in normal mode", 2)
+                network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("reboot")
@@ -66,10 +70,12 @@ class RouterReboot(Thread):
                     self.router.mode = Mode.normal
                     Logger().info("[+] Router was set into normal mode", 2)
                 else:
+                    network_ctrl.exit()
                     raise Exception
             except Exception as e:
                 Logger().warning("[-] Couldn't set Router into normal mode", 2)
                 Logger().error(str(e), 2)
+        network_ctrl.exit()
 
 
 class RouterRebootJob(RemoteSystemJob):
