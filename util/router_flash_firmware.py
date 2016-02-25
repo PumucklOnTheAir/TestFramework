@@ -102,14 +102,17 @@ class Sysupgrade(Thread):
             Logger().debug("sysupgrade ...")
             try:
                 network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
-                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
-                        self.router.mode = Mode.normal
-                        Logger().info("[+] Router was set into normal mode", 2)
-                else:
-                    raise Exception
+            except TimeoutError:
+                Logger().debug("[+] Router was set into config mode", 2)
+                self.router.mode = Mode.configuration
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
+                    self.router.mode = Mode.unknown
+                    Logger().error("[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'", 2)
             except Exception as e:
-                Logger().error("[-] Couldn't sysupgrade the Router")
+                self.router.mode = Mode.unknown
+                Logger().error("[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'")
                 Logger().error(str(e))
+        network_ctrl.exit()
 
 
 class SysupgradeJob(RemoteSystemJob):
