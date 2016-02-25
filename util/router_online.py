@@ -3,6 +3,7 @@ from router.router import Router, Mode
 from log.logger import Logger
 from subprocess import Popen, PIPE
 from network.remote_system import RemoteSystemJob
+from util.dhclient import Dhclient
 
 
 class RouterOnline(Thread):
@@ -22,6 +23,9 @@ class RouterOnline(Thread):
         stdout, sterr = process.communicate()
         if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
+            # Try to get a IP via dhclient
+            if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
+               Logger().error("[-] Dhclient failed", 2)
             return
 
         self.router.mode = Mode.configuration
@@ -29,10 +33,14 @@ class RouterOnline(Thread):
         stdout, sterr = process.communicate()
         if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             Logger().debug("[+] Router online with IP " + str(self.router.ip), 3)
+            # Try to get a IP via dhclient
+            if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
+               Logger().error("[-] Dhclient failed", 2)
             return
 
         Logger().debug("[-] Router is not online", 3)
         self.router.mode = Mode.unknown
+        return
 
 
 class RouterOnlineJob(RemoteSystemJob):
