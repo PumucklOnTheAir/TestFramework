@@ -32,10 +32,12 @@ class TestNetworkCtrl(TestCase):
         try:
             self._test_connection()
             self._test_send_command()
+            self._test_send_command_timeout()
             self._test_router_wget()
         except Exception:
             raise
         finally:
+            self.network_ctrl.exit()
             self.nv_assist.close()
 
     def _test_connection(self):
@@ -46,6 +48,14 @@ class TestNetworkCtrl(TestCase):
         # Test if the command 'uname' could be send via ssh
         output = self.network_ctrl.send_command("uname")
         self.assertEqual(str(output), "['Linux\\n']")
+
+    def _test_send_command_timeout(self):
+        # Tests if the timeout is thrown after 45sec
+        try:
+            print("Test timeout in send_command (5sec)...")
+            self.network_ctrl.send_command("sleep 10 && echo finish", timeout=5)
+        except TimeoutError:
+            return
 
     def _test_router_wget(self):
         # Create test file 'test_wget.txt'
