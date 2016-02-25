@@ -4,7 +4,6 @@ from router.router import Router, Mode
 from util.router_reboot import RouterReboot
 from network.nv_assist import NVAssistent
 from log.logger import Logger
-import time
 from multiprocessing import Process, Queue
 
 
@@ -27,9 +26,6 @@ class TestRouterReboot(TestCase):
         # Get result from process
         router = q.get()
         p.join()
-
-        Logger().debug("Wait 1min till the Router has rebooted.")
-        time.sleep(60)
 
         # Reboot Router, in an own thread, into normalmode
         p = Process(target=self._reboot_into_normal, args=(router, q,))
