@@ -1,6 +1,7 @@
 from threading import Thread
 from router.router import Router, Mode
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from network.web_config_assist import WebConfigurationAssist
 from network.remote_system import RemoteSystemJob
 from util.dhclient import Dhclient
@@ -30,7 +31,7 @@ class RouterWebConfiguration(Thread):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
         """
-        Logger().info("Configure the webinterface of the Router(" + str(self.router.id) + ") ...")
+        logging.info("Configure the webinterface of the Router(" + str(self.router.id) + ") ...")
         if self.wizard:
             self._wca_setup_wizard(self.webinterface_config)
         else:
@@ -48,16 +49,16 @@ class RouterWebConfiguration(Thread):
             wca.setup_wizard()
             wca.exit()
         except Exception as e:
-            Logger().error(str(e), 2)
+            logging.error(str(e), 2)
             raise e
         # The Router should reboot
-        Logger().info("Wait until Router rebooted (45sec) ...")
+        logging.info("Wait until Router rebooted (45sec) ...")
         time.sleep(45)
         if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
             self.router.mode = Mode.normal
-            Logger().info("[+] Router was set into normal mode", 2)
+            logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
         else:
-            Logger().warning("[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")")
+            logging.warning("[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")")
 
     def _wca_setup_expert(self, config):
         """
@@ -75,7 +76,7 @@ class RouterWebConfiguration(Thread):
             wca.setup_expert_wlan()
             wca.setup_expert_autoupdate()
         except Exception as e:
-            Logger().error(str(e), 2)
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e
 
 

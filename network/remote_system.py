@@ -1,5 +1,6 @@
 from abc import ABCMeta, abstractproperty, abstractmethod, abstractstaticmethod
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from threading import Event
 # from server.server import Server
 
@@ -67,7 +68,7 @@ class RemoteSystemJob(metaclass=ABCMeta):
 
         :param remote_sys: the RemoteSystem which are connected to this job
         """
-        Logger().debug("Prepare job", 5)
+        logging.debug("%sPrepare job", LoggerSetup.get_log_deep(5))
         self.remote_system = remote_sys
 
     def set_done_event(self, done_event: Event = None) -> None:

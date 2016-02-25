@@ -3,7 +3,7 @@ from pyroute2 import netns
 from router.router import Router, Mode
 from util.router_reboot import RouterReboot
 from network.nv_assist import NVAssistent
-from log.logger import Logger
+import logging
 import time
 from multiprocessing import Process, Queue
 
@@ -28,7 +28,7 @@ class TestRouterReboot(TestCase):
         router = q.get()
         p.join()
 
-        Logger().debug("Wait 1min till the Router has rebooted.")
+        logging.debug("Wait 1min till the Router has rebooted.")
         time.sleep(60)
 
         # Reboot Router, in an own thread, into normalmode
@@ -39,7 +39,7 @@ class TestRouterReboot(TestCase):
         p.join()
 
     def _reboot_into_config(self, router: Router, q: Queue):
-        Logger().debug("Reboot Router into configmode...")
+        logging.debug("Reboot Router into configmode...")
         # Create NVAssistent
         nv_assist = NVAssistent("eth0")
         nv_assist.create_namespace_vlan(router)
@@ -55,7 +55,7 @@ class TestRouterReboot(TestCase):
         q.put(router)
 
     def _reboot_into_normal(self, router: Router, q: Queue):
-        Logger().debug("Reboot Router back into normalmode...")
+        logging.debug("Reboot Router back into normalmode...")
         nv_assist = NVAssistent("eth0")
         nv_assist.create_namespace_vlan(router)
         # Set netns for the current process

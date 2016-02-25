@@ -1,5 +1,5 @@
 from util.power_strip import PowerStrip
-from log.logger import Logger
+import logging
 from network.network_ctrl import NetworkCtrl
 
 
@@ -44,7 +44,7 @@ class Ubnt(PowerStrip):
 
     def __command(self, cmd):
         output = network_ctrl.send_command(cmd)
-        Logger().info("Command \'" + str(cmd) + "\' sent to power strip")
+        logging.info("Command \'" + str(cmd) + "\' sent to power strip")
         return output
 
     def port_status(self, port_id):
@@ -66,10 +66,10 @@ class Ubnt(PowerStrip):
         cmd = "echo 1 > /dev/output" + str(port_id)
         self.__command(cmd)
         if self.port_status(port_id) == 1:
-            Logger().info("Power turned on: port " + str(port_id))
+            logging.info("Power turned on: port " + str(port_id))
             return True
         else:
-            Logger().error("Could not turn on power on port " + str(port_id))
+            logging.error("Could not turn on power on port " + str(port_id))
             return False
 
     def down(self, port_id):
@@ -81,8 +81,8 @@ class Ubnt(PowerStrip):
         cmd = "echo 0 > /dev/output" + str(port_id)
         self.__command(cmd)
         if self.port_status(port_id) == 0:
-            Logger().info("Power turned off: port " + str(port_id))
+            logging.info("Power turned off: port " + str(port_id))
             return True
         else:
-            Logger().error("Could not turn off power on port " + str(port_id))
+            logging.error("Could not turn off power on port " + str(port_id))
             return False
