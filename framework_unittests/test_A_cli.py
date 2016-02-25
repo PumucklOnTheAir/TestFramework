@@ -138,6 +138,6 @@ class TestCLItoServerConnection(unittest.TestCase):
 
     def test_get_version(self):
         version = self.server_proxy.get_server_version()
-        assert len(version) != 0
+        assert version == Server.VERSION
 
         # TODO compare Version with Version from Server.VERSION and ./cli version (exists?)
