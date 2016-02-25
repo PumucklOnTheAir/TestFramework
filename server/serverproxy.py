@@ -103,6 +103,16 @@ class ServerProxy(metaclass=ABCMeta):
         """
         pass
 
+    @classmethod
+    def router_online(cls, router_ids: List[int], update_all: bool) -> None:
+        """
+        Tries to connect to the `Router` and updates the Mode of the Router.
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
+        :param update_all: Is True if all Routers should be updated
+        """
+        pass
+
     @abstractclassmethod
     def sysupdate_firmware(self, router_ids: List[int], update_all: bool) -> None:
         """
