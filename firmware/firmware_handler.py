@@ -260,7 +260,7 @@ class FirmwareHandler:
         try:
             files = os.listdir(path)
         except Exception:
-            Logger().debug("No Firmwares available for download at path '" + path + "'", 3)
+            Logger().debug("No Firmwares available for import at path '" + path + "'", 3)
             return
 
         for firmware_name in files:
