@@ -1,9 +1,11 @@
 from subprocess import Popen, PIPE
+from log.loggersetup import LoggerSetup
 import socket
 import struct
 import fcntl
 import time
-from log.logger import Logger
+import logging
+
 
 class Dhclient:
     """
@@ -19,7 +21,7 @@ class Dhclient:
         :return: 0 = no error; 1 = error; 2 = a dhclient is already running
         """
         try:
-            Logger().debug("Update IP via dhclient ...", 2)
+            logging.debug("%sUpdate IP via dhclient ...", LoggerSetup.get_log_deep(2))
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             while Dhclient.get_ip(interface) is None:
@@ -35,9 +37,11 @@ class Dhclient:
             raise e
 
     @staticmethod
-    def get_ip(interface) -> str:
+    def get_ip(interface: str) -> str:
         """
         Gets the ip of a specific interface
+
+        :param interface: interface name
         :return: the ip of an interface without network-mask
         """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
