@@ -26,7 +26,7 @@ class RouterOnline(Thread):
             logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
             # Try to get a IP via dhclient
             if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
-               logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(3))
+                logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(3))
             return
 
         self.router.mode = Mode.configuration
@@ -36,7 +36,7 @@ class RouterOnline(Thread):
             logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
             # Try to get a IP via dhclient
             if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
-               logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(2))
+                logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(2))
             return
 
         logging.debug("%s[-] Router is not online", LoggerSetup.get_log_deep(3))
