@@ -2,7 +2,7 @@ from unittest import TestCase
 from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware import Firmware
 from router.router import Router
-from log.logger import Logger
+import logging
 
 
 class TestFirmwareHandler(TestCase):
@@ -11,7 +11,7 @@ class TestFirmwareHandler(TestCase):
         """
         Downloads a single firmware-image.
         """
-        Logger().debug("Test FirmwareHandler: get_single_firmware ...")
+        logging.debug("Test FirmwareHandler: get_single_firmware ...")
         # Create router
         router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
@@ -40,7 +40,7 @@ class TestFirmwareHandler(TestCase):
         Try's to get the firmware-image two times. At least the second try the firmware should be stored on the device
         and imported.
         """
-        Logger().debug("Test FirmwareHandler: import_firmware ...")
+        logging.debug("Test FirmwareHandler: import_firmware ...")
         # Create router
         router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
@@ -71,7 +71,7 @@ class TestFirmwareHandler(TestCase):
         """
         Downloads a single firmware-image.
         """
-        Logger().debug("Test FirmwareHandler: check_hash_firmware ...")
+        logging.debug("Test FirmwareHandler: check_hash_firmware ...")
         # Create router
         router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"

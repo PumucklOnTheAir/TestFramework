@@ -1,4 +1,4 @@
-from log.logger import Logger
+import logging
 
 
 class CLIUtil:
@@ -18,7 +18,7 @@ class CLIUtil:
         # check for correct list lengths
         for i in range(len(content)):
             if len(content[i]) != len(headers):
-                Logger().warning("Content and headers do not match")
+                logging.warning("Content and headers do not match")
 
             assert(len(content[i]) == len(headers))
 

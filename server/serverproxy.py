@@ -144,11 +144,12 @@ class ServerProxy(metaclass=ABCMeta):
 
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
+        :param wizard
         """
         pass
 
     @abstractclassmethod
-    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+    def reboot_router(self, router_ids: List[int], reboot_all: bool, configmode: bool):
         """
         Reboots the given Routers.
 

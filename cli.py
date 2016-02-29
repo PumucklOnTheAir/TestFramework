@@ -2,7 +2,7 @@
 
 from server.ipc import IPC
 from util.cli_util import CLIUtil
-from log.logger import Logger
+import logging
 import argparse
 import time
 import sys
@@ -14,7 +14,7 @@ def connect_to_server():
     """
 
     if verbose:
-        Logger().info("Setting up IPC client")
+        logging.info("Setting up IPC client")
 
     global ipc_client
     ipc_client = IPC()
@@ -24,7 +24,7 @@ def connect_to_server():
     time.sleep(1)
 
     if verbose:
-        Logger().info("Client successfully connected")
+        logging.info("Client successfully connected")
 
     server_proxy = ipc_client.get_server_proxy()
     return server_proxy
@@ -64,7 +64,7 @@ def print_router_info(router_list, rid):
     """
     router = [elem for elem in router_list if str(elem.id) == str(rid)]
     if not router:
-        Logger().info("No such router found, check the list again")
+        logging.info("No such router found, check the list again")
     else:
         # Collect info on router [["header", info],...]
         router = router[0]
@@ -176,12 +176,12 @@ def main():
     try:
         server_proxy = connect_to_server()
     except ConnectionError as e:
-        Logger().warning("Failed to establish connection: " + str(e))
-        Logger().info("Exiting")
+        logging.warning("Failed to establish connection: " + str(e))
+        logging.info("Exiting")
         sys.exit(1)
 
     if verbose:
-        Logger().info("Mode set to verbose")
+        logging.info("Mode set to verbose")
 
     if args.mode == "status":
         """
@@ -191,7 +191,7 @@ def main():
             # return status of all routers
             routers = server_proxy.get_routers()
             if not routers:
-                Logger().warning("No routers in network")
+                logging.warning("No routers in network")
             else:
                 print_routers(routers)
 
@@ -251,7 +251,7 @@ def main():
         server_proxy.router_online(args.routers, online_all)
 
     else:
-        Logger().info("Check --help for help")
+        logging.info("Check --help for help")
 
 
 if __name__ == "__main__":

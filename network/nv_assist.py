@@ -2,7 +2,8 @@ from network.vlan import Vlan
 from network.namespace import Namespace
 from pyroute2.ipdb import IPDB
 from network.remote_system import RemoteSystem
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 import os
 
 
@@ -39,7 +40,7 @@ class NVAssistent:
         :param remote_system: Router or powerstrip
         """
         if remote_system.namespace_name in self.nsp_dict.keys():
-            Logger().debug("[-] Namespace already exists", 2)
+            logging.debug("%s[-] Namespace already exists", LoggerSetup.get_log_deep(2))
             return
 
         vlan = Vlan(self.ipdb, remote_system, self.link_iface_name)
@@ -83,5 +84,5 @@ class NVAssistent:
         for nsp in self.nsp_dict:
             self.delete_namespace(nsp)
         self.ipdb.release()
-        Logger().debug("Kill dhclient ...", 2)
+        logging.debug("%sKill dhclient ...", LoggerSetup.get_log_deep(2))
         os.system('pkill dhclient')
