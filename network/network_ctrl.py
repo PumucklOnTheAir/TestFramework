@@ -1,7 +1,6 @@
 import os
 import paramiko
 from log.loggersetup import LoggerSetup
-import logging
 from paramiko.buffered_pipe import PipeTimeout
 import socket
 import logging
