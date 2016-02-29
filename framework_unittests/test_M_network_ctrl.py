@@ -29,6 +29,7 @@ class TestNetworkCtrl(TestCase):
         assert isinstance(cls.network_ctrl, NetworkCtrl)
 
     def test_network_ctrl(self):
+        print("Test Network_Ctrl")
         try:
             self._test_connection()
             self._test_send_command()
@@ -41,23 +42,26 @@ class TestNetworkCtrl(TestCase):
             self.nv_assist.close()
 
     def _test_connection(self):
+        print("Test if a ssh connection is possible ...")
         # Test if a ssh connection is possible
         self.assertRaises(Exception, self.network_ctrl.connect_with_remote_system())
 
     def _test_send_command(self):
+        print("Test if the command 'uname' could be send via ssh ...")
         # Test if the command 'uname' could be send via ssh
         output = self.network_ctrl.send_command("uname")
         self.assertEqual(str(output), "['Linux\\n']")
 
     def _test_send_command_timeout(self):
+        print("Test if the timeout is thrown after 5sec ...")
         # Tests if the timeout is thrown after 45sec
         try:
-            print("Test timeout in send_command (5sec)...")
             self.network_ctrl.send_command("sleep 10 && echo finish", timeout=5)
         except TimeoutError:
             return
 
     def _test_router_wget(self):
+        print("Test if the 'wget'-function is working ...")
         # Create test file 'test_wget.txt'
         path = os.path.dirname(__file__)
         open(path + '/test_wget.txt', 'w+')

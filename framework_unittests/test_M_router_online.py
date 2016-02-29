@@ -6,8 +6,12 @@ from util.router_online import RouterOnline
 
 
 class TestRouterOnline(TestCase):
+    """
+    This TestModule tests the functionality of RouterOnline.
+    """""
 
     def test_router_online(self):
+        print("Test if the Router is reachable")
         router = self._create_router()
         # NVAssisten
         nv_assist = NVAssistent("eth0")
@@ -15,9 +19,12 @@ class TestRouterOnline(TestCase):
         # Set netns for the current process
         netns.setns(router.namespace_name)
 
+        print("Send a Ping to the two static IP-addresses ...")
         router_online = RouterOnline(router)
         router_online.start()
         router_online.join()
+
+        print("Router is online with IP " + router.ip + "/" + str(router.ip_mask))
 
         self.assertEqual(router.mode, Mode.configuration, "The Configuration Mode is not correct")
 
