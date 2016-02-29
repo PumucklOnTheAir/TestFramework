@@ -4,7 +4,6 @@ from router.router import Router, Mode
 from util.router_reboot import RouterReboot
 from network.nv_assist import NVAssistent
 from multiprocessing import Process, Queue
-from util.router_online import RouterOnline
 
 
 class TestRouterReboot(TestCase):
