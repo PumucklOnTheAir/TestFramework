@@ -6,6 +6,9 @@ from firmware.firmware import Firmware
 from log.loggersetup import LoggerSetup
 import logging
 
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+FIRMWARE_PATH = os.path.join(BASE_DIR, 'firmware/firmwares')  # Join the path to the webserver files with firmwares
+
 
 class FirmwareHandler:
     """
@@ -16,8 +19,6 @@ class FirmwareHandler:
         4. Creates the Firmware-Objects and lists them
     """
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-    FIRMWARE_PATH = os.path.join(BASE_DIR, 'firmware/firmwares')  # Join the path to the webserver files with firmwares
     UPDATE_TYPE = "sysupgrade"
 
     def __init__(self, url: str):
@@ -142,7 +143,7 @@ class FirmwareHandler:
             hash_firmware = firmware.split(' ')[4]
             freifunk_verein = firmware_name.split('-')[1]
             firmware_version = firmware_name.split('-')[2]
-            file = (self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
+            file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                     firmware_name)
             url = self.url + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' + firmware_name
             firmwares.append(Firmware(firmware_name, firmware_version, freifunk_verein, release_model, file, url))
@@ -174,7 +175,7 @@ class FirmwareHandler:
         :param firmware_name:
         :return: bool
         """
-        file = (self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
+        file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                 release_model + '.manifest')
         with open(file, 'r') as f:
             for line in f:
@@ -191,7 +192,7 @@ class FirmwareHandler:
         :return: True if the firmware was successfully downloaded
         """
         logging.info("%sDownload " + url + " ...", LoggerSetup.get_log_deep(2))
-        self._create_path(self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE)
+        self._create_path(FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE)
         try:
             # Download the file from `url` and save it locally under `file_name`:
             urllib.request.urlretrieve(url, file)
@@ -209,7 +210,7 @@ class FirmwareHandler:
         """
         url = (self.url + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                release_model + '.manifest')
-        file = (self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
+        file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                 release_model + '.manifest')
         valid_download = False
         count = 0
@@ -259,7 +260,7 @@ class FirmwareHandler:
         Imports the stored Firmwares, so the firmware_handler can use them.
         :param release_model: stable, beta, experimental
         """
-        path = self.FIRMWARE_PATH + '/' + release_model + '/' + self.UPDATE_TYPE + '/'
+        path = FIRMWARE_PATH + '/' + release_model + '/' + self.UPDATE_TYPE + '/'
         logging.debug("%sImport Firmwares from '" + path + "'", LoggerSetup.get_log_deep(2))
         count = 0
 

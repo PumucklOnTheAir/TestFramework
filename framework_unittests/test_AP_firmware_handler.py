@@ -1,8 +1,10 @@
 from unittest import TestCase
 from firmware.firmware_handler import FirmwareHandler
+from firmware.firmware_handler import FIRMWARE_PATH
 from firmware.firmware import Firmware
 from router.router import Router, Mode
 from subprocess import Popen, PIPE
+from shutil import rmtree
 
 
 class TestFirmwareHandler(TestCase):
@@ -20,13 +22,13 @@ class TestFirmwareHandler(TestCase):
         cls.router = cls._create_router()
 
     def test_firmware_handler(self):
-        self._remove_existing_firmware()
+        rmtree(FIRMWARE_PATH + "/", ignore_errors=True)  # ignore if we have to start time no "firmwares" directory
         self._test_get_single_firmware()
 
-        self._remove_existing_firmware()
+        rmtree(FIRMWARE_PATH + "/")
         self._test_import_firmware()
 
-        self._remove_existing_firmware()
+        rmtree(FIRMWARE_PATH + "/")
         self._test_check_hash_firmware()
 
     def _test_get_single_firmware(self):
@@ -54,7 +56,7 @@ class TestFirmwareHandler(TestCase):
         assert firmware.version == "0.7.3"
         assert firmware.freifunk_verein == "ffda"
         assert firmware.release_model == "stable"
-        assert firmware.file == (firmware_handler.FIRMWARE_PATH +
+        assert firmware.file == (FIRMWARE_PATH +
                                  '/stable/sysupgrade/gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9-sysupgrade.bin')
 
     def _test_import_firmware(self):
@@ -76,7 +78,7 @@ class TestFirmwareHandler(TestCase):
         firmware_handler = FirmwareHandler(url)
         assert isinstance(firmware_handler, FirmwareHandler)
 
-        # Downlaods the firmware-image
+        # Downloads the firmware-image
         firmware_handler.download_firmware(router.model, release_model)
 
         # Imports the firmware-image from the local storage
@@ -86,7 +88,7 @@ class TestFirmwareHandler(TestCase):
         assert firmware.version == "0.7.3"
         assert firmware.freifunk_verein == "ffda"
         assert firmware.release_model == "stable"
-        assert firmware.file == (firmware_handler.FIRMWARE_PATH +
+        assert firmware.file == (FIRMWARE_PATH +
                                  '/stable/sysupgrade/gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9-sysupgrade.bin')
 
     def _test_check_hash_firmware(self):
@@ -115,12 +117,6 @@ class TestFirmwareHandler(TestCase):
         assert not firmware.check_hash(incorrect_hash)
 
         assert firmware.check_hash(firmware.hash)
-
-    def _remove_existing_firmware(cls):
-        print("Remove existing firmwares ...")
-        process = Popen(["rm", "-r", "../firmware/firmwares/"], stdout=PIPE, stderr=PIPE)
-        stdout, sterr = process.communicate()
-        assert sterr.decode('utf-8') == ""
 
     @classmethod
     def _create_router(cls):
