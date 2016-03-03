@@ -3,7 +3,6 @@ from firmware.firmware_handler import FirmwareHandler
 from firmware.firmware_handler import FIRMWARE_PATH
 from firmware.firmware import Firmware
 from router.router import Router, Mode
-from subprocess import Popen, PIPE
 from shutil import rmtree
 
 
