@@ -3,7 +3,6 @@ from router.router import Router, Mode
 from util.router_info import RouterInfo
 from network.nv_assist import NVAssistent
 from pyroute2 import netns
-import logging
 
 
 class TestRouterInfo(TestCase):
@@ -12,6 +11,7 @@ class TestRouterInfo(TestCase):
     """""
 
     def test_router_info(self):
+        print("Test Router_Info")
         router = self._create_router()
 
         # NVAssisten
@@ -20,11 +20,12 @@ class TestRouterInfo(TestCase):
         # Set netns for the current process
         netns.setns(router.namespace_name)
 
+        print("Get informations via ssh-commands ...")
         router_info = RouterInfo(router)
         router_info.start()
         router_info.join()
 
-        logging.debug(str(router))
+        print(str(router))
 
         # Close Namespaces and VLANs
         nv_assist.close()

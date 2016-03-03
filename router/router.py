@@ -11,6 +11,7 @@ class Mode(Enum):
     """""
     normal = 1
     configuration = 2
+    reboot = 3
     unknown = 3
 
 

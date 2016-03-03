@@ -18,11 +18,13 @@ class TestRouterFlashFirmware(TestCase):
     """""
 
     def test_flash_firmware(self):
+        print("Test Router_Flash_Firmware")
         router = self._create_router()
 
         # Create firware configuration
         firmware_config = ConfigManager.get_firmware_dict()[0]
 
+        print("Download/Import firmware-image from UpdateServer/PI ...")
         # Download firmare-image from UpdateServer
         sysupdate = Sysupdate(router, firmware_config)
         sysupdate.start()
@@ -38,6 +40,7 @@ class TestRouterFlashFirmware(TestCase):
 
         try:
             # Copy firmware-image to the Router (/tmp/image)
+            print("Copy firmware-image to Router ...")
             sysupgrade = Sysupgrade(router, n=True, web_server_ip=web_server_ip, debug=True)
             sysupgrade.start()
             sysupgrade.join()

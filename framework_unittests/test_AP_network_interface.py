@@ -4,6 +4,7 @@ import ipaddress
 
 
 class TestNetworkInterface(TestCase):
+
     def test_create_network_interface(self):
         network_interface = NetworkInterface(0, "eth0")
         assert isinstance(network_interface, NetworkInterface)

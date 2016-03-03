@@ -15,6 +15,7 @@ class TestVlan(TestCase):
     """""
 
     def test_create_vlan(self):
+        print("Test if a VLAN can be created")
         router = self._create_router()
 
         # Create VLAN

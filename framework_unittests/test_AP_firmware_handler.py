@@ -1,17 +1,40 @@
 from unittest import TestCase
 from firmware.firmware_handler import FirmwareHandler
+from firmware.firmware_handler import FIRMWARE_PATH
 from firmware.firmware import Firmware
-from router.router import Router
-import logging
+from router.router import Router, Mode
+from shutil import rmtree
 
 
 class TestFirmwareHandler(TestCase):
+    """
+    This TestModule tests the functionality of the FirmwareHandler.
 
-    def test_get_single_firmware(self):
+        1. Create Router (Mode: normal)
+        2. Try to download a single firmware
+        3. Try to import a single firmware
+        4. Try to check the hash of a given firmware
+    """""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.router = cls._create_router()
+
+    def test_firmware_handler(self):
+        rmtree(FIRMWARE_PATH + "/", ignore_errors=True)  # ignore if we have to start time no "firmwares" directory
+        self._test_get_single_firmware()
+
+        rmtree(FIRMWARE_PATH + "/")
+        self._test_import_firmware()
+
+        rmtree(FIRMWARE_PATH + "/")
+        self._test_check_hash_firmware()
+
+    def _test_get_single_firmware(self):
         """
         Downloads a single firmware-image.
         """
-        logging.debug("Test FirmwareHandler: get_single_firmware ...")
+        print("Test FirmwareHandler: get_single_firmware ...")
         # Create router
         router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
@@ -32,15 +55,15 @@ class TestFirmwareHandler(TestCase):
         assert firmware.version == "0.7.3"
         assert firmware.freifunk_verein == "ffda"
         assert firmware.release_model == "stable"
-        assert firmware.file == (firmware_handler.FIRMWARE_PATH +
+        assert firmware.file == (FIRMWARE_PATH +
                                  '/stable/sysupgrade/gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9-sysupgrade.bin')
 
-    def test_import_firmware(self):
+    def _test_import_firmware(self):
         """
         Try's to get the firmware-image two times. At least the second try the firmware should be stored on the device
         and imported.
         """
-        logging.debug("Test FirmwareHandler: import_firmware ...")
+        print("Test FirmwareHandler: import_firmware ...")
         # Create router
         router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
@@ -54,7 +77,7 @@ class TestFirmwareHandler(TestCase):
         firmware_handler = FirmwareHandler(url)
         assert isinstance(firmware_handler, FirmwareHandler)
 
-        # Downlaods the firmware-image
+        # Downloads the firmware-image
         firmware_handler.download_firmware(router.model, release_model)
 
         # Imports the firmware-image from the local storage
@@ -64,14 +87,14 @@ class TestFirmwareHandler(TestCase):
         assert firmware.version == "0.7.3"
         assert firmware.freifunk_verein == "ffda"
         assert firmware.release_model == "stable"
-        assert firmware.file == (firmware_handler.FIRMWARE_PATH +
+        assert firmware.file == (FIRMWARE_PATH +
                                  '/stable/sysupgrade/gluon-ffda-0.7.3-tp-link-tl-wr841n-nd-v9-sysupgrade.bin')
 
-    def test_check_hash_firmware(self):
+    def _test_check_hash_firmware(self):
         """
         Downloads a single firmware-image.
         """
-        logging.debug("Test FirmwareHandler: check_hash_firmware ...")
+        print("Test FirmwareHandler: check_hash_firmware ...")
         # Create router
         router = Router(1, "vlan1", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
@@ -93,3 +116,14 @@ class TestFirmwareHandler(TestCase):
         assert not firmware.check_hash(incorrect_hash)
 
         assert firmware.check_hash(firmware.hash)
+
+    @classmethod
+    def _create_router(cls):
+        # Create router
+        router = Router(0, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
+        router.model = "TP-LINK TL-WR841N/ND v9"
+        router.mac = "e8:de:27:b7:7c:e2"
+        # Has to be matched with the current mode (normal, configuration)
+        router.mode = Mode.configuration
+        assert isinstance(router, Router)
+        return router

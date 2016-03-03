@@ -13,6 +13,7 @@ class TestWebConfigurationAssistWizard(TestCase):
         This UnitTest executes the wca_setup_expert-function with the given config-file.
         It sets the values of all the  from WebInterface of the Router.
         """
+        print("Test if the 'wca_setup_wizard'-function is working")
         router = self._create_router()
         # NVAssisten
         nv_assist = NVAssistent("eth0")
@@ -23,6 +24,8 @@ class TestWebConfigurationAssistWizard(TestCase):
         # Config
         config = ConfigManager().get_web_interface_dict()[router.id]
         self.assertEqual(len(config), 30, "Wrong size of the Config-Directory")
+
+        print("Set the following configuration: \n" + str(config))
 
         router_web_config = RouterWebConfiguration(router, config, wizard=True)
         router_web_config.start()

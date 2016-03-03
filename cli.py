@@ -146,6 +146,12 @@ def create_parsers():
     parser_update_info.add_argument("-a", "--all", action="store_true", default=False,
                                     help="Apply to all routers")
 
+    # subparser for online
+    parser_online = subparsers.add_parser("online", help="")
+    parser_online.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                               help="List of routers", nargs="+")
+    parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
+
     return parser
 
 
@@ -235,6 +241,13 @@ def main():
         update_all = args.all
 
         server_proxy.update_router_info(args.routers, update_all)
+
+    elif args.mode == "online":
+        """
+        subparse: online
+        """
+        online_all = args.all
+        server_proxy.router_online(args.routers, online_all)
 
     else:
         logging.info("Check --help for help")

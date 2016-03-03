@@ -59,6 +59,8 @@ class RouterInfo(Thread):
             logging.error(str(e))
             for tb in traceback.format_tb(sys.exc_info()[2]):
                 logging.error("%s" + tb, LoggerSetup.get_log_deep(3))
+        finally:
+            self.network_ctrl.exit()
 
     def _get_router_model(self) -> str:
         """
