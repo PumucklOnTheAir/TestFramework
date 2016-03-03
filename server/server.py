@@ -57,7 +57,7 @@ class Server(ServerProxy):
     _task_pool = None  # multiprocessing.pool.Pool for task execution
     _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
-    _test_sets = {'set_1': ['demo_1'], 'set_2': ['demo_1', 'demo_2']}  # Dict[List[str]]
+    _test_sets = {}  # Dict[List[str]]
 
     # NVAssistent
     _nv_assistent = None
@@ -137,7 +137,7 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_router_manual_list()
-        # cls._test_sets = ConfigManager.get_test_sets()
+        cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
     def stop(cls) -> None:
