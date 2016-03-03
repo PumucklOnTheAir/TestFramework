@@ -254,7 +254,8 @@ class Server(ServerProxy):
         """
         Start an specific test on a router
 
-        :param router_id: The id of the router on which the test will run
+        :param router_id: The id of the router on which the test will run.
+        If id is -1 the test will be executed on all routers.
         :param test_set_name: The name of the test set to execute
         :return: True if test was successful added in the queue
         """
@@ -265,7 +266,11 @@ class Server(ServerProxy):
 
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj) and issubclass(obj, FirmwareTest) and name != "FirmwareTest":
-                    cls.__start_task(cls.get_router_by_id(router_id), obj)
+                    if router_id == -1:
+                        for router in cls._routers:
+                            cls.__start_task(router, obj)
+                    else:
+                        cls.__start_task(cls.get_router_by_id(router_id), obj)
         return True
 
     @classmethod

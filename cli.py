@@ -152,6 +152,13 @@ def create_parsers():
                                help="List of routers", nargs="+")
     parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
 
+    parser_test_set = subparsers.add_parser("start", help="Start a test set")
+    parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                                 help="List of routers", nargs="+")
+    parser_test_set.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
+    parser_test_set.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
+                                 help="Name of set")
+
     return parser
 
 
@@ -248,6 +255,17 @@ def main():
         """
         online_all = args.all
         server_proxy.router_online(args.routers, online_all)
+
+    elif args.mode == "start":
+        """
+        subparse: start
+        """
+        if args.all:
+            router_id = -1
+        else:
+            router_id = args.routers[0]
+        set_name = args.set[0]
+        server_proxy.start_test_set(router_id, set_name)
 
     else:
         logging.info("Check --help for help")
