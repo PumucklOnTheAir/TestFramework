@@ -148,10 +148,9 @@ def create_parsers():
 
     # subparser for online
     parser_online = subparsers.add_parser("online", help="")
-    parser_online.add_argument("-r", "--routers", metavar="Router ID", type=int,
-                                default=[], action="store", help="List of routers", nargs="+")
-    parser_online.add_argument("-a", "--all", action="store_true", default=False,
-                                help="Apply to all routers")
+    parser_online.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                               help="List of routers", nargs="+")
+    parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
 
     return parser
 

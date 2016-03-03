@@ -62,7 +62,6 @@ class RouterInfo(Thread):
         finally:
             self.network_ctrl.exit()
 
-
     def _get_router_model(self) -> str:
         """
         :return: the Model of the given Router object
