@@ -269,31 +269,6 @@ class Server(ServerProxy):
         return True
 
     @classmethod
-    def start_test(cls, router_id: int, test_name: str) -> bool:
-        """
-        Start an specific test on a router
-
-        :param router_id: The id of the router on which the test will run
-        :param test_name: The name of the test to execute
-        :return: True if test was successful added in the queue
-        """
-        router = cls.get_router_by_id(router_id)
-        if router is None:
-            logging.error("Router ID unknown")
-            return False
-
-        # TODO: Testverwaltung - ermittlung des passenden Tests #36
-        # cls.get_test_by_name
-        from firmware_tests.connection_test import ConnectionTest
-        if test_name == "ConnectionTest":
-            demo_test = ConnectionTest  # Important: Param is a class and not an object
-        else:
-            logging.error("Testname unknown")
-            return False
-
-        return cls.__start_task(router, demo_test)
-
-    @classmethod
     def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
         """
         Apply a job or a test to the ProcessPool, execute it in the right network namespace with
