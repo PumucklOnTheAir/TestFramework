@@ -9,6 +9,7 @@ from log.loggersetup import LoggerSetup
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
+import importlib
 from threading import Event, Semaphore
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
@@ -56,6 +57,7 @@ class Server(ServerProxy):
     _task_pool = None  # multiprocessing.pool.Pool for task execution
     _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
+    _test_sets = {'set_1': ['demo_1'], 'set_2': ['demo_1', 'demo_2']}  # Dict[List[str]]
 
     # NVAssistent
     _nv_assistent = None
@@ -135,6 +137,7 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_router_manual_list()
+        # cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
     def stop(cls) -> None:
@@ -247,6 +250,25 @@ class Server(ServerProxy):
                 return cls.__start_task(remote_sys, remote_job)
 
     @classmethod
+    def start_test_set(cls, router_id: int, test_set_name: str) -> bool:
+        """
+        Start an specific test on a router
+
+        :param router_id: The id of the router on which the test will run
+        :param test_set_name: The name of the test set to execute
+        :return: True if test was successful added in the queue
+        """
+
+        for file_name in cls._test_sets[test_set_name]:
+            module = importlib.import_module("firmware_tests." + file_name)
+            import inspect
+
+            for name, obj in inspect.getmembers(module):
+                if inspect.isclass(obj) and issubclass(obj, FirmwareTest) and name != "FirmwareTest":
+                    cls.__start_task(cls.get_router_by_id(router_id), obj)
+        return True
+
+    @classmethod
     def start_test(cls, router_id: int, test_name: str) -> bool:
         """
         Start an specific test on a router
@@ -262,11 +284,9 @@ class Server(ServerProxy):
 
         # TODO: Testverwaltung - ermittlung des passenden Tests #36
         # cls.get_test_by_name
-        from firmware_tests.connection_test import ConnectionTest, VeryLongTest
+        from firmware_tests.connection_test import ConnectionTest
         if test_name == "ConnectionTest":
             demo_test = ConnectionTest  # Important: Param is a class and not an object
-        elif test_name == "VeryLongTest":
-            demo_test = VeryLongTest
         else:
             logging.error("Testname unknown")
             return False
@@ -282,7 +302,7 @@ class Server(ServerProxy):
 
         :param remote_sys: the RemoteSystem
         :param job: the Job
-        :return: true if job directly started, false if
+        :return: true if job directly started, false if not
         """
         assert(cls._pid == os.getpid())
         # Check if it is the the same PID as the PID Process which started the ProcessPool
@@ -467,10 +487,6 @@ class Server(ServerProxy):
 
         :return: List is a copy of the original list.
         """
-
-        # check if list is still valid
-        for router in cls._routers:
-            assert isinstance(router, Router)
 
         return cls._routers.copy()
 

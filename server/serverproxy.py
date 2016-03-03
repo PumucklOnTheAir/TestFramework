@@ -11,12 +11,12 @@ class ServerProxy(metaclass=ABCMeta):
     the return value is given by copy and not by reference!
     """""
     @abstractclassmethod
-    def start_test(self, router_id: int, test_name: str) -> bool:
+    def start_test_set(self, router_id: int, test_set_name: str) -> bool:
         """
         Start an specific test on a router
 
         :param router_id: The id of the router on which the test will run
-        :param test_name: The name of the test to execute
+        :param test_set_name: The name of the test set to execute
         :return: True if test was successful added in the queue
         """
         pass

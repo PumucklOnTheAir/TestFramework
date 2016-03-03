@@ -232,7 +232,7 @@ class ConfigManager:
         return ConfigManager.read_file(path)
 
     @staticmethod
-    def get_test_dict() -> []:
+    def get_test_sets() -> []:
         """
         Read the Test Config file
 
@@ -244,10 +244,11 @@ class ConfigManager:
     @staticmethod
     def get_test_list() -> []:
         """
-        Read the Test Config file
+        Read the Test Config file. DEPRECATED
 
         :return: List with a specific output from the file
         """
+        raise DeprecationWarning  # TODO remove me
         output = ConfigManager.get_test_config()
         test_list = []
         for x in output:

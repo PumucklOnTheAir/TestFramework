@@ -56,38 +56,32 @@ class ServerCore(object):
         assert len(routers) != 0
         assert isinstance(routers[0], Router)
 
-    def test_little_self_check(self):
-        started = self.server_proxy.start_test(0, "ConnectionTest")
+    def test_test_set(self):
+        started = self.server_proxy.start_test_set(0, "set_2")
 
         assert started
 
         # wait until tests are done, assumes that exactly two tests are already finished
-        while not self.server_proxy.get_reports():
+        while not len(self.server_proxy.get_reports()) == 2:
             time.sleep(2)
             print('.', end="", flush=True)
 
         reports = self.server_proxy.get_reports()
-        assert len(reports) != 0
+        assert len(reports) == 2
         assert len(reports[-1].errors) == 0  # check last report
 
-    def test_long_self_check(self):
-        started = self.server_proxy.start_test(0, "ConnectionTest")
+        started = self.server_proxy.start_test_set(0, "set_1")
+
         assert started
-        started2 = self.server_proxy.start_test(0, "VeryLongTest")
-        assert not started2
-        if started and not started2:
 
-            while not len(self.server_proxy.get_reports()) == 3:
-                time.sleep(2)
-                print('.', end="", flush=True)
+        # wait until tests are done, assumes that exactly two tests are already finished
+        while not len(self.server_proxy.get_reports()) == 3:
+            time.sleep(2)
+            print('.', end="", flush=True)
 
-            self.server_proxy.stop_all_tasks()
-
-            reports = self.server_proxy.get_reports()
-            assert reports[-1].wasSuccessful()  # check last report
-
-    # def test_jobs(self):
-    #    raise NotImplemented
+        reports = self.server_proxy.get_reports()
+        assert len(reports) == 3
+        assert len(reports[-1].errors) == 0  # check last report
 
 
 class ServerTestCase2(ServerCore, unittest.TestCase):
