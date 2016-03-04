@@ -11,7 +11,7 @@ import socket
 def block_until_server_is_online():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     print("wait", flush=True)
-    while not not sock.connect_ex(('localhost', 5000)):
+    while sock.connect_ex(('localhost', 5000)):
         time.sleep(3)
         print('.', end="", flush=True)
     sock.close()
@@ -32,7 +32,7 @@ class ServerCore(object):
         for i in range(2):  # do it two times to be sure
             routers = server_proxy.get_routers()
             for router in routers:
-                while not not server_proxy.get_routers_task_queue_size(router.id):
+                while server_proxy.get_routers_task_queue_size(router.id):
                     time.sleep(2)
                     print('.', end="", flush=True)
 
@@ -47,7 +47,7 @@ class ServerCore(object):
         for i in range(2):  # do it two times to be sure
             routers = self.server_proxy.get_routers()
             for router in routers:
-                while not not self.server_proxy.get_routers_task_queue_size(router.id):
+                while self.server_proxy.get_routers_task_queue_size(router.id):
                     time.sleep(2)
                     print('.', end="", flush=True)
 
