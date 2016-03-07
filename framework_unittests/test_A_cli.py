@@ -136,8 +136,10 @@ class TestCLItoServerConnection(unittest.TestCase):
         response = os.system(self.path_cli)
         assert response == 0
 
+    def test_cli_start_test_set(self):
+        response = os.system(self.path_cli + " start -s set_1 -r 0")
+        assert response == 0
+
     def test_get_version(self):
         version = self.server_proxy.get_server_version()
         assert version == Server.VERSION
-
-        # TODO compare Version with Version from Server.VERSION and ./cli version (exists?)

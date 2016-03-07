@@ -127,3 +127,7 @@ class DummyServer(ServerProxy):
     @classmethod
     def get_routers_task_queue_size(cls, router_id: int) -> [str]:
         pass
+
+    @classmethod
+    def start_test_set(self, router_id: int, test_set_name: str) -> bool:
+        pass

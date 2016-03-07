@@ -222,7 +222,7 @@ class ConfigManager:
         return None
 
     @staticmethod
-    def get_test_config() -> []:
+    def _get_test_config() -> []:
         """
         Read the Test Config file
 
@@ -238,23 +238,8 @@ class ConfigManager:
 
         :return: Dictionary with a specific output from the file
         """
-        output = ConfigManager.get_test_config()
+        output = ConfigManager._get_test_config()
         return output
-
-    @staticmethod
-    def get_test_list() -> []:
-        """
-        Read the Test Config file. DEPRECATED
-
-        :return: List with a specific output from the file
-        """
-        raise DeprecationWarning  # TODO remove me
-        output = ConfigManager.get_test_config()
-        test_list = []
-        for x in output:
-            for v in x.values():
-                test_list.append(v)
-        return test_list
 
     @staticmethod
     def get_firmware_config() -> []:
