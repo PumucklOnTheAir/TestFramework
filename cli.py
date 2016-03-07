@@ -264,7 +264,7 @@ def main():
             router_id = -1
         else:
             router_id = args.routers[0]
-        set_name = args.set[0]
+        set_name = args.set
         server_proxy.start_test_set(router_id, set_name)
 
     else:
