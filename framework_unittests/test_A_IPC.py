@@ -133,9 +133,5 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
-    def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
-        pass
-
-    @classmethod
     def delete_test_results(cls) -> int:
         pass
