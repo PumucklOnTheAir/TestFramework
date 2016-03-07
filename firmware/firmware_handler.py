@@ -138,6 +138,8 @@ class FirmwareHandler:
         hashs = []
         non_parsed_firmwares = self._read_firmwares_from_manifest(release_model)
         for firmware in non_parsed_firmwares:
+            if firmware.find("---\n") != -1:  # skip the end of the file
+                continue
             firmware_name = "gluon" + firmware.split("gluon")[1].split("-sysupgrade")[0] + "-" + \
                             FirmwareHandler.UPDATE_TYPE + "." + firmware.split(".")[-1].replace("\n", "")
             hash_firmware = firmware.split(' ')[4]
