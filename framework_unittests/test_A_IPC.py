@@ -1,4 +1,4 @@
-from unittest import TestCase, TestResult
+from unittest import TestCase
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
 import time
