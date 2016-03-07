@@ -79,31 +79,6 @@ class MyTestCase(unittest.TestCase):
         data = ConfigManager.get_server_property("Server_Name")
         self.assertEqual(data, "TestServer", "test_Yaml: Wrong size of the List")
 
-    # test tests
-    def test_config_test(self):
-        """
-        Tests the test config
-        :return: Tests results
-        """
-        data = ConfigManager.get_test_config()
-        self.assertEqual(len(data), 2, "test_Yaml: Wrong size of the List")
-
-    def test_config_test_dict(self):
-        """
-        Tests the test config
-        :return: Tests results
-        """
-        data = ConfigManager.get_test_dict()
-        self.assertEqual(len(data), 2, "test_Yaml: Wrong size of the List")
-
-    def test_config_test_list(self):
-        """
-        Tests the test config
-        :return: Tests results
-        """
-        data = ConfigManager.get_test_list()
-        self.assertEqual(len(data), 4, "test_Yaml: Wrong size of the List")
-
     # firmware tests
     def test_firmware_property(self):
         """

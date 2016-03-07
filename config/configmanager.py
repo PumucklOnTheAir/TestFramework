@@ -222,7 +222,7 @@ class ConfigManager:
         return None
 
     @staticmethod
-    def get_test_config() -> []:
+    def _get_test_config() -> []:
         """
         Read the Test Config file
 
@@ -232,28 +232,14 @@ class ConfigManager:
         return ConfigManager.read_file(path)
 
     @staticmethod
-    def get_test_dict() -> []:
+    def get_test_sets() -> []:
         """
         Read the Test Config file
 
         :return: Dictionary with a specific output from the file
         """
-        output = ConfigManager.get_test_config()
+        output = ConfigManager._get_test_config()
         return output
-
-    @staticmethod
-    def get_test_list() -> []:
-        """
-        Read the Test Config file
-
-        :return: List with a specific output from the file
-        """
-        output = ConfigManager.get_test_config()
-        test_list = []
-        for x in output:
-            for v in x.values():
-                test_list.append(v)
-        return test_list
 
     @staticmethod
     def get_firmware_config() -> []:

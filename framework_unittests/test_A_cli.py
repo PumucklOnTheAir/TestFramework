@@ -124,7 +124,7 @@ class TestCLItoServerConnection(unittest.TestCase):
     @staticmethod
     def serverStartWithParams():
         base_dir = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-        config_path = os.path.join(base_dir, 'tests/configs/config_no_vlan')  # Join Project Root with config
+        config_path = os.path.join(base_dir, 'framework_unittests/configs/config_no_vlan')
         Server.start(config_path=config_path)
 
     def setUp(self):
@@ -136,8 +136,26 @@ class TestCLItoServerConnection(unittest.TestCase):
         response = os.system(self.path_cli)
         assert response == 0
 
+    def test_cli_start_test_set(self):
+        response = os.system(self.path_cli + " start -s set_1 -r 0")
+        assert response == 0
+
+        # assumes that there is only one test in the set
+        while self.server_proxy.get_routers_task_queue_size(0):
+                    time.sleep(2)
+                    print('.', end="", flush=True)
+        assert len(self.server_proxy.get_reports())
+
+        response = os.system(self.path_cli + " start -s set_1 -a")
+        assert response == 0
+
+        routers = self.server_proxy.get_routers()
+        for router in routers:
+            while self.server_proxy.get_routers_task_queue_size(router.id):
+                    time.sleep(2)
+                    print('.', end="", flush=True)
+        assert len(self.server_proxy.get_reports()) == len(routers) + 1
+
     def test_get_version(self):
         version = self.server_proxy.get_server_version()
         assert version == Server.VERSION
-
-        # TODO compare Version with Version from Server.VERSION and ./cli version (exists?)
