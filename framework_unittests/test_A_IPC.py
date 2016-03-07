@@ -38,7 +38,7 @@ class TestIPC(TestCase):
         ipc_client.connect(False)
         server_proxy = ipc_client.get_server_proxy()
 
-        rep = server_proxy.get_reports()
+        rep = server_proxy.get_test_results()
         #  print(rep)
         assert rep[1].text == "test"
 
