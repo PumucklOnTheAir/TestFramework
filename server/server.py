@@ -46,7 +46,7 @@ class Server(ServerProxy):
 
     # runtime vars
     _routers = []  # all registered routers on the system
-    _reports = []  # all test reports
+    _test_results = []  # all test reports in form (router.id, str(test), TestResult)
     _stopped = False  # marks if the server is still running
 
     _max_subprocesses = 0  # will be set at start. describes how many Processes are needed in the Pool
@@ -390,7 +390,7 @@ class Server(ServerProxy):
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
             logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
 
-            cls._reports.append(result)
+            cls._test_results.append((router.id, str(test), result))
         except Exception as e:
             # TODO #105
             logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
@@ -401,11 +401,11 @@ class Server(ServerProxy):
             # result.addError(None, (type(exception), exception, None))
             # TODO exception handling for failed Tests
 
-            cls._reports.append(result)
+            cls._test_results.append((router.id, str(test), result))
 
         finally:
             cls.set_running_task(router, None)
-            # logging.debug(str(cls._reports))
+            # logging.debug(str(cls._test_results))
             # start next test in the queue
             cls.__start_task(router, None)
 
@@ -498,13 +498,33 @@ class Server(ServerProxy):
         return cls._running_tasks.copy()
 
     @classmethod
-    def get_reports(cls) -> []:
+    def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
         """
-        Returns the test results.
+        Returns the firmware test results for the router
 
-        :return: List of reports
+        :param router_id: the specific router or all router if id = -1
+        :return: List of results
         """
-        return cls._reports
+
+        if router_id == -1:
+            return cls._test_results
+        else:
+            results = []
+            for result in cls._test_results:
+                if result[0] == router_id:
+                    results.append(result)
+            return results
+
+    @classmethod
+    def delete_test_results(cls) -> int:
+        """
+        Remove all test results
+
+        :return: Number of deleted results
+        """
+        size_results = len(cls._test_results)
+        cls._test_results = []
+        return size_results
 
     @classmethod
     def get_tests(cls) -> List[FirmwareTestClass]:

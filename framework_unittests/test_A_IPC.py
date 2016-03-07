@@ -38,7 +38,7 @@ class TestIPC(TestCase):
         ipc_client.connect(False)
         server_proxy = ipc_client.get_server_proxy()
 
-        rep = server_proxy.get_reports()
+        rep = server_proxy.get_test_results()
         #  print(rep)
         assert rep[1].text == "test"
 
@@ -76,7 +76,7 @@ class DummyServer(ServerProxy):
         return ["lol"]
 
     @classmethod
-    def get_reports(cls) -> []:
+    def get_test_results(cls) -> []:
         d = DummyObject("test")
         return [id(d), d]
 
@@ -129,5 +129,9 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
-    def start_test_set(self, router_id: int, test_set_name: str) -> bool:
+    def start_test_set(cls, router_id: int, test_set_name: str) -> bool:
+        pass
+
+    @classmethod
+    def delete_test_results(cls) -> int:
         pass

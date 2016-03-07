@@ -1,4 +1,5 @@
 import logging
+from unittest import TestResult
 
 
 class CLIUtil:
@@ -11,6 +12,7 @@ class CLIUtil:
     def print_dynamic_table(content, headers):
         """
         prints a dynamically formatted table
+
         :param content: list of lists of data
         :param headers: list of headers
         """
@@ -48,6 +50,7 @@ class CLIUtil:
     def print_status(self, routers, headers):
         """
         prints the status of all routers
+
         :param routers: list of routers
         :param headers: list of headers
         """
@@ -62,6 +65,7 @@ class CLIUtil:
     def print_header():
         """
         prints header for the command line
+
         :return:
         """
         print("\v\t" + OutputColors.bold + "Freifunk Testframework\v" + OutputColors.clear)
@@ -70,6 +74,7 @@ class CLIUtil:
     def return_progressbar(router, tid, percentage):
         """
         returns the visual progress of a test on a router
+
         :param router: router name
         :param tid: ID of test
         :param percentage: progress of test in percent
@@ -84,6 +89,7 @@ class CLIUtil:
     def print_list(content):
         """
         prints a simple list(table) sorted by the first row and formatted
+
         :param content: list of list (table)
         :return:
         """
@@ -107,12 +113,32 @@ class CLIUtil:
     def print_router(router_list):
         """
         prints a detailed list of info on a router
+
         :param router_list: list of info on router
         :return:
         """
         print("------Detailed Router Info------")
         for elem in router_list:
             print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
+
+    @staticmethod
+    def print_test_results(result_list: [(int, str, TestResult)]):
+        """
+        Prints a the TestResult list
+
+        :param result_list:
+        :return:
+        """
+        headers = ["Router ID", "Test", "(S|F|E)"]
+        content = []
+        print("------Testresults------")
+        for result in result_list:
+            content.append([str(result[0]), result[1], "(" + str(result[2].testsRun - len(result[2].failures) -
+                                                                 len(result[2].errors)) +
+                            "|" + str(len(result[2].failures)) +
+                            "|" + str(len(result[2].errors)) + ")"])
+
+        CLIUtil.print_dynamic_table(content, headers)
 
 
 class OutputColors:

@@ -152,12 +152,21 @@ def create_parsers():
                                help="List of routers", nargs="+")
     parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
 
+    # subparser for test set
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
     parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
-                                 help="List of routers", nargs="+")
+                                 help="", nargs="+")
     parser_test_set.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
     parser_test_set.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
                                  help="Name of set")
+
+    # subparser for test results
+    parser_test_result = subparsers.add_parser("results", help="Manage the test results")
+    parser_test_result.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                                    help="", nargs="+")
+    parser_test_result.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
+    parser_test_result.add_argument("-rm", "--remove", action="store_true", default=False,
+                                    help="Remove all results. Ignoring parameter -r.")
 
     return parser
 
@@ -266,6 +275,21 @@ def main():
             router_id = args.routers[0]
         set_name = args.set
         server_proxy.start_test_set(router_id, set_name)
+
+    elif args.mode == "results":
+        """
+        subparse: results
+        """
+
+        if args.remove:
+            removed = server_proxy.delete_test_results()
+            print("Removed all " + str(removed) + " results.")
+        else:
+            if args.all:
+                router_id = -1
+            else:
+                router_id = args.routers[0]
+            util.print_test_results(server_proxy.get_test_results(router_id))
 
     else:
         logging.info("Check --help for help")

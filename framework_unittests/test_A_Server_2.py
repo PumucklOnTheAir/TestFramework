@@ -62,26 +62,48 @@ class ServerCore(object):
         assert started
 
         # wait until tests are done, assumes that exactly two tests are already finished
-        while not len(self.server_proxy.get_reports()) == 2:
+        while not len(self.server_proxy.get_test_results()) == 2:
             time.sleep(2)
             print('.', end="", flush=True)
 
-        reports = self.server_proxy.get_reports()
+        reports = self.server_proxy.get_test_results()
         assert len(reports) == 2
-        assert len(reports[-1].errors) == 0  # check last report
+        assert len(reports[-1][2].errors) == 0  # check last report
 
         started = self.server_proxy.start_test_set(0, "set_1")
 
         assert started
 
         # wait until tests are done, assumes that exactly two tests are already finished
-        while not len(self.server_proxy.get_reports()) == 3:
+        while not len(self.server_proxy.get_test_results()) == 3:
             time.sleep(2)
             print('.', end="", flush=True)
 
-        reports = self.server_proxy.get_reports()
+        reports = self.server_proxy.get_test_results()
         assert len(reports) == 3
-        assert len(reports[-1].errors) == 0  # check last report
+        assert len(reports[2][-1].errors) == 0  # check last report
+
+    def test_test_results(self):
+        self.server_proxy.delete_test_results()
+
+        started = self.server_proxy.start_test_set(0, "set_2")
+        assert started
+
+        while not len(self.server_proxy.get_test_results()) == 2:
+            time.sleep(2)
+            print('.', end="", flush=True)
+
+        reports = self.server_proxy.get_test_results()
+
+        for report in reports:
+            assert report[0] == 0
+            assert report[1] != ""
+            assert len(report[2].errors) == 0
+
+        removed_results = self.server_proxy.delete_test_results()
+        assert len(reports) == removed_results
+        time.sleep(0.5)
+        assert not len(self.server_proxy.get_test_results())
 
 
 class ServerTestCase2(ServerCore, unittest.TestCase):
