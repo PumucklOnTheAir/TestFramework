@@ -51,7 +51,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_test_results(self, router_id: int = -1) -> [TestResult]:
+    def get_test_results(self, router_id: int = -1) -> [(int, str, TestResult)]:
         """
         Returns the firmware test results for the router
 

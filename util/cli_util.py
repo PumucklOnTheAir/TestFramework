@@ -12,7 +12,7 @@ class CLIUtil:
     def print_dynamic_table(content, headers):
         """
         prints a dynamically formatted table
-        
+
         :param content: list of lists of data
         :param headers: list of headers
         """

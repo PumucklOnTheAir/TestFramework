@@ -175,6 +175,8 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert response == 0
         response = os.system(self.path_cli + " results -rm -a")
         assert response == 0
+        response = os.system(self.path_cli + " results -rm -r 0")
+        assert response == 0
         assert not len(self.server_proxy.get_test_results())
 
     def test_get_version(self):

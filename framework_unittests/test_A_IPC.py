@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, TestResult
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
 import time
@@ -129,5 +129,13 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
-    def start_test_set(self, router_id: int, test_set_name: str) -> bool:
+    def start_test_set(cls, router_id: int, test_set_name: str) -> bool:
+        pass
+
+    @classmethod
+    def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
+        pass
+
+    @classmethod
+    def delete_test_results(cls) -> int:
         pass
