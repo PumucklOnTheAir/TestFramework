@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractclassmethod
 from typing import List
 from router.router import Router
+from unittest import TestResult
 
 
 class ServerProxy(metaclass=ABCMeta):
@@ -50,11 +51,21 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_reports(self) -> []:
+    def get_test_results(self, router_id: int = -1) -> [TestResult]:
         """
-        Returns the test results.
+        Returns the firmware test results for the router
 
-        :return: List of reports
+        :param router_id: the specific router or all router if id = -1
+        :return: List of results
+        """
+        pass
+
+    @abstractclassmethod
+    def delete_test_results(self) -> int:
+        """
+        Remove all test results
+
+        :return: Number of deleted results
         """
         pass
 

@@ -144,7 +144,7 @@ class TestCLItoServerConnection(unittest.TestCase):
         while self.server_proxy.get_routers_task_queue_size(0):
                     time.sleep(2)
                     print('.', end="", flush=True)
-        assert len(self.server_proxy.get_reports())
+        assert len(self.server_proxy.get_test_results())
 
         response = os.system(self.path_cli + " start -s set_1 -a")
         assert response == 0
@@ -154,7 +154,28 @@ class TestCLItoServerConnection(unittest.TestCase):
             while self.server_proxy.get_routers_task_queue_size(router.id):
                     time.sleep(2)
                     print('.', end="", flush=True)
-        assert len(self.server_proxy.get_reports()) == len(routers) + 1
+        assert len(self.server_proxy.get_test_results()) == len(routers) + 1
+
+    def test_cli_test_results(self):
+        assert not os.system(self.path_cli + " results -rm -a")
+        os.system(self.path_cli + " start -s set_1 -a")
+
+        routers = self.server_proxy.get_routers()
+        for router in routers:
+            while self.server_proxy.get_routers_task_queue_size(router.id):
+                    time.sleep(2)
+                    print('.', end="", flush=True)
+
+        response = os.system(self.path_cli + " results -r 0")
+        assert response == 0
+        response = os.system(self.path_cli + " results -a")
+        assert response == 0
+
+        response = os.system(self.path_cli + " results -rm")
+        assert response == 0
+        response = os.system(self.path_cli + " results -rm -a")
+        assert response == 0
+        assert not len(self.server_proxy.get_test_results())
 
     def test_get_version(self):
         version = self.server_proxy.get_server_version()

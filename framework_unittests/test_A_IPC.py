@@ -76,7 +76,7 @@ class DummyServer(ServerProxy):
         return ["lol"]
 
     @classmethod
-    def get_reports(cls) -> []:
+    def get_test_results(cls) -> []:
         d = DummyObject("test")
         return [id(d), d]
 
