@@ -6,6 +6,7 @@ import logging
 import argparse
 import time
 import sys
+from log.loggersetup import LoggerSetup
 
 
 def connect_to_server():
@@ -25,6 +26,8 @@ def connect_to_server():
 
     if verbose:
         logging.info("Client successfully connected")
+
+    LoggerSetup.add_current_console_handler()
 
     server_proxy = ipc_client.get_server_proxy()
     return server_proxy
