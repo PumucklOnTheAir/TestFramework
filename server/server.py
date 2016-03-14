@@ -141,8 +141,7 @@ class Server(ServerProxy):
 
             # update Router
             cls.router_online(None, update_all=True, blocked=True)
-            # TODO Hat error verursacht
-            # cls.update_router_info(None, update_all=True)
+            cls.update_router_info(None, update_all=True)
 
         logging.info("Runtime Server started")
 
