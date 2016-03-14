@@ -171,6 +171,17 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
+    def control_switch(self, router_ids: List[int], switch_all: bool, on_or_off: bool):
+        """
+        Controls the power on the given port
+
+        :param router_ids: List of router IDs
+        :param switch_all: apply to all routers
+        :param on_or_off: true for on, false for off
+        """
+        pass
+
+    @abstractclassmethod
     def get_server_version(self) -> str:
         """
         Returns the server version as a string

@@ -3,35 +3,25 @@ from .ipc import IPC
 from .test import FirmwareTest
 from typing import List, Union, Iterable, Optional
 from router.router import Router
+from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
 from log.loggersetup import LoggerSetup
 import logging
-import threading
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 import importlib
-from multiprocessing import Event
-from threading import Semaphore
+from threading import Event, Semaphore
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
 from collections import deque
 import os
 import sys
-import signal
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 RemoteSystemJobClass = type(RemoteSystemJob)
-
-
-# initialization method for processes of the task pool
-def init_process(event):
-    # register the stop signal for CTRL+C
-    def signal_handler(signal, frame):
-        event.set()
-    signal.signal(signal.SIGINT, signal_handler)
 
 
 class Server(ServerProxy):
@@ -57,6 +47,7 @@ class Server(ServerProxy):
 
     # runtime vars
     _routers = []  # all registered routers on the system
+    _power_strips = []  # all registered power strips on the system
     _test_results = []  # all test reports in form (router.id, str(test), TestResult)
     _stopped = False  # marks if the server is still running
 
@@ -75,8 +66,6 @@ class Server(ServerProxy):
 
     _pid = None  # PID of the server
 
-    _server_stop_event = None
-
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
@@ -85,7 +74,7 @@ class Server(ServerProxy):
         :param config_path: Path to an alternative config directory
         """
 
-        # server has to be run with root rights - except on travis CI
+        # server has to be run with root rights - except on travi CI
         if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
 
@@ -104,8 +93,6 @@ class Server(ServerProxy):
             debug_mode = True
         cls.DEBUG = debug_mode
 
-        cls._server_stop_event = Event()
-
         cls._pid = os.getpid()
 
         # create instance and give params to the logger object
@@ -118,14 +105,9 @@ class Server(ServerProxy):
             cls._running_task.append(None)
             cls._waiting_tasks.append(deque())
 
-        # start thread for multiprocess stop wait
-        t = threading.Thread(target=cls._close_wait)
-        t.start()
-
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers) + 2)
-        cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
-                              initargs=(cls._server_stop_event,), maxtasksperchild=1)
+        cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
         cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses + 5))
 
         # add Namespace and Vlan for each Router
@@ -157,6 +139,7 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_router_manual_list()
+        cls._power_strips = ConfigManager.get_power_strip_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
@@ -164,27 +147,15 @@ class Server(ServerProxy):
         """
         Stops the server, all running tests and closes all connections.
         """
-        cls._server_stop_event.set()
-
-    @classmethod
-    def _close_wait(cls) -> None:
-        assert(cls._pid == os.getpid())
-
-        cls._server_stop_event.wait()
-
         if not cls._stopped:
-            print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
-            cls._task_pool.join()
-            cls._job_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
             # close open streams and the logger instance
             LoggerSetup.shutdown()
 
             cls._ipc_server.shutdown()
-            sys.exit(0)
 
     @classmethod
     def stop_all_tasks(cls) -> None:
@@ -319,8 +290,8 @@ class Server(ServerProxy):
         assert(cls._pid == os.getpid())
         # Check if it is the the same PID as the PID Process which started the ProcessPool
 
+        cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
         try:
-            cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
             if job is None:  # no job given? look up for the next job in the queue
                 logging.debug("%sLookup for next task", LoggerSetup.get_log_deep(1))
                 if not len(cls.get_waiting_task_queue(remote_sys)):
@@ -349,10 +320,10 @@ class Server(ServerProxy):
                 cls.set_waiting_task(remote_sys, job)
 
                 return False
-        except KeyboardInterrupt:
-            cls.stop()
+
         except Exception as e:
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+
         finally:
             cls._semaphore_task_management.release()
             # logging.debug(str(cls._waiting_tasks), 3)
@@ -501,6 +472,17 @@ class Server(ServerProxy):
         """
 
         return cls._routers.copy()
+
+    @classmethod
+    def get_power_strip(cls) -> PowerStrip:
+        """
+        Power strip as object, for now only 1
+
+        :return: Copy of the original object
+        """
+        for ps in cls._power_strips:
+            assert isinstance(ps, PowerStrip)
+        return cls._power_strips[0]
 
     @classmethod
     def get_routers_task_queue_size(cls, router_id: int) -> int:
@@ -708,6 +690,29 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 cls.start_job(router, RouterRebootJob(configmode))
+
+    @classmethod
+    def control_switch(cls, router_ids: List[int], switch_all: bool, on_or_off: bool):
+        """
+        Switches the power for different routers on or off
+
+        :param router_ids: List of router IDs
+        :param switch_all: apply to all routers
+        :param on_or_off: true for on, false for off
+        """
+        from power_strip.power_strip_control import PowerStripControlJob
+
+        # for now only 1 power strip, change in router if more are added
+        power_strip = cls.get_power_strip()
+
+        if switch_all:
+            for router in cls.get_routers():
+                port_id = router.power_socket
+                cls.start_job(power_strip, PowerStripControlJob(on_or_off, port_id))
+        else:
+            for router_id in router_ids:
+                port_id = cls.get_router_by_id(router_id).power_socket
+                cls.start_job(power_strip, PowerStripControlJob(on_or_off, port_id))
 
     @classmethod
     def get_server_version(cls) -> str:
