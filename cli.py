@@ -7,7 +7,6 @@ import argparse
 import time
 import sys
 import subprocess
-from log.loggersetup import LoggerSetup
 
 
 def connect_to_server():
@@ -28,11 +27,12 @@ def connect_to_server():
     if verbose:
         logging.info("Client successfully connected")
 
+    server_proxy = ipc_client.get_server_proxy()
+
     # register console for cli
     name = subprocess.getoutput('tty')
-    LoggerSetup.add_current_console_handler(name)
+    server_proxy.register_tty(name)
 
-    server_proxy = ipc_client.get_server_proxy()
     return server_proxy
 
 

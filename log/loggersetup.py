@@ -215,6 +215,7 @@ class LoggerSetup:
     _is_setup_loaded = False
     _max_log_deep = 0
     _stream_paths = []
+    _log_format = ""
 
     @staticmethod
     def is_setup_loaded() -> bool:
@@ -287,24 +288,33 @@ class LoggerSetup:
             # set LoggerSetup variables
             LoggerSetup._max_log_deep = max_log_deep
             LoggerSetup._is_setup_loaded = True
+            LoggerSetup._log_format = log_format
+            LoggerSetup._stream_paths.append('/dev/console')
 
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 
     @staticmethod
-    def add_current_console_handler(stream_path: str = "") -> bool:
+    def add_handler(stream_path: str = "") -> bool:
         """
         Add new console output to logger handlers
         :param stream_path Path of the stream
         :return: None
         """
+        # if path exists do nothing
         if stream_path in LoggerSetup._stream_paths:
             return False
+
+        # register new handler
         logger = logging.getLogger()
         handler = MultiProcessingHandler('mp-handler-{0}'.format(len(logger.handlers)),
                                          sub_handler=LoggerSetup.create_stream_handler(stream_path))
+        handler.setFormatter(ColoredFormatter(LoggerSetup._log_format))
         logger.addHandler(handler)
+
+        # add path to collection
         LoggerSetup._stream_paths.append(stream_path)
+
         return True
 
     @staticmethod

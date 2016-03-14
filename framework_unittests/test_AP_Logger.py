@@ -60,10 +60,10 @@ class MyTestCase(unittest.TestCase):
     def test_add_handler(self):
         LoggerSetup.setup()
         name = subprocess.getoutput('tty')
-        result = LoggerSetup.add_current_console_handler(name)
+        result = LoggerSetup.add_handler(name)
         self.assertEqual(True, result)
         logging.info('Info on all cli')
-        result = LoggerSetup.add_current_console_handler(name)
+        result = LoggerSetup.add_handler(name)
         self.assertEqual(False, result)
         LoggerSetup.shutdown()
 

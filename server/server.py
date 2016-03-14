@@ -683,3 +683,12 @@ class Server(ServerProxy):
         Returns the server version as a string
         """
         return cls.VERSION
+
+    def register_tty(self, tty_name: str = '') -> bool:
+        """
+        Register tty from cli in logging
+        :param tty_name: Name of the console
+        :return bool: Success of the register
+        """
+        # register console from cli in the current process and logging instance
+        return LoggerSetup.add_handler(tty_name)
