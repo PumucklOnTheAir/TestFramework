@@ -284,7 +284,7 @@ class ConfigManager:
                 u = None
                 power_strip_list.append(u)
 
-            #if power_strip_list:
+            # if power_strip_list:
             #    power_strip_list = sorted(power_strip_list, key=lambda e: e.id)
 
             return power_strip_list
