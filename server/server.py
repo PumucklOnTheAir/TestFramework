@@ -597,7 +597,7 @@ class Server(ServerProxy):
         return None
 
     @classmethod
-    def router_online(cls, router_ids: List[int], update_all: bool, blocked: bool = False) -> None:
+    def router_online(cls, router_ids: Union[List[int], None], update_all: bool, blocked: bool = False) -> None:
         """
         Tries to connect to the `Router` and updates the Mode of the Router.
 
@@ -620,7 +620,7 @@ class Server(ServerProxy):
                 cls.start_job(router, RouterOnlineJob(), wait)
 
     @classmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
+    def update_router_info(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
         """
         Updates all the information about the :py:class:`Router`
 
@@ -641,7 +641,7 @@ class Server(ServerProxy):
             logging.info("set VLAN to true to activate 'update_router_info' it")
 
     @classmethod
-    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
+    def sysupdate_firmware(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
         """
         Downloads and copies the firmware to the :py:class:`Router` given in
         the List(by a unique id) resp. to all Routers
@@ -663,7 +663,7 @@ class Server(ServerProxy):
                 sysupdate.join()
 
     @classmethod
-    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
+    def sysupgrade_firmware(cls, router_ids: Union[List[int], None], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given :py:class:`Router` s
 
@@ -685,7 +685,7 @@ class Server(ServerProxy):
                 cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
 
     @classmethod
-    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
+    def setup_web_configuration(cls, router_ids: Union[List[int], None], setup_all: bool, wizard: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -705,7 +705,7 @@ class Server(ServerProxy):
                 cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
 
     @classmethod
-    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+    def reboot_router(cls, router_ids: Union[List[int], None], reboot_all: bool, configmode: bool):
         """
         Reboots the given Routers.
 
