@@ -187,3 +187,12 @@ class ServerProxy(metaclass=ABCMeta):
         Returns the server version as a string
         """
         pass
+
+    @abstractclassmethod
+    def register_tty(self, tty_name: str = '') -> bool:
+        """
+        Register tty from cli in logging
+        :param tty_name: Name of the console
+        :return bool: Success of the register
+        """
+        pass

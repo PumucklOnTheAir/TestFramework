@@ -135,3 +135,7 @@ class DummyServer(ServerProxy):
     @classmethod
     def delete_test_results(cls) -> int:
         pass
+
+    @classmethod
+    def register_tty(cls, tty_name: str = ''):
+        pass
