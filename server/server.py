@@ -11,7 +11,8 @@ import threading
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 import importlib
-from multiprocessing import Event, Semaphore
+from multiprocessing import Event
+from threading import Semaphore
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
@@ -84,7 +85,7 @@ class Server(ServerProxy):
         :param config_path: Path to an alternative config directory
         """
 
-        # server has to be run with root rights - except on travi CI
+        # server has to be run with root rights - except on travis CI
         if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
 
