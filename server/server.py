@@ -8,20 +8,31 @@ from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
 from log.loggersetup import LoggerSetup
 import logging
+import threading
 from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 import importlib
-from threading import Event, Semaphore
+from multiprocessing import Event
+from threading import Semaphore
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
 from collections import deque
 import os
 import sys
+import signal
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 RemoteSystemJobClass = type(RemoteSystemJob)
+
+
+# initialization method for processes of the task pool
+def init_process(event):
+    # register the stop signal for CTRL+C
+    def signal_handler(signal, frame):
+        event.set()
+    signal.signal(signal.SIGINT, signal_handler)
 
 
 class Server(ServerProxy):
@@ -66,6 +77,8 @@ class Server(ServerProxy):
 
     _pid = None  # PID of the server
 
+    _server_stop_event = None
+
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
@@ -74,7 +87,7 @@ class Server(ServerProxy):
         :param config_path: Path to an alternative config directory
         """
 
-        # server has to be run with root rights - except on travi CI
+        # server has to be run with root rights - except on travis CI
         if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
 
@@ -93,6 +106,8 @@ class Server(ServerProxy):
             debug_mode = True
         cls.DEBUG = debug_mode
 
+        cls._server_stop_event = Event()
+
         cls._pid = os.getpid()
 
         # create instance and give params to the logger object
@@ -105,9 +120,14 @@ class Server(ServerProxy):
             cls._running_task.append(None)
             cls._waiting_tasks.append(deque())
 
+        # start thread for multiprocess stop wait
+        t = threading.Thread(target=cls._close_wait)
+        t.start()
+
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers) + 2)
-        cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
+        cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
+                              initargs=(cls._server_stop_event,), maxtasksperchild=1)
         cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses + 5))
 
         # add Namespace and Vlan for each Router
@@ -138,8 +158,7 @@ class Server(ServerProxy):
     @classmethod
     def __load_configuration(cls):
         logging.debug("Load configuration")
-        cls._routers = ConfigManager.get_router_manual_list()
-        cls._power_strips = ConfigManager.get_power_strip_list()
+        cls._routers = ConfigManager.get_routers_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
@@ -147,15 +166,27 @@ class Server(ServerProxy):
         """
         Stops the server, all running tests and closes all connections.
         """
+        cls._server_stop_event.set()
+
+    @classmethod
+    def _close_wait(cls) -> None:
+        assert(cls._pid == os.getpid())
+
+        cls._server_stop_event.wait()
+
         if not cls._stopped:
+            print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
+            cls._task_pool.join()
+            cls._job_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
             # close open streams and the logger instance
             LoggerSetup.shutdown()
 
             cls._ipc_server.shutdown()
+            sys.exit(0)
 
     @classmethod
     def stop_all_tasks(cls) -> None:
@@ -290,8 +321,8 @@ class Server(ServerProxy):
         assert(cls._pid == os.getpid())
         # Check if it is the the same PID as the PID Process which started the ProcessPool
 
-        cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
         try:
+            cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
             if job is None:  # no job given? look up for the next job in the queue
                 logging.debug("%sLookup for next task", LoggerSetup.get_log_deep(1))
                 if not len(cls.get_waiting_task_queue(remote_sys)):
@@ -320,10 +351,10 @@ class Server(ServerProxy):
                 cls.set_waiting_task(remote_sys, job)
 
                 return False
-
+        except KeyboardInterrupt:
+            cls.stop()
         except Exception as e:
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
-
         finally:
             cls._semaphore_task_management.release()
             # logging.debug(str(cls._waiting_tasks), 3)
@@ -621,13 +652,13 @@ class Server(ServerProxy):
         from util.router_flash_firmware import Sysupdate
         if update_all:
             for router in cls.get_routers():
-                sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
+                sysupdate = Sysupdate(router)
                 sysupdate.start()
                 sysupdate.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
+                sysupdate = Sysupdate(router)
                 sysupdate.start()
                 sysupdate.join()
 
@@ -667,11 +698,11 @@ class Server(ServerProxy):
         from util.router_setup_web_configuration import RouterWebConfigurationJob  # TODO remove it from here #64
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
-                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
-                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
 
     @classmethod
     def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
