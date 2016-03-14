@@ -14,4 +14,3 @@ class ConnectionTest(FirmwareTest):
         response = os.system("ping -t 5 -c 1 " + "localhost")
         time.sleep(3)
         assert response == 0
-
