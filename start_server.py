@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
 
 from server.server import Server
-Server.start()
+
+try:
+    Server.start()
+except KeyboardInterrupt:
+    Server.stop()
