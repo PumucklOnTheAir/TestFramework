@@ -7,6 +7,7 @@ from router.router import Router
 from network.remote_system import RemoteSystemJob
 from util.dhclient import Dhclient
 from router.router import Mode
+from config.configmanager import ConfigManager
 
 
 class Sysupdate(Thread):
@@ -14,10 +15,9 @@ class Sysupdate(Thread):
     Downloads the firmware image from an update-server
     """""
 
-    def __init__(self, router: Router, firmware_config: dict):
+    def __init__(self, router: Router):
         Thread.__init__(self)
         self.router = router
-        self.firmware_config = firmware_config
         self.daemon = True
 
     def run(self):
@@ -26,9 +26,10 @@ class Sysupdate(Thread):
         :return:
         """
         logging.info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
-        firmware_handler = FirmwareHandler(self.firmware_config['URL'])
-        firmware = firmware_handler.get_firmware(self.router.model, self.firmware_config['Release_Model'],
-                                                 self.firmware_config['Download_All'])
+        firmware_handler = FirmwareHandler(str(ConfigManager.get_firmware_property('URL')))
+        firmware = firmware_handler.get_firmware(self.router.model,
+                                                 str(ConfigManager.get_firmware_property('Release_Model')),
+                                                 bool(ConfigManager.get_firmware_property('Download_All')))
         self.router.firmware = firmware
 
 
@@ -42,7 +43,7 @@ class SysupdateJob(RemoteSystemJob):
 
     def run(self):
         router = self.remote_system
-        router_info = Sysupdate(router, self.firmware_config)
+        router_info = Sysupdate(router)
         router_info.start()
         router_info.join()
         return {'router': router}
@@ -108,7 +109,8 @@ class Sysupgrade(Thread):
                 self.router.mode = Mode.configuration
                 if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
                     self.router.mode = Mode.unknown
-                    logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'", LoggerSetup.get_log_deep(2))
+                    logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
+                                  LoggerSetup.get_log_deep(2))
             except Exception as e:
                 self.router.mode = Mode.unknown
                 logging.error("[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'")

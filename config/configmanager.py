@@ -1,7 +1,7 @@
 import yaml
 import io
 import logging
-import os.path
+from os import path
 from router.router import Router
 
 
@@ -10,14 +10,9 @@ class ConfigManager:
     Manager which handles the config files for the TestServer.
     """
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-    CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
-    ROUTER_AUTO_CONFIG_FILE = 'router_auto_config.yaml'
-    ROUTER_MANUAL_CONFIG_FILE = 'router_manual_config.yaml'
-    SERVER_CONFIG_FILE = 'server_config.yaml'
-    TEST_CONFIG_FILE = 'test_config.yaml'
-    FIRMWARE_CONFIG_FILE = 'firmware_config.yaml'
-    WEB_INTERFACE_CONFIG_FILE = 'web_interface_config.yaml'
+    BASE_DIR = path.dirname(path.dirname(__file__))  # This is your Project Root
+    CONFIG_PATH = path.join(BASE_DIR, 'config')  # Join Project Root with config
+    FRAMEWORK_CONFIG_FILE = 'framework_config.yml'
 
     @classmethod
     def set_config_path(cls, config_path: str = "") -> None:
@@ -30,296 +25,290 @@ class ConfigManager:
         cls.CONFIG_PATH = config_path
 
     @staticmethod
-    def read_file(path: str = "") -> []:
+    def read_file(file_path: str = "") -> []:
         """
         Read a config file from the path
 
-        :param path: File path
+        :param file_path: File path
         :return: Array with the output from the file
         """
         try:
-            if path == "":
+            if file_path == "":
                 logging.error("Path is an empty string")
-                return
-            file_stream = io.open(path, "r", encoding="utf-8")
+                return None
+            file_stream = io.open(file_path, "r", encoding="utf-8")
             output = yaml.safe_load(file_stream)
             file_stream.close()
             return output
         except IOError as ex:
-            logging.error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
+            logging.error("Error at read the file at path: {0}\nError: {1}".format(file_path, ex))
+            return None
         except yaml.YAMLError as ex:
-            logging.error("Error at safe load the YAML-File\nError: {0}".format(ex))
+            logging.error("Error at safe load the YML-File\nError: {0}".format(ex))
+            return None
+
+    # config
+    @staticmethod
+    def get_framework_config() -> []:
+        """
+        Read the framework config file
+
+        :return: Dictionary with the output from the file
+        """
+        file_path = path.join(ConfigManager.CONFIG_PATH, ConfigManager.FRAMEWORK_CONFIG_FILE)
+        return ConfigManager.read_file(file_path)
+
+    # router
+    @staticmethod
+    def get_routers_dict() -> dict:
+        """
+        Read the routers from config file
+
+        :return: Dictionary with all routers
+        """
+        config = ConfigManager.get_framework_config()
+        return config['routers']
 
     @staticmethod
-    def write_file(data: str = "", path: str = "") -> None:
+    def get_routers_list() -> []:
         """
-        Write a config file on the path
+        Read the routers from the config
 
-        :param data: String of data to write in the file
-        :param path: File path
-        :return: None
+        :return: List with any router objects from the file
         """
-        try:
-            if path == "":
-                logging.error("Path is an empty string")
-                return
-            file_stream = io.open(path, "w", encoding="utf-8")
-            yaml.safe_dump(data, file_stream)
-            file_stream.flush()
-            file_stream.close()
-        except IOError as ex:
-            logging.error("Error at read the file at path: {0}\nError: {1}".format(path, ex))
-        except yaml.YAMLError as ex:
-            logging.error("Error at safe dump the YAML-File\nError: {0}".format(ex))
+        output = ConfigManager.get_routers_dict()
 
-    @staticmethod
-    def get_router_auto_config() -> []:
-        """
-        Read the Router Auto Config file
+        routers = []
 
-        :return: Array with the output from the file
-        """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.ROUTER_AUTO_CONFIG_FILE)
-        return ConfigManager.read_file(path)
+        # i must defined before 'for', because 'default' increase i and then the router.id has wrong count
+        i = 0
+        for data in output.items():
 
-    @staticmethod
-    def get_router_auto_list(count: int = 0) -> []:
-        """
-        Read the Router Auto Config file
+            name, router_info = data
 
-        :param count: Count of the Router
-        :return: List with any Router objects from the file
-        """
-        output = ConfigManager.get_router_auto_config()
+            if 'default' in name:
+                continue
 
-        if not len(output) == 10:
-            logging.error("List must be length of 10 but has a length of {0}".format(len(output)))
-            return
-
-        try:
-            router_count = output[0]
-            name = output[1]
-            identifier = output[2]
-            ip = output[3]
-            ip_mask = output[4]
-            config_ip = output[5]
-            config_ip_mask = output[6]
-            username = output[7]
-            password = output[8]
-            power_socket = output[9]
-
-            i = identifier['default_Start_Id']
-            socket_id = power_socket['powerSocket_Start_Id']
-            router_list = []
-
-            if count <= 0:
-                count = router_count['router_Count']
-            else:
-                count = count
-
-            for x in range(0, count):
-                v = Router(x, name['default_Name'] + "{0}".format(i), i, ip['default_IP'], ip_mask['default_IP_Mask'],
-                           config_ip['default_CONFIG_IP'], config_ip_mask['default_CONFIG_IP_MASK'],
-                           username['default_Username'], password['default_Password'], socket_id)
-                router_list.append(v)
-                i += 1
-                socket_id += 1
-
-            return router_list
-
-        except Exception as ex:
-            logging.error("Error at building the list of Router's\nError: {0}".format(ex))
-
-    @staticmethod
-    def get_router_manual_config() -> []:
-        """
-        Read the Router Manual Config file
-
-        :return: Array with the output from the file
-        """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.ROUTER_MANUAL_CONFIG_FILE)
-        return ConfigManager.read_file(path)
-
-    @staticmethod
-    def get_router_manual_list() -> []:
-        """
-        Read the Router Manual Config file
-
-        :return: List with any Router objects from the file
-        """
-        output = ConfigManager.get_router_manual_config()
-
-        router_list = []
-
-        for i in range(0, len(output)):
-            router_info = output[i]
-
-            if not len(router_info) == 9:
+            if len(router_info) != 9:  # FixMe ist eher eine schlechte idee
                 logging.error("List must be length of 9 but has a length of {0}".format(len(output)))
-                return
+                return None
+
+            # TODO:
+            # wenn die keys im "router_info" dict mit den argument namen von `Router` passt kann man das so machen:
+            # router = Router(i, **router_info)
 
             try:
-                v = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['IP_Mask'],
-                           router_info['CONFIG_IP'], router_info['CONFIG_IP_MASK'],
-                           router_info['Username'], router_info['Password'], router_info['PowerSocket'])
-                router_list.append(v)
+                router = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['IP_Mask'],
+                                router_info['CONFIG_IP'], router_info['CONFIG_IP_MASK'],
+                                router_info['Username'], router_info['Password'], router_info['PowerSocket'])
+                routers.append(router)
+                i += 1
 
-            except Exception as ex:
+            except KeyError as ex:
                 logging.error("Error at building the list of Router's\nError: {0}".format(ex))
+                return None
 
-        return router_list
+        if len(routers) > 0:
+            routers = sorted(routers, key=lambda e: e.id)
 
+        return routers
+
+    # server
     @staticmethod
-    def get_server_config() -> []:
+    def get_server_dict() -> dict:
         """
-        Read the Server Config file
+        Read the server config from the file
 
-        :return: Array with the output from the file
+        :return: Dictionary with all server properties from the file
         """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.SERVER_CONFIG_FILE)
-        return ConfigManager.read_file(path)
-
-    @staticmethod
-    def get_server_dict() -> []:
-        """
-        Read the Server Config file
-
-        :return: Dictionary with a specific output from the file
-        """
-        output = ConfigManager.get_server_config()
-        return output
+        config = ConfigManager.get_framework_config()
+        return config['server']
 
     @staticmethod
     def get_server_list() -> []:
         """
-        Read the Server Config file
+        Read the server config from the file
 
-        :return: List with a specific output from the file
+        :return: List with all server properties from the file
         """
-        output = ConfigManager.get_server_config()
+        server = ConfigManager.get_server_dict()
         server_list = []
-        for x in output:
-            for v in x.values():
-                server_list.append(v)
+        for x in server:
+            props = server[x]
+            for entry in props:
+                server_list.append(props[entry])
         return server_list
 
     @staticmethod
     def get_server_property(prop: str = "") -> object:
         """
-        Read the Server Config file and give the property back
+        Read the server config from the file and give the property back
 
-        :param prop: Property from Server file
-        :return: Value of the property from the file
+        :param prop: Property from server
+        :return: Value of the property from server
         """
-        dic_keys = {"Server_Name", "Log_Level", "Vlan_On"}
-
-        if prop in dic_keys:
-            output = ConfigManager.get_server_config()
-            for x in output:
-                if prop in x.keys():
-                    return x[prop]
+        server = ConfigManager.get_server_dict()
+        for value in server.values():
+            if prop in value:
+                return value[prop]
 
         return None
 
+    # firmware
     @staticmethod
-    def _get_test_config() -> []:
+    def get_firmware_dict() -> dict:
         """
-        Read the Test Config file
+        Read the firmware config from the file
 
-        :return: Array with the output from the file
+        :return: Dictionary with all firmware properties from the file
         """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.TEST_CONFIG_FILE)
-        return ConfigManager.read_file(path)
-
-    @staticmethod
-    def get_test_sets() -> []:
-        """
-        Read the Test Config file
-
-        :return: Dictionary with a specific output from the file
-        """
-        output = ConfigManager._get_test_config()
-        return output
-
-    @staticmethod
-    def get_firmware_config() -> []:
-        """
-        Read the Firmware Config file
-
-        :return: Array with the output from the file
-        """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.FIRMWARE_CONFIG_FILE)
-        return ConfigManager.read_file(path)
-
-    @staticmethod
-    def get_firmware_dict() -> []:
-        """
-        Read the Firmware Config file
-
-        :return: Dictionary with a specific output from the file
-        """
-        output = ConfigManager.get_firmware_config()
-        return output
+        config = ConfigManager.get_framework_config()
+        return config['firmware']
 
     @staticmethod
     def get_firmware_list() -> []:
         """
-        Read the Firmware Config file
+        Read the firmware config from the file
 
-        :return: List with a specific output from the file
+        :return: List with all firmware properties from the file
         """
-        output = ConfigManager.get_firmware_config()
+        firmware = ConfigManager.get_firmware_dict()
         firmware_list = []
-        for x in output:
-            for v in x.values():
-                firmware_list.append(v)
+        for x in firmware:
+            props = firmware[x]
+            for entry in props:
+                firmware_list.append(props[entry])
         return firmware_list
 
     @staticmethod
     def get_firmware_property(prop: str = "") -> object:
         """
-        Read the Firmware Config file and give the property back
+        Read the firmware config from the file and give the property back
 
-        :param prop: Property from Firmware file
-        :return: Value of the property from the file
+        :param prop: Property from firmware
+        :return: Value of the property from firmware
         """
-        dic_keys = {"URL", "Release_Model", "Firmware_Version", "Download_All"}
-
-        if prop in dic_keys:
-            output = ConfigManager.get_firmware_config()
-            for x in output:
-                if prop in x.keys():
-                    return x[prop]
+        firmware = ConfigManager.get_firmware_dict()
+        for value in firmware.values():
+            if prop in value:
+                return value[prop]
 
         return None
 
+    # web interface
     @staticmethod
-    def get_web_interface_config() -> []:
+    def get_web_interface_dict() -> dict:
         """
-        Read the web interface Config file
-        :return: Array with the output from the file
+        Read the web interface config from the file
+        :return: Dictionary with all web interface properties from the file
         """
-        path = os.path.join(ConfigManager.CONFIG_PATH, ConfigManager.WEB_INTERFACE_CONFIG_FILE)
-        return ConfigManager.read_file(path)
-
-    @staticmethod
-    def get_web_interface_dict() -> []:
-        """
-        Read the web interface Config file
-        :return: Dictionary with a specific output from the file
-        """
-        output = ConfigManager.get_web_interface_config()
-        return output
+        config = ConfigManager.get_framework_config()
+        return config['webconfigs']
 
     @staticmethod
     def get_web_interface_list() -> []:
         """
-        Read the web interface Config file
-        :return: List with a specific output from the file
+        Read the web interface config from the file
+        :return: List with all web interface properties from the file, have intern dictionaries
         """
-        output = ConfigManager.get_web_interface_config()
+        interface = ConfigManager.get_web_interface_dict()
+
         web_list = []
-        for x in output:
-            for v in x.values():
-                web_list.append(v)
+        for x in interface:
+
+            if 'default' in x:
+                continue
+
+            props = interface[x]
+            web_list.append(props)
+
+        if web_list:
+            if 'node_name' in web_list[0].keys():
+                web_list = sorted(web_list, key=lambda e: e['node_name'])
+
         return web_list
+
+    @staticmethod
+    def get_web_interface_property(prop: str = "") -> object:
+        """
+        Read the web interface config from the file and give the property back
+
+        :param prop: Property from web interface
+        :return: Value of the property from web interface
+        """
+        interface = ConfigManager.get_web_interface_dict()
+        for value in interface.values():
+            if prop in value:
+                return value[prop]
+
+        return None
+
+    # power strip
+    @staticmethod
+    def get_power_strip_dict() -> dict:
+        """
+        Read the power strip config from the file
+        :return: Dictionary with all power strip properties from the file
+        """
+        config = ConfigManager.get_framework_config()
+        return config['powerstrip']
+
+    @staticmethod
+    def get_power_strip_list() -> []:
+        """
+        Read the power strip config file
+        :return: List with any power strips objects from the file
+        """
+        power_strip = ConfigManager.get_power_strip_dict()
+        power_strip = power_strip['powerstripdefault']
+
+        if len(power_strip) != 8:  # FixME: nicht so die gute idee
+            logging.error("List must be length of 8 but has a length of {0}".format(len(power_strip)))
+            return None
+
+        try:
+            count = power_strip['Power_Strip_Count']
+
+            power_strip_list = []
+
+            # TODO:
+            # wenn die keys im "power_strip" dict mit den argument namen von `Ubnt` passt kann man das so machen:
+            # u = Ubnt(i, **power_strip)
+
+            for i in range(0, count):
+                """
+                u = Ubnt(i, power_strip['default_Name'], power_strip['default_vlan_Id'], power_strip['default_IP'],
+                         power_strip['default_Mask'], power_strip['default_Username'], power_strip['default_Password'],
+                         power_strip['default_Ports'])
+                """
+                u = None
+                power_strip_list.append(u)
+
+            #if power_strip_list:
+            #    power_strip_list = sorted(power_strip_list, key=lambda e: e.id)
+
+            return power_strip_list
+
+        except KeyError as ex:
+            logging.error("Error at building the list of Router's\nError: {0}".format(ex))
+            return None
+
+    @staticmethod
+    def get_test_dict() -> []:
+        """
+        Read the test config from the file
+
+        :return: Dictionary with all test properties from the file
+        """
+        config = ConfigManager.get_framework_config()
+        return config['tests']
+
+    @staticmethod
+    def get_test_sets() -> []:
+        """
+        Read the test config from the file
+
+        :return: List with all test properties from the file
+        """
+        tests = ConfigManager.get_test_dict()
+        return tests

@@ -1,7 +1,6 @@
 from unittest import TestCase
 from util.router_flash_firmware import Sysupdate, Sysupgrade
 from router.router import Router, Mode
-from config.configmanager import ConfigManager
 from network.nv_assist import NVAssistent
 from pyroute2 import netns
 
@@ -21,12 +20,9 @@ class TestRouterFlashFirmware(TestCase):
         print("Test Router_Flash_Firmware")
         router = self._create_router()
 
-        # Create firware configuration
-        firmware_config = ConfigManager.get_firmware_dict()[0]
-
         print("Download/Import firmware-image from UpdateServer/PI ...")
         # Download firmare-image from UpdateServer
-        sysupdate = Sysupdate(router, firmware_config)
+        sysupdate = Sysupdate(router)
         sysupdate.start()
         sysupdate.join()
 
