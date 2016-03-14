@@ -56,7 +56,6 @@ class RemoteSystemJob(metaclass=ABCMeta):
     """""
     def __init__(self):
         self.remote_system = None
-        self.__done_event = None
         self.__return_data = None
 
     def __str__(self):
@@ -70,23 +69,6 @@ class RemoteSystemJob(metaclass=ABCMeta):
         """
         logging.debug("%sPrepare job", LoggerSetup.get_log_deep(5))
         self.remote_system = remote_sys
-
-    def set_done_event(self, done_event: Event = None) -> None:
-        """
-
-        :param done_event: Optional Event which will be called at the end
-        :return:
-        """
-        self.__done_event = done_event
-
-    def done(self) -> None:
-        """
-        Will be called by the Server
-
-        :return:
-        """
-        if self.__done_event is not None:
-            self.__done_event.set()
 
     @abstractstaticmethod
     def pre_process(self, server) -> {}:

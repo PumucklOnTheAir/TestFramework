@@ -1,5 +1,6 @@
 from server.test import FirmwareTest
 import os
+import time
 
 
 class ConnectionTest(FirmwareTest):
@@ -11,4 +12,6 @@ class ConnectionTest(FirmwareTest):
 
     def test_ping_local(self):
         response = os.system("ping -t 5 -c 1 " + "localhost")
+        time.sleep(3)
         assert response == 0
+

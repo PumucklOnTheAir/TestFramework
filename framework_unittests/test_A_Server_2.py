@@ -6,6 +6,7 @@ from server.ipc import IPC
 import time
 import os
 import socket
+import datetime
 
 
 def block_until_server_is_online():
@@ -104,6 +105,16 @@ class ServerCore(object):
         assert len(reports) == removed_results
         time.sleep(0.5)
         assert not len(self.server_proxy.get_test_results())
+
+    def test_blocked_execution(self):
+        self.server_proxy.delete_test_results()
+        start = datetime.datetime.now()
+        started = self.server_proxy.start_test_set(0, "set_2", 300)
+        assert started
+        stop = datetime.datetime.now()
+
+        # magic value - we assume that non-blocking execution of the method would be faster
+        assert stop - start > datetime.timedelta(seconds=2)
 
 
 class ServerTestCase2(ServerCore, unittest.TestCase):
