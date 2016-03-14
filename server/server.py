@@ -156,7 +156,7 @@ class Server(ServerProxy):
     @classmethod
     def __load_configuration(cls):
         logging.debug("Load configuration")
-        cls._routers = ConfigManager.get_router_manual_list()
+        cls._routers = ConfigManager.get_routers_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
@@ -651,13 +651,13 @@ class Server(ServerProxy):
         from util.router_flash_firmware import Sysupdate
         if update_all:
             for router in cls.get_routers():
-                sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
+                sysupdate = Sysupdate(router)
                 sysupdate.start()
                 sysupdate.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                sysupdate = Sysupdate(router, ConfigManager.get_firmware_dict()[0])
+                sysupdate = Sysupdate(router)
                 sysupdate.start()
                 sysupdate.join()
 
@@ -697,11 +697,11 @@ class Server(ServerProxy):
         from util.router_setup_web_configuration import RouterWebConfigurationJob  # TODO remove it from here #64
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
-                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
         else:
             for i, router_id in enumerate(router_ids):
                 router = cls.get_router_by_id(router_id)
-                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_config()[i], wizard))
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
 
     @classmethod
     def reboot_router(cls, router_ids: Union[List[int], None], reboot_all: bool, configmode: bool):
