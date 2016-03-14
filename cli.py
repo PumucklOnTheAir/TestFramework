@@ -6,6 +6,7 @@ import logging
 import argparse
 import time
 import sys
+import subprocess
 
 
 def connect_to_server():
@@ -27,6 +28,11 @@ def connect_to_server():
         logging.info("Client successfully connected")
 
     server_proxy = ipc_client.get_server_proxy()
+
+    # register console for cli
+    name = subprocess.getoutput('tty')
+    server_proxy.register_tty(name)
+
     return server_proxy
 
 

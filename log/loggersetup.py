@@ -214,6 +214,8 @@ class LoggerSetup:
 
     _is_setup_loaded = False
     _max_log_deep = 0
+    _stream_paths = []
+    _log_format = ""
 
     @staticmethod
     def is_setup_loaded() -> bool:
@@ -248,7 +250,7 @@ class LoggerSetup:
             file_handler = LoggerSetup.create_file_handler(log_file_path)
 
             # create ConsoleHandler
-            stream_handler = LoggerSetup.create_stream_handler()
+            dev_console_handler = LoggerSetup.create_stream_handler('/dev/console')
 
             # create a SysLogHandler
             syslog_handler = LoggerSetup.create_syslog_handler()
@@ -266,9 +268,9 @@ class LoggerSetup:
                 file_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
                 logger.addHandler(file_handler)
 
-            if stream_handler is not None:
-                stream_handler.setFormatter(ColoredFormatter(log_format))
-                logger.addHandler(stream_handler)
+            if dev_console_handler is not None:
+                dev_console_handler.setFormatter(ColoredFormatter(log_format))
+                logger.addHandler(dev_console_handler)
 
             if syslog_handler is not None:
                 syslog_handler.setFormatter(ColoredFormatter(log_format, use_color=False))
@@ -286,9 +288,34 @@ class LoggerSetup:
             # set LoggerSetup variables
             LoggerSetup._max_log_deep = max_log_deep
             LoggerSetup._is_setup_loaded = True
+            LoggerSetup._log_format = log_format
+            LoggerSetup._stream_paths.append('/dev/console')
 
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
+
+    @staticmethod
+    def add_handler(stream_path: str = "") -> bool:
+        """
+        Add new console output to logger handlers
+        :param stream_path Path of the stream
+        :return: None
+        """
+        # if path exists do nothing
+        if stream_path in LoggerSetup._stream_paths:
+            return False
+
+        # register new handler
+        logger = logging.getLogger()
+        handler = MultiProcessingHandler('mp-handler-{0}'.format(len(logger.handlers)),
+                                         sub_handler=LoggerSetup.create_stream_handler(stream_path))
+        handler.setFormatter(ColoredFormatter(LoggerSetup._log_format))
+        logger.addHandler(handler)
+
+        # add path to collection
+        LoggerSetup._stream_paths.append(stream_path)
+
+        return True
 
     @staticmethod
     def create_syslog_handler() -> logging.Handler:
@@ -303,16 +330,20 @@ class LoggerSetup:
             return None
 
     @staticmethod
-    def create_stream_handler() -> logging.Handler:
+    def create_stream_handler(stream_path: str = "") -> logging.Handler:
         """
         Create a StreamHandler
+        :param stream_path Path of the stream
         :return: StreamHandler
         """
         try:
             # console handler
-            return logging.StreamHandler(open('/dev/console', 'w'))
+            if stream_path is "":
+                return logging.StreamHandler()
+
+            return logging.StreamHandler(open(stream_path, 'w'))
         except Exception as ex:
-            logging.warning("Logger can not log on {0}: {1}".format('/dev/console', ex))
+            logging.warning("Logger can not log on {0}: {1}".format(stream_path, ex))
             # create StreamHandler because can not register console handler
             return logging.StreamHandler()
 
