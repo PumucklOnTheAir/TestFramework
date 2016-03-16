@@ -2,6 +2,7 @@ from threading import Thread
 from network.network_ctrl import NetworkCtrl
 from network.remote_system import RemoteSystemJob
 from power_strip.ubnt import Ubnt
+import logging
 
 
 class PowerStripControl(Thread):
@@ -19,24 +20,12 @@ class PowerStripControl(Thread):
         Runs new thread
         """
         self.network_ctrl.connect_with_remote_system()
+        cmd = self.create_command(self.on_or_off, self.port)
+        self.network_ctrl.send_command(cmd)
+        logging.info("Switched Power")
 
-    def _get_router_model(self) -> str:
-        """
-        :return: the Model of the given Router object
-        """
-        return self.network_ctrl.send_command('cat /proc/cpuinfo | grep machine')[0].split(":")[1][1:-1]
-
-    def _get_router_mac(self) -> str:
-        """
-        :return: the MAC of the given Router object
-        """
-        return self.network_ctrl.send_command('uci show network.client.macaddr')[0].split('=')[1][:-1]
-
-    def _get_router_ssid(self):
-        """
-        :return: the SSID of the given Router object
-        """
-        return self.network_ctrl.send_command('uci show wireless.client_radio0.ssid')[0].split('=')[1][:-1]
+    def create_command(self, on_or_off: bool, port: int):
+        return self.power_strip.create_command(port, on_or_off)
 
 
 class PowerStripControlJob(RemoteSystemJob):

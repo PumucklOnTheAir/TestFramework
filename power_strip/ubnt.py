@@ -124,7 +124,7 @@ class Ubnt(PowerStrip):
 
     def __port_exists(self, port_id):
         if port_id == 0 or port_id > self.n_ports:
-            Logger().info("No such port")
+            logging.info("No such port")
             return False
         else:
             return True
@@ -140,44 +140,14 @@ class Ubnt(PowerStrip):
             cmd = "cat /dev/output" + str(port_id)
             return cmd
 
-    def up(self, port_id):
-        """
-        Turns on power on port
-
-        :param port_id: ID of power strip port
-        :param switch_all: flag to turn on all ports
-        :return: bool for failure or success
-        """
-        if self.__port_exists(port_id):
-            self.switch(port_id,  1)
-            return True
-        else:
-            return False
-
-    def down(self, port_id):
-        """
-        Turns off power on port
-
-        :param port_id: ID of power strip port
-        :param switch_all: flag to turn off all ports
-        :return: bool for failure or success
-        """
-
-        if self.__port_exists(port_id):
-            self.switch(port_id, 0)
-            return True
-        else:
-            return False
-
-    def switch(self, port_id, on_or_off):
+    def create_command(self, port_id: int, on_or_off: bool):
         """
         Switches the power on the given port
 
         :param port_id: ID of port to be switched
-        :param switch_all: flag to switch the whole strip
-        :param on_or_off: switch power to: 1 for on, 0 for off
+        :param on_or_off: switch power to: true for on, false for off
         """
-        assert on_or_off == 0 or on_or_off == 1
-        cmd = "echo " + str(on_or_off) + " > /dev/output" + str(port_id)
-
-        return cmd
+        if self.__port_exists(port_id):
+            on = 1 if on_or_off else 0
+            cmd = "echo " + str(on) + " > /dev/output" + str(port_id)
+            return cmd

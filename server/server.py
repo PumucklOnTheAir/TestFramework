@@ -140,6 +140,10 @@ class Server(ServerProxy):
                 logging.debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
                 cls._nv_assistent.create_namespace_vlan(router)
 
+            # add Namespace and Vlan for 1 Powerstrip (expand to more if necessary)
+            logging.debug("Add Namespace and Vlan for Powerstrip")
+            cls._nv_assistent.create_namespace_vlan(cls.get_power_strip())
+
             # update Router
             cls.router_online(None, update_all=True)
             # TODO Hat error verursacht
@@ -159,6 +163,7 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_routers_list()
+        cls._power_strips = ConfigManager.get_power_strip_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod

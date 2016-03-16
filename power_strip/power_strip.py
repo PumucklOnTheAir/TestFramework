@@ -18,21 +18,13 @@ class PowerStrip(RemoteSystem):
         pass
 
     @abstractmethod
-    def up(self, port_id: int) -> str:
+    def create_command(self, port_id: int, on_or_off: bool) -> str:
         """
-        generates the command to set the selected port to up, aka turn on the power
+        generates the command to set the selected port to up or down
 
         :param port_id: port to be set
+        :param on_or_off: turn on or off
         :return: command as string
         """
         pass
 
-    @abstractmethod
-    def down(self, port_id: int) -> str:
-        """
-        generates the command to set the selected port to down, aka turn off power
-
-        :param port_id: port to be set
-        :return: command as string
-        """
-        pass
