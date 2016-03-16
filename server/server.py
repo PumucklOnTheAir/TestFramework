@@ -150,8 +150,6 @@ class Server(ServerProxy):
             # update Router
             cls.router_online(None, update_all=True, blocked=True)
             cls.update_router_info(None, update_all=True)
-            #t = threading.Thread(target=cls._close_wait)
-            #t.start()
 
         logging.info("Runtime Server started")
 
