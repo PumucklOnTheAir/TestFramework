@@ -5,7 +5,9 @@ from typing import List
 
 class GatewayTest(FirmwareTest):
     """
-    This is a demo test - only to test the functionality of the framework itself.
+    Shouldn't work, because the processes of a Test have no internet access.
+    Test if an internet-connection exists.
+    Therefore two PINGs are send one to "google (8.8.8.8)" and one to "freifunk.net"
     """""
 
     def test_connection(self):
