@@ -92,7 +92,7 @@ class ConfigManager:
         """
         Read the routers from config file
 
-        :return: Dictionary with all routers
+        :return: Tuple with bool and dictionary with all routers
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -148,7 +148,7 @@ class ConfigManager:
         """
         Read the server config from the file
 
-        :return: Dictionary with all server properties from the file
+        :return: Tuple with bool and dictionary with all server properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -199,7 +199,7 @@ class ConfigManager:
         """
         Read the firmware config from the file
 
-        :return: Dictionary with all firmware properties from the file
+        :return: Tuple with bool and dictionary with all firmware properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -249,7 +249,7 @@ class ConfigManager:
     def get_web_interface_dict() -> (bool, dict):
         """
         Read the web interface config from the file
-        :return: Dictionary with all web interface properties from the file
+        :return: Tuple with bool and dictionary with all web interface properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -306,7 +306,7 @@ class ConfigManager:
     def get_power_strip_dict() -> (bool, dict):
         """
         Read the power strip config from the file
-        :return: Dictionary with all power strip properties from the file
+        :return: Tuple with bool and dictionary with all power strip properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -358,7 +358,7 @@ class ConfigManager:
         """
         Read the test config from the file
 
-        :return: Dictionary with all test properties from the file
+        :return: Tuple with bool and dictionary with all test properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
