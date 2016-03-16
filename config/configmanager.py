@@ -76,7 +76,7 @@ class ConfigManager:
         """
         Check the data against the schema
         :param data: Data from the yml file
-        :return:
+        :return: True if check is successfully
         """
         schema = ConfigManager.get_framework_schema()
         try:
