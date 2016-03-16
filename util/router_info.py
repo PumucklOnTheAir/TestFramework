@@ -251,6 +251,9 @@ class RouterInfo(Thread):
         return socket_lst
 
     def _get_router_uci(self):
+        """
+        :return: All values of the UCI of a Router.
+        """
         print("UCI_Info ...")
         uci_dict = dict()
         raw_uci_lst = self.network_ctrl.send_command("uci show")
