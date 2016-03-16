@@ -1,0 +1,109 @@
+{
+  "type": "object",
+  "properties": {
+    "server": {
+      "type": "object",
+      "properties": {
+        "serverdefaults": {
+          "type": "object",
+          "properties": {
+            "Server_Name": {"type": "string"},
+            "Log_Level": {"type": "integer"},
+            "Vlan_On": {"type": "boolean"},
+          },
+        },
+      },
+    },
+    "firmware": {
+      "type": "object",
+      "properties": {
+        "firmwaredefaults": {
+          "type": "object",
+          "properties": {
+            "URL": {"type": "string"},
+            "Release_Model": {"type": "string"},
+            "Firmware_Version": {"type": "string"},
+            "Download_All": {"type": "boolean"},
+          },
+        },
+      },
+    },
+    "routers": {
+      "type": "object",
+      "properties": {
+        "routersdefaults": {
+          "type": "object",
+          "properties": {
+            "Name": {"type": "string"},
+            "Id": {"type": "number"},
+            "PowerSocket": {"type": "number"},
+            "IP": {"type": "string"},
+            "IP_Mask": {"type": "number"},
+            "CONFIG_IP": {"type": "string"},
+            "CONFIG_IP_MASK": {"type": "number"},
+            "Username": {"type": "string"},
+            "Password": {"type": "string"},
+          },
+        },
+      },
+    },
+    "powerstrip": {
+      "type": "object",
+      "properties": {
+        "powerstripdefault": {
+          "type": "object",
+          "properties": {
+            "Power_Strip_Count": {"type": "number"},
+            "default_Name": {"type": "string"},
+            "default_vlan_Id": {"type": "number"},
+            "default_Mask": {"type": "number"},
+            "default_IP": {"type": "string"},
+            "default_Username": {"type": "string"},
+            "default_Password": {"type": "string"},
+            "default_Ports": {"type": "number"},
+          },
+        },
+      },
+    },
+    "webconfigs": {
+      "type": "object",
+      "properties": {
+        "webdefaults": {
+          "type": "object",
+          "properties": {
+            "node_name": {"type": "string"},
+            "mesh_vpn": {"type": "boolean"},
+            "limit_bandwidth": {"type": "boolean"},
+            "show_location": {"type": "boolean"},
+            "latitude": {"type": "number"},
+            "longitude": {"type": "number"},
+            "altitude": {"type": "number"},
+            "contact": {"type": "string"},
+            "private_wlan": {"type": "boolean"},
+            "ssid": {"type": "string"},
+            "ssid_key": {"type": "string"},
+            "ssh_keys": {"type": "string"},
+            "password": {"type": "string"},
+            "ipv4": {"type": "string"},
+            "ipv4_address": {"type": "string"},
+            "ipv4_netmask": {"type": "string"},
+            "gateway_v4": {"type": "string"},
+            "ipv6": {"type": "string"},
+            "ipv6_address": {"type": "string"},
+            "gateway_v6": {"type": "string"},
+            "static_dns_server": {"type": "string"},
+            "mesh_wan": {"type": "boolean"},
+            "mesh_lan": {"type": "boolean"},
+            "security_mode": {"type": "boolean"},
+            "performance_mode": {"type": "boolean"},
+            "client_network": {"type": "boolean"},
+            "mesh_network": {"type": "boolean"},
+            "transmission_power": {"type": "string"},
+            "auto_update": {"type": "boolean"},
+            "branch": {"type": "string"},
+          },
+        },
+      },
+    },
+  },
+}
