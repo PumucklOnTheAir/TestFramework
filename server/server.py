@@ -21,6 +21,16 @@ from collections import deque
 import os
 import sys
 import signal
+import platform
+
+if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
+    from util.router_info import RouterInfoJob
+    from util.router_online import RouterOnlineJob
+    from network.nv_assist import NVAssistent
+    from util.router_reboot import RouterRebootJob
+    from util.router_setup_web_configuration import RouterWebConfigurationJob
+    from util.router_flash_firmware import SysupgradeJob
+    from util.router_flash_firmware import Sysupdate
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -131,8 +141,6 @@ class Server(ServerProxy):
 
         # add Namespace and Vlan for each Router
         if cls.VLAN:
-            # TODO wrong place #70
-            from network.nv_assist import NVAssistent
             cls._nv_assistent = NVAssistent("eth0")
 
             for router in cls.get_routers():
@@ -141,7 +149,9 @@ class Server(ServerProxy):
 
             # update Router
             cls.router_online(None, update_all=True, blocked=True)
-            # cls.update_router_info(None, update_all=True)
+            cls.update_router_info(None, update_all=True)
+            #t = threading.Thread(target=cls._close_wait)
+            #t.start()
 
         logging.info("Runtime Server started")
 
@@ -176,14 +186,16 @@ class Server(ServerProxy):
             print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
+            cls._task_pool.terminate()
             cls._task_pool.join()
             cls._job_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
-            # close open streams and the logger instance
-            LoggerSetup.shutdown()
 
             cls._ipc_server.shutdown()
+
+            # close open streams and the logger instance
+            LoggerSetup.shutdown()
             sys.exit(0)
 
     @classmethod
@@ -604,7 +616,7 @@ class Server(ServerProxy):
         :param update_all: Is True if all Routers should be updated
         :param blocked: blocks until it finished
         """
-        from util.router_online import RouterOnlineJob  # TODO remove it from here #64
+
         if blocked:
             wait = 300
         else:
@@ -627,8 +639,6 @@ class Server(ServerProxy):
         :param update_all: Is True if all Routers should be updated
         """
         if cls.VLAN:
-            from util.router_info import RouterInfoJob  # TODO remove it from here #64
-
             if update_all:
                 for router in cls.get_routers():
                     cls.start_job(router, RouterInfoJob())
@@ -648,7 +658,7 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_flash_firmware import Sysupdate
+
         if update_all:
             for router in cls.get_routers():
                 sysupdate = Sysupdate(router)
@@ -670,7 +680,7 @@ class Server(ServerProxy):
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
-        from util.router_flash_firmware import SysupgradeJob  # TODO remove it from here #64
+
         if upgrade_all:
             for router in cls.get_routers():
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
@@ -694,7 +704,7 @@ class Server(ServerProxy):
         :param setup_all: If True all Routers will be setuped via the webinterface
         :param wizard
         """
-        from util.router_setup_web_configuration import RouterWebConfigurationJob  # TODO remove it from here #64
+
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
                 cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
@@ -712,7 +722,7 @@ class Server(ServerProxy):
         :param reboot_all: Reboots all Routers
         :param configmode: Reboots Router into configmode
         """
-        from util.router_reboot import RouterRebootJob  # TODO remove it from here #64
+
         if reboot_all:
             for router in cls.get_routers():
                 cls.start_job(router, RouterRebootJob(configmode))
