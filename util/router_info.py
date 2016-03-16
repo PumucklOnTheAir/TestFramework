@@ -53,6 +53,8 @@ class RouterInfo(Thread):
             self.router.ram = self._get_router_mem_ram()
             # Sockets
             self.router.sockets = self._get_router_sockets()
+            # UCI
+            self.router.uci = self._get_router_uci()
             logging.debug("%s[+] Infos updated", LoggerSetup.get_log_deep(2))
         except Exception as e:
             logging.warning("%s[-] Couldn't update all Infos", LoggerSetup.get_log_deep(2))
@@ -247,6 +249,14 @@ class RouterInfo(Thread):
             socket.program_name = raw_process[1]
             socket_lst.append(socket)
         return socket_lst
+
+    def _get_router_uci(self):
+        print("UCI_Info ...")
+        uci_dict = dict()
+        raw_uci_lst = self.network_ctrl.send_command("uci show")
+        for uci_info in raw_uci_lst:
+            print(str(uci_info))
+            key, value = uci_info.split("=")
 
 
 class RouterInfoJob(RemoteSystemJob):

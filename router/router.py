@@ -48,6 +48,7 @@ class Router(RemoteSystem):
         self._ram = None
         self._flashdriver = None
         self._firmware = Firmware.get_default_firmware()
+        self.uci = None
 
     def update(self, new_router) -> None:
         """
