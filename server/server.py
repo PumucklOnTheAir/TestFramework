@@ -141,7 +141,7 @@ class Server(ServerProxy):
 
             # update Router
             cls.router_online(None, update_all=True, blocked=True)
-            cls.update_router_info(None, update_all=True)
+            # cls.update_router_info(None, update_all=True)
 
         logging.info("Runtime Server started")
 
@@ -244,7 +244,7 @@ class Server(ServerProxy):
         """
         queue = cls.get_waiting_task_queue(remote_system)
         queue.appendleft(task)
-        logging.debug("%sAdded " + str(task) + " to queue of " + remote_system + ". Queue length: " + len(queue),
+        logging.debug("%sAdded " + str(task) + " to queue of " + str(remote_system) + ". Queue length: " + str(len(queue)),
                       LoggerSetup.get_log_deep(3))
 
     @classmethod
@@ -357,7 +357,7 @@ class Server(ServerProxy):
         except KeyboardInterrupt:
             cls.stop()
         except Exception as e:
-            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+            logging.error("%s start_task: " + str(e), LoggerSetup.get_log_deep(2))
         finally:
             cls._semaphore_task_management.release()
             # logging.debug(str(cls._waiting_tasks), 3)
