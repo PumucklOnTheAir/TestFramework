@@ -27,4 +27,3 @@ class PowerStrip(RemoteSystem):
         :return: command as string
         """
         pass
-

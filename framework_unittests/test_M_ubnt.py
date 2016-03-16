@@ -41,7 +41,6 @@ class TestUbnt(TestCase):
     def _power_on(self, ps: Ubnt, q: Queue, port: int):
         nv_assist = NVAssistent("eth0")
         nv_assist.create_namespace_vlan(ps)
-        # Set netns for the current process
         netns.setns(ps.namespace_name)
 
         power_on = PowerStripControl(ps, True, port)
@@ -54,7 +53,6 @@ class TestUbnt(TestCase):
     def _power_off(self, ps: Ubnt, q: Queue, port: int):
         nv_assist = NVAssistent("eth0")
         nv_assist.create_namespace_vlan(ps)
-        # Set netns for the current process
         netns.setns(ps.namespace_name)
 
         power_on = PowerStripControl(ps, True, port)
