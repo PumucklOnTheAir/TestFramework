@@ -68,6 +68,11 @@ class RemoteSystemJob(metaclass=ABCMeta):
         """
         logging.debug("%sPrepare job", LoggerSetup.get_log_deep(5))
         self.remote_system = remote_sys
+        RemoteSystemJob._prepare(remote_sys)
+
+    @classmethod
+    def _prepare(cls, remote_sys: RemoteSystem):
+        cls.remote_system = remote_sys
 
     @abstractstaticmethod
     def pre_process(self, server) -> {}:

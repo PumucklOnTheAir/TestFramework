@@ -7,6 +7,11 @@ class ConnectionTest(FirmwareTest):
     """
     This is a demo test - only to test the functionality of the framework itself.
     """""
+
+    @classmethod
+    def setUpClass(cls):
+        assert cls.remote_system.id == 0
+
     def test_self_router(self):
         assert self.remote_system.id == 0
 
