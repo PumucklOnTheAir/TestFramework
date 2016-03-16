@@ -75,7 +75,7 @@ class ConfigManager:
     def check(data: object = None) -> bool:
         """
         Check the data against the schema
-        :param data: yml Data
+        :param data: Data from the yml file
         :return:
         """
         schema = ConfigManager.get_framework_schema()
