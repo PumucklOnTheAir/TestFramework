@@ -22,12 +22,12 @@ class CLIUtil:
             if len(content[i]) != len(headers):
                 logging.warning("Content and headers do not match")
 
-            assert(len(content[i]) == len(headers))
+            assert(len(i) == len(headers))
 
         # generate list of column widths, compare with strings in header
         table = [headers]
-        for i in range(len(content)):
-            table.append(content[i])
+        for i in content:
+            table.append(i)
         width_list = [[len(str(x)) for x in row] for row in table]
         width_list = list(map(max, zip(*width_list)))
 
@@ -37,15 +37,15 @@ class CLIUtil:
         print("+" + "=".join("={}=".format("".ljust(width_list[i], "=")) for i, x in enumerate(content[0])) + "+")
 
         # print content
-        for c in range(len(content)):
+        for c in content:
             print("|" + "|".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(content[c])) + "|")
+                                 for i, x in enumerate(c)) + "|")
             if c == len(content) - 1:
                 print("+" + "-".join("-{}-".format("".ljust(width_list[i], "-"))
-                                     for i, x in enumerate(content[c])) + "+")
+                                     for i, x in enumerate(c)) + "+")
             else:
                 print("|" + "+".join("-{}-".format("".ljust(width_list[i], "-"))
-                                     for i, x in enumerate(content[c])) + "|")
+                                     for i, x in enumerate(c)) + "|")
 
     def print_status(self, routers, headers):
         """
@@ -86,40 +86,59 @@ class CLIUtil:
                 "".join("{}".format(" ") for _ in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
     @staticmethod
-    def print_list(content):
+    def print_list(content, headers):
         """
         prints a simple list(table) sorted by the first row and formatted
 
         :param content: list of list (table)
+        :param headers: list of headers for table, leave empty if not wanted
         :return:
         """
         # generate list of row widths
-        width_list = [[len(str(x)) for x in row] for row in content]
+        width_list = content.copy()
+        width_list.append(headers)
+        width_list = [[len(str(x)) for x in row] for row in width_list]
         width_list = list(map(max, zip(*width_list)))
 
         # sort content by the first row
         content.sort(key=lambda x: x[0])
 
-        # print list
         line = "+" + "-".join("-{}-".format("-".ljust(width_list[i], "-"))
                               for i, x in enumerate(content[0])) + "+"
-        print(line)
-        for c in range(len(content)):
+
+        # print headers only if wanted
+        if len(headers) > 0:
+            print(line)
             print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(content[c])))
+                                 for i, x in enumerate(headers)))
+
+        # print list
+        print(line)
+        for c in content:
+            print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
+                                 for i, x in enumerate(c)))
         print(line)
 
-    @staticmethod
-    def print_router(router_list):
+    def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list):
         """
         prints a detailed list of info on a router
 
         :param router_list: list of info on router
+        :param if_list_headers: headers for the interfaces
+        :param if_list: list of interfaces
+        :param proc_list_headers: headers for the CPU Process table
+        :param proc_list: list of CPU processes running on router
         :return:
         """
-        print("------Detailed Router Info------")
+        print(OutputColors.bold + "------Detailed Router Info------" + OutputColors.clear)
         for elem in router_list:
             print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
+
+        print(OutputColors.bold + "\v------Interfaces------" + OutputColors.clear)
+        self.print_list(if_list, if_list_headers)
+
+        print(OutputColors.bold + "\v------CPU Processes------" + OutputColors.clear)
+        self.print_list(proc_list, proc_list_headers)
 
     @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
