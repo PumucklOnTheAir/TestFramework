@@ -3,7 +3,11 @@ import re
 import os
 import errno
 from firmware.firmware import Firmware
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
+
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+FIRMWARE_PATH = os.path.join(BASE_DIR, 'firmware/firmwares')  # Join the path to the webserver files with firmwares
 
 
 class FirmwareHandler:
@@ -15,8 +19,6 @@ class FirmwareHandler:
         4. Creates the Firmware-Objects and lists them
     """
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-    FIRMWARE_PATH = os.path.join(BASE_DIR, 'firmware/firmwares')  # Join the path to the webserver files with firmwares
     UPDATE_TYPE = "sysupgrade"
 
     def __init__(self, url: str):
@@ -34,7 +36,7 @@ class FirmwareHandler:
         :param download_all: if all Firmwares in the Manifest should be downloaded
         :return: Firmware
         """
-        Logger().info("Configure download of Firmware for Router(" + router_model + ")", 1)
+        logging.info("%sConfigure download of Firmware for Router(" + router_model + ")", LoggerSetup.get_log_deep(1))
         self.import_firmwares(release_model)
 
         if download_all:
@@ -59,7 +61,8 @@ class FirmwareHandler:
         for firmware in self.firmwares:
             if parsed_router_model in firmware.name:
                 return firmware
-        Logger().info("[-] Couldn't found a matching Firmware to Router(" + router_model + ")", 2)
+        logging.info("%s[-] Couldn't found a matching Firmware to Router(" + router_model + ")",
+                     LoggerSetup.get_log_deep(2))
         return None
 
     def _verified_download(self, firmware: Firmware, hash_firmware: str, max_attempts: int) -> bool:
@@ -78,10 +81,12 @@ class FirmwareHandler:
                 valid_download = firmware.check_hash(hash_firmware)
             count += 1
         if count >= max_attempts:
-            Logger().debug("[-] The Firmware(" + firmware.name + ") couldn't be downloaded", 3)
+            logging.debug("%s[-] The Firmware(" + firmware.name + ") couldn't be downloaded",
+                          LoggerSetup.get_log_deep(3))
             return False
         else:
-            Logger().debug("[+] The Firmware(" + firmware.name + ") was successfully downloaded", 3)
+            logging.debug("%s[+] The Firmware(" + firmware.name + ") was successfully downloaded",
+                          LoggerSetup.get_log_deep(3))
             return True
 
     def download_firmware(self, router_model: str, release_model: str, max_attemps: int=3) -> Firmware:
@@ -92,7 +97,7 @@ class FirmwareHandler:
         :param max_attemps: max number of attemps to download a firmware
         :return: Firmware
         """
-        Logger().debug("Download single Firmware ...", 2)
+        logging.debug("%sDownload single Firmware ...", LoggerSetup.get_log_deep(2))
         firmwares, hashs = self._get_all_firmwares(release_model)
         router_model_name, router_model_version = self._parse_router_model(router_model)
         parsed_router_model = router_model_name + "-" + router_model_version
@@ -110,7 +115,7 @@ class FirmwareHandler:
         :param max_attemps: max number of attemps to download a firmware
         :return: A List of all Firmware-Objects
         """
-        Logger().debug("Download all Firmwares ...", 2)
+        logging.debug("%sDownload all Firmwares ...", LoggerSetup.get_log_deep(2))
         firmwares, hashs = self._get_all_firmwares(release_model)
         num_firmwares = len(firmwares)
         for i, firmware in enumerate(firmwares):
@@ -118,7 +123,8 @@ class FirmwareHandler:
             if not valid_download:
                 del(firmwares[i])
                 del(hashs[i])
-        Logger().info(str(len(firmwares)) + "/" + str(num_firmwares) + " Firmwares downloaded", 3)
+        logging.info("%s" + str(len(firmwares)) + "/" + str(num_firmwares) + " Firmwares downloaded",
+                     LoggerSetup.get_log_deep(3))
         return firmwares
 
     def _get_all_firmwares(self, release_model: str):
@@ -132,12 +138,14 @@ class FirmwareHandler:
         hashs = []
         non_parsed_firmwares = self._read_firmwares_from_manifest(release_model)
         for firmware in non_parsed_firmwares:
+            if firmware.find("---\n") != -1:  # skip the end of the file
+                continue
             firmware_name = "gluon" + firmware.split("gluon")[1].split("-sysupgrade")[0] + "-" + \
                             FirmwareHandler.UPDATE_TYPE + "." + firmware.split(".")[-1].replace("\n", "")
             hash_firmware = firmware.split(' ')[4]
             freifunk_verein = firmware_name.split('-')[1]
             firmware_version = firmware_name.split('-')[2]
-            file = (self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
+            file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                     firmware_name)
             url = self.url + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' + firmware_name
             firmwares.append(Firmware(firmware_name, firmware_version, freifunk_verein, release_model, file, url))
@@ -150,7 +158,7 @@ class FirmwareHandler:
         :param release_model: stable, beta, experimental
         :return: list of firmwares written like in the manifest
         """
-        Logger().debug("Create a list of firmwares from the manifest ...", 4)
+        logging.debug("%sCreate a list of firmwares from the manifest ...", LoggerSetup.get_log_deep(4))
         file = self._download_manifest(release_model)
         firmwares = []
         with open(file, 'r') as f:
@@ -169,7 +177,7 @@ class FirmwareHandler:
         :param firmware_name:
         :return: bool
         """
-        file = (self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
+        file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                 release_model + '.manifest')
         with open(file, 'r') as f:
             for line in f:
@@ -185,15 +193,15 @@ class FirmwareHandler:
         :param release_model: stable, beta, experimental
         :return: True if the firmware was successfully downloaded
         """
-        Logger().info("Download " + url + " ...", 2)
-        self._create_path(self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE)
+        logging.info("%sDownload " + url + " ...", LoggerSetup.get_log_deep(2))
+        self._create_path(FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE)
         try:
             # Download the file from `url` and save it locally under `file_name`:
             urllib.request.urlretrieve(url, file)
             return True
         except Exception as e:
-            Logger().debug("[-] Failed download", 3)
-            Logger().error(str(e), 3)
+            logging.debug("%s[-] Failed download", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
             return False
 
     def _download_manifest(self, release_model: str, max_count: int=3) -> str:
@@ -204,7 +212,7 @@ class FirmwareHandler:
         """
         url = (self.url + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                release_model + '.manifest')
-        file = (self.FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
+        file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                 release_model + '.manifest')
         valid_download = False
         count = 0
@@ -212,10 +220,10 @@ class FirmwareHandler:
             valid_download = self._download_file(url, file, release_model)
             count += 1
         if count >= max_count:
-            Logger().debug("[-] Couldn't download manifest", 3)
+            logging.debug("%s[-] Couldn't download manifest", LoggerSetup.get_log_deep(3))
             return ""
         else:
-            Logger().debug("[+] Successfully downloaded manifest", 3)
+            logging.debug("%s[+] Successfully downloaded manifest", LoggerSetup.get_log_deep(3))
             return file
 
     def _parse_router_model(self, router_model: str):
@@ -224,14 +232,15 @@ class FirmwareHandler:
         :param router_model:
         :return: router_model_name and router_model_version
         """
-        Logger().debug("Parse RouterModel ...", 2)
+        logging.debug("Parse RouterModel ...", LoggerSetup.get_log_deep(2))
         tmp = router_model.split(' v')
         router_model_name = tmp[0]
         router_model_version = 'v' + tmp[1]
         router_model_name = router_model_name.lower()
         # replace all symbols with a minus
         router_model_name = re.sub(r'(?:[^\w])', '-', router_model_name)
-        Logger().debug("'" + router_model + "' into '" + router_model_name + " " + router_model_version + "'", 3)
+        logging.debug("%s'" + router_model + "' into '" + router_model_name + " " + router_model_version + "'",
+                      LoggerSetup.get_log_deep(3))
         return [router_model_name, router_model_version]
 
     def _create_path(self, path: str):
@@ -240,27 +249,27 @@ class FirmwareHandler:
         :param path:
         """
         try:
-            Logger().debug("Create path " + path + " ...", 3)
+            logging.debug("%sCreate path " + path + " ...", LoggerSetup.get_log_deep(3))
             os.makedirs(path)
-            Logger().debug("[+] Path successfully created", 4)
+            logging.debug("%s[+] Path successfully created", LoggerSetup.get_log_deep(4))
         except OSError as exception:
             if exception.errno != errno.EEXIST:
                 raise
-            Logger().debug("[+] Path allready exists", 4)
+            logging.debug("%s[+] Path allready exists", LoggerSetup.get_log_deep(4))
 
     def import_firmwares(self, release_model: str):
         """
         Imports the stored Firmwares, so the firmware_handler can use them.
         :param release_model: stable, beta, experimental
         """
-        path = self.FIRMWARE_PATH + '/' + release_model + '/' + self.UPDATE_TYPE + '/'
-        Logger().debug("Import Firmwares from '" + path + "'", 2)
+        path = FIRMWARE_PATH + '/' + release_model + '/' + self.UPDATE_TYPE + '/'
+        logging.debug("%sImport Firmwares from '" + path + "'", LoggerSetup.get_log_deep(2))
         count = 0
 
         try:
             files = os.listdir(path)
         except Exception:
-            Logger().debug("No Firmwares available for download at path '" + path + "'", 3)
+            logging.debug("%sNo Firmwares available for import at path '" + path + "'", LoggerSetup.get_log_deep(3))
             return
 
         for firmware_name in files:
@@ -273,6 +282,6 @@ class FirmwareHandler:
                                                release_model, file, url))
                 count += 1
             except Exception:
-                Logger().warning("[-] Couldn't import " + firmware_name, 3)
+                logging.warning("%s[-] Couldn't import " + firmware_name, LoggerSetup.get_log_deep(3))
                 continue
-        Logger().debug(str(count) + " Firmwares imported", 3)
+        logging.debug("%s" + str(count) + " Firmwares imported", LoggerSetup.get_log_deep(3))

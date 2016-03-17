@@ -2,11 +2,11 @@
 
 from server.ipc import IPC
 from util.cli_util import CLIUtil
-from log.logger import Logger
-from router import CPUProcess, NetworkInterface
+import logging
 import argparse
 import time
 import sys
+import subprocess
 
 
 def connect_to_server():
@@ -15,7 +15,7 @@ def connect_to_server():
     """
 
     if verbose:
-        Logger().info("Setting up IPC client")
+        logging.info("Setting up IPC client")
 
     global ipc_client
     ipc_client = IPC()
@@ -25,9 +25,14 @@ def connect_to_server():
     time.sleep(1)
 
     if verbose:
-        Logger().info("Client successfully connected")
+        logging.info("Client successfully connected")
 
     server_proxy = ipc_client.get_server_proxy()
+
+    # register console for cli
+    name = subprocess.getoutput('tty')
+    server_proxy.register_tty(name)
+
     return server_proxy
 
 
@@ -40,7 +45,7 @@ def print_routers(routers):
     """
 
     # Headers for table
-    headers = ["ID", "Router Model/Vers", "VLAN ID", "Router Name", "IP", "MAC"]
+    headers = ["ID", "Router Model/Vers", "VLAN ID", "Mode", "IP", "MAC"]
     string_list = []
 
     # Collect info on routers
@@ -48,7 +53,7 @@ def print_routers(routers):
         string_list.append([routers[i].id,
                             routers[i].model,
                             routers[i].vlan_iface_id,
-                            routers[i].wlan_mode,
+                            routers[i].mode,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
 
@@ -65,7 +70,7 @@ def print_router_info(router_list, rid):
     """
     router = [elem for elem in router_list if str(elem.id) == str(rid)]
     if not router:
-        Logger().info("No such router found, check the list again")
+        logging.info("No such router found, check the list again")
     else:
         # Collect info on router [["header", info],...]
         router = router[0]
@@ -75,7 +80,7 @@ def print_router_info(router_list, rid):
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
                 ["VLan ID", router.vlan_iface_id],
-                ["WLAN Modus", router.wlan_mode],
+                ["Mode", router.mode],
                 ["username", router.usr_name],
                 ["password", router.usr_password],
                 ["SSID", router.ssid],
@@ -153,13 +158,39 @@ def create_parsers():
                                   default=[], action="store", help="List of routers to be configured", nargs="+")
     parser_webconfig.add_argument("-a", "--all", action="store_true", default=False,
                                   help="Apply to all routers")
+    parser_webconfig.add_argument("-w", "--wizard", action="store_true", default=False,
+                                  help="start in Wizard Mode, if False start in Expert Mode")
 
-    # subparser for connect
-    parser_connect = subparsers.add_parser("connect", help="")
-    parser_connect.add_argument("-r", "--routers", metavar="Router ID", type=int,
-                                default=[], action="store", help="List of routers", nargs="+")
-    parser_connect.add_argument("-a", "--all", action="store_true", default=False,
-                                help="Apply to all routers")
+    # subparser for update_info
+    parser_update_info = subparsers.add_parser("update_info", help="Updates the router info")
+    parser_update_info.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                    default=[], action="store", help="List of routers", nargs="+")
+    parser_update_info.add_argument("-a", "--all", action="store_true", default=False,
+                                    help="Apply to all routers")
+
+    # subparser for online
+    parser_online = subparsers.add_parser("online", help="")
+    parser_online.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                               help="List of routers", nargs="+")
+    parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
+
+    # subparser for test set
+    parser_test_set = subparsers.add_parser("start", help="Start a test set")
+    parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                                 help="", nargs="+")
+    parser_test_set.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
+    parser_test_set.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
+                                 help="Name of set")
+    parser_test_set.add_argument("-b", "--blocking", help="Blocks until finished", default=False,
+                                 action="store_true")
+
+    # subparser for test results
+    parser_test_result = subparsers.add_parser("results", help="Manage the test results")
+    parser_test_result.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
+                                    help="", nargs="+")
+    parser_test_result.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
+    parser_test_result.add_argument("-rm", "--remove", action="store_true", default=False,
+                                    help="Remove all results. Ignoring parameter -r.")
 
     return parser
 
@@ -178,17 +209,18 @@ def main():
 
     global util
     util = CLIUtil()
-    util.print_header()
+    # Isn't necessary
+    # util.print_header()
 
     try:
         server_proxy = connect_to_server()
     except ConnectionError as e:
-        Logger().warning("Failed to establish connection: " + str(e))
-        Logger().info("Exiting")
+        logging.warning("Failed to establish connection: " + str(e))
+        logging.info("Exiting")
         sys.exit(1)
 
     if verbose:
-        Logger().info("Mode set to verbose")
+        logging.info("Mode set to verbose")
 
     if args.mode == "status":
         """
@@ -198,7 +230,7 @@ def main():
             # return status of all routers
             routers = server_proxy.get_routers()
             if not routers:
-                Logger().warning("No routers in network")
+                logging.warning("No routers in network")
             else:
                 print_routers(routers)
 
@@ -238,18 +270,59 @@ def main():
         subparse: webconfig
         """
         config_all = args.all
+        toggle_wizard = args.wizard
 
-        server_proxy.setup_web_configuration(args.routers, config_all)
+        server_proxy.setup_web_configuration(args.routers, config_all, toggle_wizard)
 
-    elif args.mode == "connect":
+    elif args.mode == "update_info":
         """
-        subparse: connect
+        subparse: update_info
         """
-        connect_all = args.all
-        server_proxy.router_online(args.routers, connect_all)
+        update_all = args.all
+
+        server_proxy.update_router_info(args.routers, update_all)
+
+    elif args.mode == "online":
+        """
+        subparse: online
+        """
+        online_all = args.all
+        server_proxy.router_online(args.routers, online_all)
+
+    elif args.mode == "start":
+        """
+        subparse: start
+        """
+        if args.all:
+            router_id = -1
+        else:
+            router_id = args.routers[0]
+        set_name = args.set
+
+        if args.blocking:
+            wait = 5000  # seconds
+        else:
+            wait = -1  # don't wait
+
+        server_proxy.start_test_set(router_id, set_name, wait)
+
+    elif args.mode == "results":
+        """
+        subparse: results
+        """
+
+        if args.remove:
+            removed = server_proxy.delete_test_results()
+            print("Removed all " + str(removed) + " results.")
+        else:
+            if args.all:
+                router_id = -1
+            else:
+                router_id = args.routers[0]
+            util.print_test_results(server_proxy.get_test_results(router_id))
 
     else:
-        Logger().info("Check --help for help")
+        logging.info("Check --help for help")
 
 
 if __name__ == "__main__":

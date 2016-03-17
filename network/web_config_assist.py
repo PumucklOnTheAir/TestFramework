@@ -1,6 +1,6 @@
 from selenium.webdriver.support.ui import WebDriverWait
-from log.logger import Logger
-from router.router import Mode
+from log.loggersetup import LoggerSetup
+import logging
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
 
 
@@ -26,17 +26,17 @@ class WebConfigurationAssist:
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
         :param router: Remote object
         """
-        Logger().debug("Create WebConfigurationAssist ...", 2)
+        logging.debug("%sCreate WebConfigurationAssist ...", LoggerSetup.get_log_deep(2))
         self.config = config
         self.router = router
         try:
             pre_command = ['ip', 'netns', 'exec', self.router.namespace_name]
             self.browser = WebdriverPhantomjsExtended(pre_command=pre_command)
             self.browser.get(self.router.ip)
-            Logger().debug("[+] Browser started", 3)
-            Logger().debug("[*] Config: " + str(self.config), 3)
+            logging.debug("%s[+] Browser started", LoggerSetup.get_log_deep(3))
+            logging.debug("%s[*] Config: " + str(self.config), LoggerSetup.get_log_deep(3))
         except Exception as e:
-            Logger().debug("[-] Couldn't start Browser", 3)
+            logging.debug("%s[-] Couldn't start Browser", LoggerSetup.get_log_deep(3))
             raise e
 
     def setup_wizard(self):
@@ -58,7 +58,7 @@ class WebConfigurationAssist:
 
             Submit:             [button]
         """
-        Logger().debug("Setup 'wizard' ...", 3)
+        logging.debug("%sSetup 'wizard' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/gluon-config-mode/')
 
         node_name_field_id = "cbid.wizard.1._hostname"
@@ -107,7 +107,6 @@ class WebConfigurationAssist:
         contact_field_element.send_keys(self.config['contact'])
 
         safe_restart_button_element.click()
-        self.router.mode = Mode.normal
 
     def setup_expert_private_wlan(self):
         """
@@ -119,7 +118,7 @@ class WebConfigurationAssist:
                 ssid key:       [text]
             submit:         [button]
         """
-        Logger().debug("Setup 'Private WLAN' ...", 3)
+        logging.debug("%sSetup 'Private WLAN' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/privatewifi/')
 
         private_wlan_field_id = "cbid.wifi.1.enabled"
@@ -159,7 +158,7 @@ class WebConfigurationAssist:
 
             submit:     [button]
         """
-        Logger().debug("Setup 'Remote Access' ...", 3)
+        logging.debug("%sSetup 'Remote Access' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/remote/')
 
         ssh_keys_field_id = "cbid.system._keys._data"
@@ -213,7 +212,7 @@ class WebConfigurationAssist:
 
             submit:     [button]
         """
-        Logger().debug("Setup 'Network' ...", 3)
+        logging.debug("%sSetup 'Network' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/portconfig/')
 
         ipv4_automatic_field_id = "cbi-portconfig-1-ipv4-dhcp"
@@ -297,7 +296,7 @@ class WebConfigurationAssist:
 
             submit:         [button]
         """
-        Logger().debug("Setup 'Mesh VPN' ...", 3)
+        logging.debug("%sSetup 'Mesh VPN' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/mesh_vpn_fastd/')
 
         security_mode_field_id = "cbid.mesh_vpn.1.mode1"
@@ -323,7 +322,7 @@ class WebConfigurationAssist:
 
             submit:         [Submit]
         """
-        Logger().debug("Setup 'WLAN' ...", 3)
+        logging.debug("%sSetup 'WLAN' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/wifi-config/')
 
         client_network_field_id = "cbid.wifi.1.radio0_client_enabled"
@@ -371,7 +370,7 @@ class WebConfigurationAssist:
 
             submit:         [button]
         """
-        Logger().debug("Setup 'AutoUpdate' ...", 3)
+        logging.debug("%sSetup 'AutoUpdate' ...", LoggerSetup.get_log_deep(3))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/autoupdater/')
 
         autoupdate_field_id = "cbid.autoupdater.settings.enabled"

@@ -1,4 +1,5 @@
-from log.logger import Logger
+import logging
+from unittest import TestResult
 
 
 class CLIUtil:
@@ -11,21 +12,22 @@ class CLIUtil:
     def print_dynamic_table(content, headers):
         """
         prints a dynamically formatted table
+
         :param content: list of lists of data
         :param headers: list of headers
         """
 
         # check for correct list lengths
-        for i in content:
-            if len(i) != len(headers):
-                Logger().warning("Content and headers do not match")
+        for i in range(len(content)):
+            if len(content[i]) != len(headers):
+                logging.warning("Content and headers do not match")
 
-            assert(len(i) == len(headers))
+            assert(len(content[i]) == len(headers))
 
         # generate list of column widths, compare with strings in header
         table = [headers]
-        for i in content:
-            table.append(i)
+        for i in range(len(content)):
+            table.append(content[i])
         width_list = [[len(str(x)) for x in row] for row in table]
         width_list = list(map(max, zip(*width_list)))
 
@@ -35,19 +37,20 @@ class CLIUtil:
         print("+" + "=".join("={}=".format("".ljust(width_list[i], "=")) for i, x in enumerate(content[0])) + "+")
 
         # print content
-        for c in content:
+        for c in range(len(content)):
             print("|" + "|".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(c)) + "|")
+                                 for i, x in enumerate(content[c])) + "|")
             if c == len(content) - 1:
                 print("+" + "-".join("-{}-".format("".ljust(width_list[i], "-"))
-                                     for i, x in enumerate(c)) + "+")
+                                     for i, x in enumerate(content[c])) + "+")
             else:
                 print("|" + "+".join("-{}-".format("".ljust(width_list[i], "-"))
-                                     for i, x in enumerate(c)) + "|")
+                                     for i, x in enumerate(content[c])) + "|")
 
     def print_status(self, routers, headers):
         """
         prints the status of all routers
+
         :param routers: list of routers
         :param headers: list of headers
         """
@@ -62,6 +65,7 @@ class CLIUtil:
     def print_header():
         """
         prints header for the command line
+
         :return:
         """
         print("\v\t" + OutputColors.bold + "Freifunk Testframework\v" + OutputColors.clear)
@@ -70,6 +74,7 @@ class CLIUtil:
     def return_progressbar(router, tid, percentage):
         """
         returns the visual progress of a test on a router
+
         :param router: router name
         :param tid: ID of test
         :param percentage: progress of test in percent
@@ -81,57 +86,59 @@ class CLIUtil:
                 "".join("{}".format(" ") for _ in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
     @staticmethod
-    def print_list(content, headers):
+    def print_list(content):
         """
         prints a simple list(table) sorted by the first row and formatted
+
         :param content: list of list (table)
-        :param headers: list of headers for table, leave empty if not wanted
         :return:
         """
         # generate list of row widths
-        width_list = content.copy()
-        width_list.append(headers)
-        width_list = [[len(str(x)) for x in row] for row in width_list]
+        width_list = [[len(str(x)) for x in row] for row in content]
         width_list = list(map(max, zip(*width_list)))
 
         # sort content by the first row
         content.sort(key=lambda x: x[0])
 
+        # print list
         line = "+" + "-".join("-{}-".format("-".ljust(width_list[i], "-"))
                               for i, x in enumerate(content[0])) + "+"
-
-        # print headers only if wanted
-        if len(headers) > 0:
-            print(line)
-            print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(headers)))
-
-        # print list
         print(line)
-        for c in content:
+        for c in range(len(content)):
             print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(c)))
+                                 for i, x in enumerate(content[c])))
         print(line)
 
-    def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list):
+    @staticmethod
+    def print_router(router_list):
         """
         prints a detailed list of info on a router
+
         :param router_list: list of info on router
-        :param if_list_headers: headers for the interfaces
-        :param if_list: list of interfaces
-        :param proc_list_headers: headers for the CPU Process table
-        :param proc_list: list of CPU processes running on router
         :return:
         """
-        print(OutputColors.bold + "------Detailed Router Info------" + OutputColors.clear)
+        print("------Detailed Router Info------")
         for elem in router_list:
             print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
 
-        print(OutputColors.bold + "\v------Interfaces------" + OutputColors.clear)
-        self.print_list(if_list, if_list_headers)
+    @staticmethod
+    def print_test_results(result_list: [(int, str, TestResult)]):
+        """
+        Prints a the TestResult list
 
-        print(OutputColors.bold + "\v------CPU Processes------" + OutputColors.clear)
-        self.print_list(proc_list, proc_list_headers)
+        :param result_list:
+        :return:
+        """
+        headers = ["Router ID", "Test", "(S|F|E)"]
+        content = []
+        print("------Testresults------")
+        for result in result_list:
+            content.append([str(result[0]), result[1], "(" + str(result[2].testsRun - len(result[2].failures) -
+                                                                 len(result[2].errors)) +
+                            "|" + str(len(result[2].failures)) +
+                            "|" + str(len(result[2].errors)) + ")"])
+
+        CLIUtil.print_dynamic_table(content, headers)
 
 
 class OutputColors:

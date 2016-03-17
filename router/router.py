@@ -1,16 +1,7 @@
-from server.proxyobject import ProxyObject
 from enum import Enum
 from firmware.firmware import Firmware
 from network.remote_system import RemoteSystem
 from router.memory import RAM, Flashdriver
-
-
-class WlanMode(Enum):
-    master = 1
-    managed = 2
-    ad_hoc = 3
-    monitor = 4
-    unknown = 5
 
 
 class Mode(Enum):
@@ -20,10 +11,11 @@ class Mode(Enum):
     """""
     normal = 1
     configuration = 2
+    reboot = 3
     unknown = 3
 
 
-class Router(ProxyObject, RemoteSystem):
+class Router(RemoteSystem):
     """
     This class represent a Freifunk-Router
     """""
@@ -31,7 +23,7 @@ class Router(ProxyObject, RemoteSystem):
     def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
                  config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
 
-        ProxyObject.__init__(self)
+        RemoteSystem.__init__(self)
 
         self._id = id
         self._ip = ip
@@ -45,17 +37,28 @@ class Router(ProxyObject, RemoteSystem):
 
         # Optional values
         self._mode = Mode.unknown
-        self._model = None
+        self._model = ""
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
-        self._wlan_mode = WlanMode.unknown
         self._ssid = ''
         self.interfaces = dict()
         self.cpu_processes = list()
+        self.sockets = list()
         self._ram = None
         self._flashdriver = None
         self._firmware = Firmware.get_default_firmware()
+
+    def update(self, new_router) -> None:
+        """
+        Updates the properties from this router
+        :param new_router: router with newer property values
+        :return:
+        """
+        self._model = new_router.model
+        self._mac = new_router.mac
+        self._ssid = new_router.ssid
+        self._mode = new_router.mode
 
     @property
     def id(self) -> int:
@@ -161,23 +164,6 @@ class Router(ProxyObject, RemoteSystem):
         """
         assert isinstance(value, str)
         self._ssid = value
-
-    @property
-    def wlan_mode(self) -> Mode:
-        """
-        The WLAN mode of the router. Value could be outdated.
-
-        :return:
-        """
-        return self._wlan_mode
-
-    @wlan_mode.setter
-    def wlan_mode(self, value: Mode):
-        """
-        :type value: str
-        """
-        assert isinstance(value, WlanMode)
-        self._wlan_mode = value
 
     @property
     def model(self) -> str:
@@ -293,3 +279,25 @@ class Router(ProxyObject, RemoteSystem):
         """
         assert isinstance(value, Flashdriver)
         self._flashdriver = value
+
+    def __str__(self):
+        string = "\nRouter: \n"
+        string += "ID: " + str(self.id) + "\n"
+        string += "MAC: " + self.mac + "\n"
+        string += "Model:" + self.model + "\n"
+        string += "Namespace: " + self.namespace_name + "\n"
+        string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
+        string += "IP: " + self.ip + "/" + str(self.ip_mask) + "\n"
+        string += "Power Socket: " + str(self.power_socket) + "\n"
+        string += "User Name: " + self.usr_name + ", Password: " + self._usr_password + "\n"
+        string += "\nInterfaces: \n"
+        for interface in self.interfaces.values():
+            string += str(interface) + "\n"
+        string += "\nSockets: \n"
+        for socket in self.sockets:
+            string += str(socket) + "\n"
+        string += "\nCPU Processes: \n"
+        for cpu_process in self.cpu_processes:
+            string += str(cpu_process) + "\n"
+        string += "\nMemory: " + str(self.ram) + "\n"
+        return string

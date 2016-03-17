@@ -1,31 +1,19 @@
 from threading import Thread
-from router.router import Router
-from log.logger import Logger
+from router.router import Router, Mode
+from log.loggersetup import LoggerSetup
+import logging
 from network.web_config_assist import WebConfigurationAssist
-
-
-# TODO: Die einzelnen Funktionen sollen später nicht in einem Thread ausgeführt werden.
-# TODO: Im Moment stürtzt allerdings der Server noch ab wenn der NetworkCrtl nicht in einem eigenen Thread läuft
-'''
-class RouterWebConfiguration:
-
-    @staticmethod
-    def setup(router: Router, webinterface_config):
-        """
-        Instantiate a NetworkCtrl and setup the webinterface of the Router
-
-        :param router:
-        :param webinterface_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, ...}
-        """
-        worker = SetupWorker(router, webinterface_config)
-        worker.start()
-        worker.join()
-'''
+from network.remote_system import RemoteSystemJob
+from util.dhclient import Dhclient
+import time
 
 
 class RouterWebConfiguration(Thread):
+    """
+    The RouterWebConfiguration setup the webinterface of the Router by a given configuration-file.
+    """""
 
-    def __init__(self, router: Router, webinterface_config, wizard: bool):
+    def __init__(self, router: Router, webinterface_config: dict, wizard: bool):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
 
@@ -43,7 +31,7 @@ class RouterWebConfiguration(Thread):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router
         """
-        Logger().info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
+        logging.info("Configure the webinterface of the Router(" + str(self.router.id) + ") ...")
         if self.wizard:
             self._wca_setup_wizard(self.webinterface_config)
         else:
@@ -61,8 +49,16 @@ class RouterWebConfiguration(Thread):
             wca.setup_wizard()
             wca.exit()
         except Exception as e:
-            Logger().error(str(e), 2)
+            logging.error(str(e), 2)
             raise e
+        # The Router should reboot
+        logging.info("Wait until Router rebooted (45sec) ...")
+        time.sleep(45)
+        if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
+            self.router.mode = Mode.normal
+            logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
+        else:
+            logging.warning("[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")")
 
     def _wca_setup_expert(self, config):
         """
@@ -80,8 +76,36 @@ class RouterWebConfiguration(Thread):
             wca.setup_expert_wlan()
             wca.setup_expert_autoupdate()
         except Exception as e:
-            Logger().error(str(e), 2)
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e
 
-    def join(self):
-        Thread.join(self)
+
+class RouterWebConfigurationJob(RemoteSystemJob):
+    """
+    Encapsulate  RouterWebConfiguration as a job for the Server
+    """""
+    def __init__(self, webinterface_config: dict, wizard: bool):
+        super().__init__()
+        self.webinterface_config = webinterface_config
+        self.wizard = wizard
+
+    def run(self):
+        router = self.remote_system
+        router_info = RouterWebConfiguration(router, self.webinterface_config, self.wizard)
+        router_info.start()
+        router_info.join()
+        return {'router': router}
+
+    def pre_process(self, server) -> {}:
+        return None
+
+    def post_process(self, data: {}, server) -> None:
+        """
+        Updates the router in the Server with the new information
+
+        :param data: result from run()
+        :param server: the Server
+        :return:
+        """
+        ref_router = server.get_router_by_id(data['router'].id)
+        ref_router.update(data['router'])  # Don't forget to update this method
