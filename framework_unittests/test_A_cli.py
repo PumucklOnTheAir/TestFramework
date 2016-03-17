@@ -156,6 +156,11 @@ class TestCLItoServerConnection(unittest.TestCase):
                     print('.', end="", flush=True)
         assert len(self.server_proxy.get_test_results()) == len(routers) + 1
 
+        os.system(self.path_cli + " results -rm")
+        response = os.system(self.path_cli + " start -s set_1 -r 0 -b")
+        assert response == 0
+        assert len(self.server_proxy.get_test_results()) == 1
+
     def test_cli_test_results(self):
         assert not os.system(self.path_cli + " results -rm -a")
         os.system(self.path_cli + " start -s set_1 -a")

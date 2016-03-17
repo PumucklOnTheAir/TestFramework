@@ -13,6 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 from unittest.result import TestResult
 import importlib
 from multiprocessing import Event
+from threading import Event as DoneEvent
 from threading import Semaphore
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
@@ -21,6 +22,16 @@ from collections import deque
 import os
 import sys
 import signal
+import platform
+
+if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
+    from util.router_info import RouterInfoJob
+    from util.router_online import RouterOnlineJob
+    from network.nv_assist import NVAssistent
+    from util.router_reboot import RouterRebootJob
+    from util.router_setup_web_configuration import RouterWebConfigurationJob
+    from util.router_flash_firmware import SysupgradeJob
+    from util.router_flash_firmware import Sysupdate
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -132,8 +143,6 @@ class Server(ServerProxy):
 
         # add Namespace and Vlan for each Router
         if cls.VLAN:
-            # TODO wrong place #70
-            from network.nv_assist import NVAssistent
             cls._nv_assistent = NVAssistent("eth0")
 
             for router in cls.get_routers():
@@ -145,9 +154,8 @@ class Server(ServerProxy):
             cls._nv_assistent.create_namespace_vlan(cls.get_power_strip())
 
             # update Router
-            cls.router_online(None, update_all=True)
-            # TODO Hat error verursacht
-            # cls.update_router_info(None, update_all=True)
+            cls.router_online(None, update_all=True, blocked=True)
+            cls.update_router_info(None, update_all=True)
 
         logging.info("Runtime Server started")
 
@@ -183,14 +191,16 @@ class Server(ServerProxy):
             print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
+            cls._task_pool.terminate()
             cls._task_pool.join()
             cls._job_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
-            # close open streams and the logger instance
-            LoggerSetup.shutdown()
 
             cls._ipc_server.shutdown()
+
+            # close open streams and the logger instance
+            LoggerSetup.shutdown()
             sys.exit(0)
 
     @classmethod
@@ -251,7 +261,7 @@ class Server(ServerProxy):
         """
         queue = cls.get_waiting_task_queue(remote_system)
         queue.appendleft(task)
-        logging.debug("%sAdded " + str(task) + " to queue of " + remote_system + ". Queue length: " + len(queue),
+        logging.debug("%sAdded " + str(task) + " to queue of " + str(remote_system) + ". Queue length: " + str(len(queue)),
                       LoggerSetup.get_log_deep(3))
 
     @classmethod
@@ -270,32 +280,30 @@ class Server(ServerProxy):
         :return: True if job was successful added in the queue
         """
         assert isinstance(remote_job, RemoteSystemJob)
-
-        if wait != -1:
-            raise NotImplementedError  # TODO #102
-            done_event = Event()
-            remote_job.set_done_event(done_event)
-            # TODO all routers if remote_sys == None
-            result = cls.__start_task(remote_sys, remote_job)
-            done_event.wait(wait)
+        if remote_sys is None:
+            result = True
+            for router in cls.get_routers():
+                done_event = DoneEvent()
+                result = result and cls.__start_task(router, remote_job, done_event)
+                if wait != -1:
+                    done_event.wait(wait)
             return result
         else:
-            if remote_sys is None:
-                result = True
-                for router in cls.get_routers():
-                    result = result and cls.__start_task(router, remote_job)
-                return result
-            else:
-                return cls.__start_task(remote_sys, remote_job)
+            done_event = DoneEvent()
+            result = cls.__start_task(remote_sys, remote_job, done_event)
+            if wait != -1:
+                done_event.wait(wait)
+            return result
 
     @classmethod
-    def start_test_set(cls, router_id: int, test_set_name: str) -> bool:
+    def start_test_set(cls, router_id: int, test_set_name: str, wait: int= -1) -> bool:
         """
         Start an specific test on a router
 
         :param router_id: The id of the router on which the test will run.
         If id is -1 the test will be executed on all routers.
         :param test_set_name: The name of the test set to execute
+        :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if test was successful added in the queue
         """
 
@@ -305,15 +313,22 @@ class Server(ServerProxy):
 
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj) and issubclass(obj, FirmwareTest) and name != "FirmwareTest":
-                    if router_id == -1:
+                    if router_id == -1:  # all routers
                         for router in cls._routers:
-                            cls.__start_task(router, obj)
+                            done_event = DoneEvent()
+                            cls.__start_task(router, obj, done_event)
+                            if wait != -1:
+                                done_event.wait(wait)
                     else:
-                        cls.__start_task(cls.get_router_by_id(router_id), obj)
+                        done_event = DoneEvent()
+                        cls.__start_task(cls.get_router_by_id(router_id), obj, done_event)
+                        if wait != -1:
+                            done_event.wait(wait)
         return True
 
     @classmethod
-    def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob]) -> bool:
+    def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob],
+                     done_event: DoneEvent = DoneEvent()) -> bool:
         """
         Apply a job or a test to the ProcessPool, execute it in the right network namespace with
         the matching VLAN from RemoteSystem and insert a method for result/post process handling.
@@ -346,10 +361,10 @@ class Server(ServerProxy):
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # task is a test
-                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys)
+                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, done_event)
                 else:
                     # task is a regular job
-                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys)
+                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, done_event)
                 return True
             else:
                 logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
@@ -359,7 +374,7 @@ class Server(ServerProxy):
         except KeyboardInterrupt:
             cls.stop()
         except Exception as e:
-            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+            logging.error("%s start_task: " + str(e), LoggerSetup.get_log_deep(2))
         finally:
             cls._semaphore_task_management.release()
             # logging.debug(str(cls._waiting_tasks), 3)
@@ -413,7 +428,7 @@ class Server(ServerProxy):
             return result
 
     @classmethod
-    def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router) -> None:
+    def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router, done_event: DoneEvent) -> None:
         """
         Wait 5 minutes until the test is done.
         Handles the result from the tests.
@@ -446,10 +461,11 @@ class Server(ServerProxy):
             cls.set_running_task(router, None)
             # logging.debug(str(cls._test_results))
             # start next test in the queue
+            done_event.set()
             cls.__start_task(router, None)
 
     @classmethod
-    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> None:
+    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, done_event: DoneEvent) -> None:
         """
         Wait 5 minutes until the job is done.
         Handles the result from the job with the job.prepare(data) method.
@@ -468,11 +484,11 @@ class Server(ServerProxy):
                 logging.error("%sTask raised an exception: " + str(exception), LoggerSetup.get_log_deep(1))
             else:
                 job.post_process(result, cls)
-                job.done()
 
         finally:
             cls.set_running_task(remote_sys, None)
             # start next test in the queue
+            done_event.set()
             cls.__start_task(remote_sys, None)
 
     @classmethod
@@ -608,24 +624,30 @@ class Server(ServerProxy):
         return None
 
     @classmethod
-    def router_online(cls, router_ids: List[int], update_all: bool) -> None:
+    def router_online(cls, router_ids: Union[List[int], None], update_all: bool, blocked: bool = False) -> None:
         """
         Tries to connect to the `Router` and updates the Mode of the Router.
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
+        :param blocked: blocks until it finished
         """
-        from util.router_online import RouterOnlineJob  # TODO remove it from here #64
+
+        if blocked:
+            wait = 300
+        else:
+            wait = -1
+
         if update_all:
             for router in cls.get_routers():
-                cls.start_job(router, RouterOnlineJob())
+                cls.start_job(router, RouterOnlineJob(), wait)
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                cls.start_job(router, RouterOnlineJob())
+                cls.start_job(router, RouterOnlineJob(), wait)
 
     @classmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
+    def update_router_info(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
         """
         Updates all the information about the :py:class:`Router`
 
@@ -633,8 +655,6 @@ class Server(ServerProxy):
         :param update_all: Is True if all Routers should be updated
         """
         if cls.VLAN:
-            from util.router_info import RouterInfoJob  # TODO remove it from here #64
-
             if update_all:
                 for router in cls.get_routers():
                     cls.start_job(router, RouterInfoJob())
@@ -646,7 +666,7 @@ class Server(ServerProxy):
             logging.info("set VLAN to true to activate 'update_router_info' it")
 
     @classmethod
-    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
+    def sysupdate_firmware(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
         """
         Downloads and copies the firmware to the :py:class:`Router` given in
         the List(by a unique id) resp. to all Routers
@@ -654,7 +674,7 @@ class Server(ServerProxy):
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_flash_firmware import Sysupdate
+
         if update_all:
             for router in cls.get_routers():
                 sysupdate = Sysupdate(router)
@@ -668,7 +688,7 @@ class Server(ServerProxy):
                 sysupdate.join()
 
     @classmethod
-    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
+    def sysupgrade_firmware(cls, router_ids: Union[List[int], None], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given :py:class:`Router` s
 
@@ -676,7 +696,7 @@ class Server(ServerProxy):
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
-        from util.router_flash_firmware import SysupgradeJob  # TODO remove it from here #64
+
         if upgrade_all:
             for router in cls.get_routers():
                 # The IP where the Router can download the firmware image (should be the frameworks IP)
@@ -690,7 +710,7 @@ class Server(ServerProxy):
                 cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
 
     @classmethod
-    def setup_web_configuration(cls, router_ids: List[int], setup_all: bool, wizard: bool):
+    def setup_web_configuration(cls, router_ids: Union[List[int], None], setup_all: bool, wizard: bool):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
@@ -700,7 +720,7 @@ class Server(ServerProxy):
         :param setup_all: If True all Routers will be setuped via the webinterface
         :param wizard
         """
-        from util.router_setup_web_configuration import RouterWebConfigurationJob  # TODO remove it from here #64
+
         if setup_all:
             for i, router in enumerate(cls.get_routers()):
                 cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
@@ -710,7 +730,7 @@ class Server(ServerProxy):
                 cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
 
     @classmethod
-    def reboot_router(cls, router_ids: List[int], reboot_all: bool, configmode: bool):
+    def reboot_router(cls, router_ids: Union[List[int], None], reboot_all: bool, configmode: bool):
         """
         Reboots the given Routers.
 
@@ -718,7 +738,7 @@ class Server(ServerProxy):
         :param reboot_all: Reboots all Routers
         :param configmode: Reboots Router into configmode
         """
-        from util.router_reboot import RouterRebootJob  # TODO remove it from here #64
+
         if reboot_all:
             for router in cls.get_routers():
                 cls.start_job(router, RouterRebootJob(configmode))
