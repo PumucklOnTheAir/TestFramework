@@ -162,3 +162,4 @@ tests:
   set_1: [demo_1]
   set_2: [demo_2, demo_1]
   set_3: [gateway_test]
+  set_4: [accessibility_web_config]
