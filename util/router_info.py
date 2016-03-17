@@ -254,12 +254,12 @@ class RouterInfo(Thread):
         """
         :return: All values of the UCI of a Router.
         """
-        print("UCI_Info ...")
         uci_dict = dict()
         raw_uci_lst = self.network_ctrl.send_command("uci show")
         for uci_info in raw_uci_lst:
-            print(str(uci_info))
             key, value = uci_info.split("=")
+            uci_dict[key] = value.replace("\n","")
+        return uci_dict
 
 
 class RouterInfoJob(RemoteSystemJob):

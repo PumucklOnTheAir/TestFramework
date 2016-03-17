@@ -291,14 +291,23 @@ class Router(RemoteSystem):
         string += "IP: " + self.ip + "/" + str(self.ip_mask) + "\n"
         string += "Power Socket: " + str(self.power_socket) + "\n"
         string += "User Name: " + self.usr_name + ", Password: " + self._usr_password + "\n"
+
         string += "\nInterfaces: \n"
         for interface in self.interfaces.values():
             string += str(interface) + "\n"
+
         string += "\nSockets: \n"
         for socket in self.sockets:
             string += str(socket) + "\n"
+
         string += "\nCPU Processes: \n"
         for cpu_process in self.cpu_processes:
             string += str(cpu_process) + "\n"
         string += "\nMemory: " + str(self.ram) + "\n"
+
+        string += "\nUCI: {|"
+        for uci_key in self.uci.keys():
+            string += str(uci_key) + " = " + str(self.uci[uci_key] + " | ")
+        string += "}\n"
+
         return string
