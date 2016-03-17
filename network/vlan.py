@@ -39,7 +39,7 @@ class Vlan:
                                      vlan_id=self.vlan_iface_id).commit()
             # Try to assign an IP via dhclient
             # IP 169.254.235.157/16 is returned when static is expected
-            if (not self._wait_for_ip_assignment()) or (self.ipdb_get_ip() == "169.254.235.157/16") or (self.ipdb_get_ip() == ""):
+            if (not self._wait_for_ip_assignment()) or (self.ipdb_get_ip("169.254.235.157") == ""):
                 # Otherwise add a static IP
                 iface.add_ip(self._get_matching_ip(str(self.remote_system.ip)), self.remote_system.ip_mask).commit()
             iface.mtu = 1400

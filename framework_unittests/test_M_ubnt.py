@@ -24,19 +24,10 @@ class TestUbnt(TestCase):
         print("Turn off the power...")
         p.join()
 
-        result = self._check_port(ps, port)
-        print("Port " + str(port) + " is switched to " + str(result))
-
         p2 = Process(target=self._power_on, args=(ps, q, port))
         p2.start()
         print("Turn on the power...")
         p2.join()
-
-    def _check_port(self, ps: Ubnt, port: int):
-        network_ctrl.connect_with_remote_system()
-        cmd = ps.port_status(port)
-        result = network_ctrl.send_command(cmd)
-        return result
 
     def _power_on(self, ps: Ubnt, q: Queue, port: int):
         nv_assist = NVAssistent("eth0")
@@ -55,7 +46,7 @@ class TestUbnt(TestCase):
         nv_assist.create_namespace_vlan(ps)
         netns.setns(ps.namespace_name)
 
-        power_on = PowerStripControl(ps, True, port)
+        power_on = PowerStripControl(ps, False, port)
         power_on.start()
         power_on.join()
 

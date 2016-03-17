@@ -3,7 +3,6 @@ from network.network_ctrl import NetworkCtrl
 from network.remote_system import RemoteSystemJob
 from power_strip.ubnt import Ubnt
 import logging
-import time
 
 
 class PowerStripControl(Thread):
@@ -23,11 +22,28 @@ class PowerStripControl(Thread):
         self.network_ctrl.connect_with_remote_system()
         cmd = self.create_command(self.on_or_off, self.port)
         self.network_ctrl.send_command(cmd)
-        time.sleep(5)
-        logging.info("Switched Power")
+
+        check = self._port_status(self.port)
+        result = self.network_ctrl.send_command(check)
+        result = result[0]
+        if self.on_or_off:
+            if result == "1":
+                logging.info("[+] Successfully switched on port " + str(self.port))
+            else:
+                logging.info("[-] Error switching on port " + str(self.port))
+        else:
+            if result == "0":
+                logging.info("[+] Successfully switched off port " + str(self.port))
+            else:
+                logging.info("[-] Error switching off port " + str(self.port))
+
+        self.network_ctrl.exit()
 
     def create_command(self, on_or_off: bool, port: int):
         return self.power_strip.create_command(port, on_or_off)
+
+    def _port_status(self, port: int):
+        return self.power_strip.port_status(port)
 
 
 class PowerStripControlJob(RemoteSystemJob):
