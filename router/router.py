@@ -49,6 +49,7 @@ class Router(RemoteSystem):
         self._flashdriver = None
         self._firmware = Firmware.get_default_firmware()
         self.uci = None
+        self.bat_originators = list()
 
     def update(self, new_router) -> None:
         """
@@ -303,11 +304,18 @@ class Router(RemoteSystem):
         string += "\nCPU Processes: \n"
         for cpu_process in self.cpu_processes:
             string += str(cpu_process) + "\n"
+
         string += "\nMemory: " + str(self.ram) + "\n"
 
         string += "\nUCI: {|"
         for uci_key in self.uci.keys():
             string += str(uci_key) + " = " + str(self.uci[uci_key] + " | ")
         string += "}\n"
+
+        string += "\nBatOriginators (first 10): \n"
+        for i, originator in enumerate(self.bat_originators):
+            string += str(originator) + "\n"
+            if i >= 9:
+                break
 
         return string

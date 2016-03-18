@@ -11,6 +11,7 @@ from router.socket import InternetSocket
 from typing import Dict, List
 import traceback
 import sys
+from router.bat_originator import BatOriginator
 
 
 class RouterInfo(Thread):
@@ -55,6 +56,8 @@ class RouterInfo(Thread):
             self.router.sockets = self._get_router_sockets()
             # UCI
             self.router.uci = self._get_router_uci()
+            # Bat Originators
+            self.router.bat_originators = self._get_bat_originator()
             logging.debug("%s[+] Infos updated", LoggerSetup.get_log_deep(2))
         except Exception as e:
             logging.warning("%s[-] Couldn't update all Infos", LoggerSetup.get_log_deep(2))
@@ -260,6 +263,26 @@ class RouterInfo(Thread):
             key, value = uci_info.split("=")
             uci_dict[key] = value.replace("\n","")
         return uci_dict
+
+    def _get_bat_originator(self):
+        bat_originators = list()
+        raw_bat_originator_lst = self.network_ctrl.send_command("batctl o")[2:]
+        for raw_bat_originator in raw_bat_originator_lst:
+            bat_originator = BatOriginator()
+            raw_bat_originator = raw_bat_originator.split()
+            # raw_bat_originator: ['f6:f6:6d:85:d4:ae', '0.840s', '(', '52)', '32:b8:c3:e7:6f:f0', '[', 'mesh0]:',
+            # '02:2a:1a:cc:72:ae', '(', '3)', '32:b8:c3:e7:96:b0', '(', '26)', '32:b8:c3:e7:6f:f0', '(', '52)']
+            bat_originator.mac = raw_bat_originator[0]
+            tmp = raw_bat_originator[1].replace("s", "")
+            print(str(tmp))
+            bat_originator.last_seen = float(tmp)
+            bat_originator.next_hop = raw_bat_originator[4]
+            bat_originator.outgoing_iface = raw_bat_originator[6].replace("]:", "")
+            for raw_potential_next_hop in raw_bat_originator[7:]:
+                if ":" in raw_potential_next_hop:
+                    bat_originator.potential_next_hops.append(raw_potential_next_hop)
+            bat_originators.append(bat_originator)
+        return bat_originators
 
 
 class RouterInfoJob(RemoteSystemJob):
