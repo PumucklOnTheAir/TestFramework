@@ -1,8 +1,17 @@
 
 
 class BatOriginator:
+    """
+    This class represents a node in the mesh-network, which the Router is connected to.
+    """""
 
     def __init__(self):
+        """
+        mac: address of the mesh-node
+        last_seen: seconds since the last message-exchange
+        next_hop: the originator is best achieved through the node with this mac-address
+        potential_next_hops: alternative nodes the can be used if "next_hop" fails
+        """
         self._mac = None
         self._last_seen = None
         self._next_hop = None
@@ -82,7 +91,7 @@ class BatOriginator:
         self._outgoing_iface = value
 
     def __str__(self):
-        bat_o_str =  self.mac + " " + str(self.last_seen) + "s " + self.next_hop + " " + self.outgoing_iface + " {"
+        bat_o_str = self.mac + " " + str(self.last_seen) + "s " + self.next_hop + " " + self.outgoing_iface + " {"
         for hop in self.potential_next_hops:
             bat_o_str += " " + hop
         bat_o_str += " }"
