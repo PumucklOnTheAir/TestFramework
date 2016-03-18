@@ -15,7 +15,7 @@ class TestRouterInfo(TestCase):
         router = self._create_router()
 
         # NVAssisten
-        nv_assist = NVAssistent("enp0s25")
+        nv_assist = NVAssistent("eth0")
         try:
             nv_assist.create_namespace_vlan(router)
             # Set netns for the current process
