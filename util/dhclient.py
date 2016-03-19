@@ -30,7 +30,7 @@ class Dhclient:
                 if timeout <= 0:
                     return TimeoutError
                 timeout -= 1
-
+            Dhclient.kill()
             if "File exists" in str(stderr):
                 return 2
             elif stderr.decode('utf-8') != "":
@@ -57,4 +57,10 @@ class Dhclient:
         except:
             return None
         ip = struct.unpack('16sH2x4s8x', res)[2]
+        logging.debug("%sGot IP: " + str(ip), LoggerSetup.get_log_deep(2))
         return socket.inet_ntoa(ip)
+
+    @staticmethod
+    def kill():
+        logging.debug("%s Kill dhclients", LoggerSetup.get_log_deep(2))
+        Popen(['pkill', 'dhclient'])
