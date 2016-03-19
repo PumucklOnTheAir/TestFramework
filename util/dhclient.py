@@ -28,7 +28,7 @@ class Dhclient:
             while Dhclient.get_ip(interface) is None:
                 time.sleep(1)
                 if timeout <= 0:
-                    return TimeoutError
+                    raise TimeoutError
                 timeout -= 1
             Dhclient.kill()
             if "File exists" in str(stderr):
@@ -38,6 +38,8 @@ class Dhclient:
             return 0
         except KeyboardInterrupt:
             return 3
+        except TimeoutError as te:
+            raise te
         except Exception as e:
             raise e
 
