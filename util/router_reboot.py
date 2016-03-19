@@ -71,7 +71,7 @@ class RouterReboot(Thread):
                 time.sleep(90)
                 if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
                     self.router.mode = Mode.normal
-                    logging.info("%s+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
+                    logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
                 else:
                     network_ctrl.exit()
                     raise Exception
