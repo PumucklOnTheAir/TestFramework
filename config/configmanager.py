@@ -3,7 +3,6 @@ import io
 import logging
 from os import path
 from router.router import Router
-from jsonschema import ValidationError, validate
 
 
 class ConfigManager:
@@ -336,12 +335,11 @@ class ConfigManager:
             # u = Ubnt(i, **power_strip)
 
             for i in range(0, count):
-                """
+
                 u = Ubnt(i, power_strip['default_Name'], power_strip['default_vlan_Id'], power_strip['default_IP'],
                          power_strip['default_Mask'], power_strip['default_Username'], power_strip['default_Password'],
                          power_strip['default_Ports'])
-                """
-                u = None
+
                 power_strip_list.append(u)
 
             # if power_strip_list:
