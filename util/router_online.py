@@ -32,7 +32,6 @@ class RouterOnline(Thread):
                 logging.warning("%s[!]TimeoutError", LoggerSetup.get_log_deep(3))
             return
 
-
         self.router.mode = Mode.configuration
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
