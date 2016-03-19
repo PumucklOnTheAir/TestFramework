@@ -27,7 +27,7 @@ class Vlan:
 
     def create_interface(self):
         """
-         Creats a virtual interface on a existing interface (like eth0)
+         Creates a virtual interface on a existing interface (like eth0)
         """
         logging.debug("%sCreate VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
@@ -38,7 +38,8 @@ class Vlan:
             iface = self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface,
                                      vlan_id=self.vlan_iface_id).commit()
             # Try to assign an IP via dhclient
-            if (not self._wait_for_ip_assignment()) or (self.ipdb_get_ip() == ""):
+            # IP 169.254.235.157/16 is returned when static is expected
+            if (not self._wait_for_ip_assignment()) or (self.ipdb_get_ip("169.254.235.157") == ""):
                 # Otherwise add a static IP
                 iface.add_ip(self._get_matching_ip(str(self.remote_system.ip)), self.remote_system.ip_mask).commit()
             iface.mtu = 1400
