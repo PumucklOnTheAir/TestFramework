@@ -3,6 +3,8 @@ import io
 import logging
 from os import path
 from router.router import Router
+from power_strip.ubnt import Ubnt
+from jsonschema import validate, ValidationError
 
 
 class ConfigManager:
@@ -342,8 +344,8 @@ class ConfigManager:
 
                 power_strip_list.append(u)
 
-            # if power_strip_list:
-            #    power_strip_list = sorted(power_strip_list, key=lambda e: e.id)
+            if power_strip_list:
+                power_strip_list = sorted(power_strip_list, key=lambda e: e.id)
 
             return power_strip_list
 
