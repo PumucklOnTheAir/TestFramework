@@ -22,11 +22,11 @@ class Dhclient:
         :return: 0 = no error; 1 = error; 2 = a dhclient is already running
         """
         try:
-            logging.debug("%sUpdate IP via dhclient ...", LoggerSetup.get_log_deep(2))
+            logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ")...", LoggerSetup.get_log_deep(2))
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             while Dhclient.get_ip(interface) is None:
-                time.sleep(0.5)
+                time.sleep(1)
                 if timeout <= 0:
                     return TimeoutError
                 timeout -= 1
