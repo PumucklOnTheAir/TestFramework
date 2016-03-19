@@ -94,26 +94,29 @@ class Sysupgrade(Thread):
         try:
             network_ctrl.connect_with_remote_system()
         except Exception as e:
-            logging.warning("[-] Couldn't sysupgrade the Router(" + str(self.router.id) + ")")
+            logging.warning("%s[-] Couldn't sysupgrade the Router(" + str(self.router.id) + ")",
+                            LoggerSetup.get_log_deep(2))
             logging.warning(str(e))
             return
         network_ctrl.remote_system_wget(self.router.firmware.file, '/tmp/', self.web_server_ip)
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
         if not self.debug:
-            logging.debug("sysupgrade ...")
+            logging.debug("%sSysupgrade (this will force a TimeoutError)...", LoggerSetup.get_log_deep(1))
             try:
                 network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
             except TimeoutError:
-                logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
-                self.router.mode = Mode.configuration
                 if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
                     self.router.mode = Mode.unknown
-                    logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
+                    logging.error("%s[-]Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
                                   LoggerSetup.get_log_deep(2))
+                logging.info("%s[+]Router was set into config mode",
+                             LoggerSetup.get_log_deep(2))
+                self.router.mode = Mode.configuration
             except Exception as e:
                 self.router.mode = Mode.unknown
-                logging.error("[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'")
+                logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
+                              LoggerSetup.get_log_deep(2))
                 logging.error(str(e))
         network_ctrl.exit()
 
