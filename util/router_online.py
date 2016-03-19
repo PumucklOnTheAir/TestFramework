@@ -25,9 +25,13 @@ class RouterOnline(Thread):
         if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
             # Try to get a IP via dhclient
-            if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
-                logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(3))
+            try:
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
+                    logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(3))
+            except TimeoutError:
+                logging.warning("%s[!]TimeoutError", LoggerSetup.get_log_deep(3))
             return
+
 
         self.router.mode = Mode.configuration
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
@@ -35,8 +39,11 @@ class RouterOnline(Thread):
         if sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8'):
             logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
             # Try to get a IP via dhclient
-            if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
-                logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(2))
+            try:
+                if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
+                    logging.error("%s[-] Dhclient failed", LoggerSetup.get_log_deep(3))
+            except TimeoutError:
+                logging.warning("%s[!] TimeoutError", LoggerSetup.get_log_deep(3))
             return
 
         logging.debug("%s[-] Router is not online", LoggerSetup.get_log_deep(3))
