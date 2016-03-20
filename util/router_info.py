@@ -261,7 +261,7 @@ class RouterInfo(Thread):
         raw_uci_lst = self.network_ctrl.send_command("uci show")
         for uci_info in raw_uci_lst:
             key, value = uci_info.split("=")
-            uci_dict[key] = value.replace("\n","")
+            uci_dict[key] = value.replace("\n", "")
         return uci_dict
 
     def _get_bat_originator(self):
