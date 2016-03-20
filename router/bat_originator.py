@@ -1,22 +1,22 @@
-
+from typing import List
 
 class BatOriginator:
     """
     This class represents a node in the mesh-network, which the Router is connected to.
     """""
 
-    def __init__(self):
+    def __init__(self, mac: str, last_seen: float, next_hop: str, outgoing_iface: str, potential_next_hops: List):
         """
         mac: address of the mesh-node
         last_seen: seconds since the last message-exchange
         next_hop: the originator is best achieved through the node with this mac-address
         potential_next_hops: alternative nodes the can be used if "next_hop" fails
         """
-        self._mac = None
-        self._last_seen = None
-        self._next_hop = None
-        self._outgoing_iface = None
-        self.potential_next_hops = list()
+        self._mac = mac
+        self._last_seen = last_seen
+        self._next_hop = next_hop
+        self._outgoing_iface = outgoing_iface
+        self.potential_next_hops = potential_next_hops
 
     @property
     def mac(self) -> str:
