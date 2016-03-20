@@ -42,7 +42,7 @@ class Router(RemoteSystem):
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
         self._ssid = ''
-        self.interfaces = dict()
+        self.network_interfaces = dict()
         self.cpu_processes = list()
         self.sockets = list()
         self._ram = None
@@ -291,7 +291,7 @@ class Router(RemoteSystem):
         string += "Power Socket: " + str(self.power_socket) + "\n"
         string += "User Name: " + self.usr_name + ", Password: " + self._usr_password + "\n"
         string += "\nInterfaces: \n"
-        for interface in self.interfaces.values():
+        for interface in self.network_interfaces.values():
             string += str(interface) + "\n"
         string += "\nSockets: \n"
         for socket in self.sockets:

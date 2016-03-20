@@ -46,7 +46,7 @@ class RouterInfo(Thread):
             # SSID
             self.router.ssid = self._get_router_ssid()
             # NetworkInterfaces
-            self.router.interfaces = self._get_router_network_interfaces()
+            self.router.network_interfaces = self._get_router_network_interfaces()
             # CPUProcesses
             self.router.cpu_processes = self._get_router_cpu_process()
             # RAM

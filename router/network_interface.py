@@ -176,7 +176,7 @@ class NetworkInterface:
         self._name = name
         self._status = Status.unknown
         self._mac = "00:00:00:00:00:00"
-        self.ipaddress_lst = list()
+        self.ip_address_lst = list()
         self._wifi_information = None
 
     @property
@@ -242,7 +242,7 @@ class NetworkInterface:
         :param ip: ip address
         :param ip_mask: ip mask or length prefix-length if IPv6
         """
-        self.ipaddress_lst.append(ipaddress.ip_interface(ip + "/" + str(ip_mask)))
+        self.ip_address_lst.append(ipaddress.ip_interface(ip + "/" + str(ip_mask)))
 
     @property
     def wifi_information(self) -> WifiInformation:
@@ -263,7 +263,7 @@ class NetworkInterface:
 
     def __str__(self):
         ipaddresses = "["
-        for ip in self.ipaddress_lst:
+        for ip in self.ip_address_lst:
             ipaddresses = ipaddresses + " " + str(ip)
         ipaddresses += " ]"
         return (str(self.id) + ": " + self.name + ", " + self.mac + ", " + str(self.status) + ", " + str(ipaddresses) +
