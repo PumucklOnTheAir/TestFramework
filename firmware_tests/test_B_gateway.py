@@ -2,7 +2,7 @@ from server.test import FirmwareTest
 from network.network_ctrl import NetworkCtrl
 
 
-class GatewayTest(FirmwareTest):
+class TestGateway(FirmwareTest):
     """
     Test if an internet-connection exists.
     Therefore two PINGs are send one to "google (8.8.8.8)" and one to "freifunk.net"

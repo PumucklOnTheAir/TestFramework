@@ -3,7 +3,7 @@ from router.router import Mode
 from network.webdriver_phantomjs_extended import WebdriverPhantomjsExtended
 
 
-class AccessibilityWebConfig(FirmwareTest):
+class TestAccessibilityWebConfig(FirmwareTest):
     """
     Test if WebInterface (wizard and expert) of the Router is accessible.
     The Router has to be in configuration-mode therefore
