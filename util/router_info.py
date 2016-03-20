@@ -265,6 +265,9 @@ class RouterInfo(Thread):
         return uci_dict
 
     def _get_bat_originator(self):
+        """
+        :return: All reachable mesh-nodes(bat_originators) of a Router.
+        """
         bat_originators = list()
         raw_bat_originator_lst = self.network_ctrl.send_command("batctl o")[2:]
         for raw_bat_originator in raw_bat_originator_lst:
@@ -274,7 +277,6 @@ class RouterInfo(Thread):
             # '02:2a:1a:cc:72:ae', '(', '3)', '32:b8:c3:e7:96:b0', '(', '26)', '32:b8:c3:e7:6f:f0', '(', '52)']
             bat_originator.mac = raw_bat_originator[0]
             tmp = raw_bat_originator[1].replace("s", "")
-            print(str(tmp))
             bat_originator.last_seen = float(tmp)
             bat_originator.next_hop = raw_bat_originator[4]
             bat_originator.outgoing_iface = raw_bat_originator[6].replace("]:", "")
