@@ -18,7 +18,7 @@ class TestGateway(FirmwareTest):
 
     def _ping_successful(self, ping_result: str)->bool:
         for i in range(0, 5):
-            tmp = str(5-i) + " packets received"
+            tmp = str(5 - i) + " packets received"
             if tmp in ping_result:
                 return True
         return False
