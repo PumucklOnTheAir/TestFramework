@@ -1,5 +1,6 @@
 from typing import List
 
+
 class BatOriginator:
     """
     This class represents a node in the mesh-network, which the Router is connected to.
