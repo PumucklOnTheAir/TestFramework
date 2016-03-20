@@ -21,6 +21,9 @@ firmware:
 # Properties: Name, Id, IP, IP_Mask, CONFIG_IP, CONFIG_IP_MASK, Username, Password, PowerSocket
 routers:
   routersdefaults: &routersdefaults
+    Name: vlan
+    Id: 0
+    PowerSocket: 0
     IP: 10.223.254.254
     IP_Mask: 16
     CONFIG_IP: 192.168.1.1
@@ -54,6 +57,7 @@ powerstrip:
 # default config for the Web_Config_Assistent
 webconfigs:
   webdefaults: &webdefaults
+    node_name: 64293-testframework
     # Your internet connection can be used to establish an encrypted connection with other nodes.
     # Enable this option if there are no other nodes reachable over WLAN in your vicinity or you want to make a part of your
     # connection's bandwidth available for the network. You can limit how much bandwidth the node will use at most.
