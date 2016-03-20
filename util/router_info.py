@@ -271,18 +271,19 @@ class RouterInfo(Thread):
         bat_originators = list()
         raw_bat_originator_lst = self.network_ctrl.send_command("batctl o")[2:]
         for raw_bat_originator in raw_bat_originator_lst:
-            bat_originator = BatOriginator()
             raw_bat_originator = raw_bat_originator.split()
             # raw_bat_originator: ['f6:f6:6d:85:d4:ae', '0.840s', '(', '52)', '32:b8:c3:e7:6f:f0', '[', 'mesh0]:',
             # '02:2a:1a:cc:72:ae', '(', '3)', '32:b8:c3:e7:96:b0', '(', '26)', '32:b8:c3:e7:6f:f0', '(', '52)']
-            bat_originator.mac = raw_bat_originator[0]
+            mac = raw_bat_originator[0]
             tmp = raw_bat_originator[1].replace("s", "")
-            bat_originator.last_seen = float(tmp)
-            bat_originator.next_hop = raw_bat_originator[4]
-            bat_originator.outgoing_iface = raw_bat_originator[6].replace("]:", "")
+            last_seen = float(tmp)
+            next_hop = raw_bat_originator[4]
+            outgoing_iface = raw_bat_originator[6].replace("]:", "")
+            potential_next_hops = list()
             for raw_potential_next_hop in raw_bat_originator[7:]:
                 if ":" in raw_potential_next_hop:
-                    bat_originator.potential_next_hops.append(raw_potential_next_hop)
+                    potential_next_hops.append(raw_potential_next_hop)
+            bat_originator = BatOriginator(mac, last_seen, next_hop, outgoing_iface, potential_next_hops)
             bat_originators.append(bat_originator)
         return bat_originators
 
