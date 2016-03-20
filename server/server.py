@@ -3,6 +3,7 @@ from .ipc import IPC
 from .test import FirmwareTest
 from typing import List, Union, Iterable, Optional
 from router.router import Router
+from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
 from log.loggersetup import LoggerSetup
@@ -68,6 +69,7 @@ class Server(ServerProxy):
 
     # runtime vars
     _routers = []  # all registered routers on the system
+    _power_strips = []  # all registered power strips on the system
     _test_results = []  # all test reports in form (router.id, str(test), TestResult)
     _stopped = False  # marks if the server is still running
 
@@ -147,6 +149,10 @@ class Server(ServerProxy):
                 logging.debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
                 cls._nv_assistent.create_namespace_vlan(router)
 
+            # add Namespace and Vlan for 1 Powerstrip (expand to more if necessary)
+            logging.debug("Add Namespace and Vlan for Powerstrip")
+            cls._nv_assistent.create_namespace_vlan(cls.get_power_strip())
+
             # update Router
             cls.router_online(None, update_all=True, blocked=True)
             cls.update_router_info(None, update_all=True)
@@ -165,6 +171,7 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_routers_list()
+        cls._power_strips = ConfigManager.get_power_strip_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
@@ -519,6 +526,17 @@ class Server(ServerProxy):
         return cls._routers.copy()
 
     @classmethod
+    def get_power_strip(cls) -> PowerStrip:
+        """
+        Power strip as object, for now only 1
+
+        :return: Copy of the original object
+        """
+        for ps in cls._power_strips:
+            assert isinstance(ps, PowerStrip)
+        return cls._power_strips[0]
+
+    @classmethod
     def get_routers_task_queue_size(cls, router_id: int) -> int:
         """
         Returns the size of the task queue including the actual running task
@@ -728,6 +746,29 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 cls.start_job(router, RouterRebootJob(configmode))
+
+    @classmethod
+    def control_switch(cls, router_ids: List[int], switch_all: bool, on_or_off: bool):
+        """
+        Switches the power for different routers on or off
+
+        :param router_ids: List of router IDs
+        :param switch_all: apply to all routers
+        :param on_or_off: true for on, false for off
+        """
+        from power_strip.power_strip_control import PowerStripControlJob
+
+        # for now only 1 power strip, change in router if more are added
+        power_strip = cls.get_power_strip()
+
+        if switch_all:
+            for router in cls.get_routers():
+                port_id = router.power_socket
+                cls.start_job(power_strip, PowerStripControlJob(on_or_off, port_id))
+        else:
+            for router_id in router_ids:
+                port_id = cls.get_router_by_id(router_id).power_socket
+                cls.start_job(power_strip, PowerStripControlJob(on_or_off, port_id))
 
     @classmethod
     def get_server_version(cls) -> str:

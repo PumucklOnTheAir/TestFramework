@@ -2,6 +2,7 @@ from unittest import TestCase
 from server.ipc import IPC
 from server.serverproxy import ServerProxy
 import time
+from typing import List
 from threading import Timer, Event
 
 
@@ -134,6 +135,10 @@ class DummyServer(ServerProxy):
 
     @classmethod
     def delete_test_results(cls) -> int:
+        pass
+
+    @classmethod
+    def control_switch(cls, router_ids: List[int], switch_all: bool, on_or_off: bool):
         pass
 
     @classmethod
