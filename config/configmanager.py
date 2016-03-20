@@ -4,6 +4,7 @@ import logging
 from os import path
 from router.router import Router
 from power_strip.ubnt import Ubnt
+from jsonschema import validate, ValidationError
 
 
 class ConfigManager:
@@ -14,6 +15,7 @@ class ConfigManager:
     BASE_DIR = path.dirname(path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = path.join(BASE_DIR, 'config')  # Join Project Root with config
     FRAMEWORK_CONFIG_FILE = 'framework_config.yml'
+    FRAMEWORK_SCHEMA_FILE = 'framework_schema.yml'
 
     @classmethod
     def set_config_path(cls, config_path: str = "") -> None:
@@ -59,16 +61,44 @@ class ConfigManager:
         file_path = path.join(ConfigManager.CONFIG_PATH, ConfigManager.FRAMEWORK_CONFIG_FILE)
         return ConfigManager.read_file(file_path)
 
+    # schema
+    @staticmethod
+    def get_framework_schema() -> []:
+        """
+        Read the framework schema file
+
+        :return: Dictionary with the output from the file
+        """
+        file_path = path.join(ConfigManager.CONFIG_PATH, ConfigManager.FRAMEWORK_SCHEMA_FILE)
+        return ConfigManager.read_file(file_path)
+
+    @staticmethod
+    def check(data: object = None) -> bool:
+        """
+        Check the data against the schema
+        :param data: Data from the yml file
+        :return: True if check is successfully
+        """
+        schema = ConfigManager.get_framework_schema()
+        try:
+            validate(data, schema)
+        except ValidationError as ve:
+            logging.error("Error at ConfigManager by get check data against schema: {0}".format(ve))
+            return False
+        return True
+
     # router
     @staticmethod
-    def get_routers_dict() -> dict:
+    def get_routers_dict() -> (bool, dict):
         """
         Read the routers from config file
 
-        :return: Dictionary with all routers
+        :return: Tuple with bool and dictionary with all routers
         """
         config = ConfigManager.get_framework_config()
-        return config['routers']
+        if ConfigManager.check(config):
+            return True, config['routers']
+        return False, None
 
     @staticmethod
     def get_routers_list() -> []:
@@ -79,20 +109,19 @@ class ConfigManager:
         """
         output = ConfigManager.get_routers_dict()
 
+        if not output[0]:
+            return []
+
         routers = []
 
         # i must defined before 'for', because 'default' increase i and then the router.id has wrong count
         i = 0
-        for data in output.items():
+        for data in output[1].items():
 
             name, router_info = data
 
             if 'default' in name:
                 continue
-
-            if len(router_info) != 9:  # FixMe ist eher eine schlechte idee
-                logging.error("List must be length of 9 but has a length of {0}".format(len(output)))
-                return None
 
             # TODO:
             # wenn die keys im "router_info" dict mit den argument namen von `Router` passt kann man das so machen:
@@ -109,21 +138,23 @@ class ConfigManager:
                 logging.error("Error at building the list of Router's\nError: {0}".format(ex))
                 return None
 
-        if len(routers) > 0:
+        if routers:
             routers = sorted(routers, key=lambda e: e.id)
 
         return routers
 
     # server
     @staticmethod
-    def get_server_dict() -> dict:
+    def get_server_dict() -> (bool, dict):
         """
         Read the server config from the file
 
-        :return: Dictionary with all server properties from the file
+        :return: Tuple with bool and dictionary with all server properties from the file
         """
         config = ConfigManager.get_framework_config()
-        return config['server']
+        if ConfigManager.check(config):
+            return True, config['server']
+        return False, None
 
     @staticmethod
     def get_server_list() -> []:
@@ -133,9 +164,13 @@ class ConfigManager:
         :return: List with all server properties from the file
         """
         server = ConfigManager.get_server_dict()
+
+        if not server[0]:
+            return []
+
         server_list = []
-        for x in server:
-            props = server[x]
+        for x in server[1]:
+            props = server[1][x]
             for entry in props:
                 server_list.append(props[entry])
         return server_list
@@ -149,7 +184,11 @@ class ConfigManager:
         :return: Value of the property from server
         """
         server = ConfigManager.get_server_dict()
-        for value in server.values():
+
+        if not server[0]:
+            return None
+
+        for value in server[1].values():
             if prop in value:
                 return value[prop]
 
@@ -157,14 +196,16 @@ class ConfigManager:
 
     # firmware
     @staticmethod
-    def get_firmware_dict() -> dict:
+    def get_firmware_dict() -> (bool, dict):
         """
         Read the firmware config from the file
 
-        :return: Dictionary with all firmware properties from the file
+        :return: Tuple with bool and dictionary with all firmware properties from the file
         """
         config = ConfigManager.get_framework_config()
-        return config['firmware']
+        if ConfigManager.check(config):
+            return True, config['firmware']
+        return False, None
 
     @staticmethod
     def get_firmware_list() -> []:
@@ -174,9 +215,13 @@ class ConfigManager:
         :return: List with all firmware properties from the file
         """
         firmware = ConfigManager.get_firmware_dict()
+
+        if not firmware[0]:
+            return None
+
         firmware_list = []
-        for x in firmware:
-            props = firmware[x]
+        for x in firmware[1]:
+            props = firmware[1][x]
             for entry in props:
                 firmware_list.append(props[entry])
         return firmware_list
@@ -190,7 +235,11 @@ class ConfigManager:
         :return: Value of the property from firmware
         """
         firmware = ConfigManager.get_firmware_dict()
-        for value in firmware.values():
+
+        if not firmware[0]:
+            return None
+
+        for value in firmware[1].values():
             if prop in value:
                 return value[prop]
 
@@ -198,13 +247,15 @@ class ConfigManager:
 
     # web interface
     @staticmethod
-    def get_web_interface_dict() -> dict:
+    def get_web_interface_dict() -> (bool, dict):
         """
         Read the web interface config from the file
-        :return: Dictionary with all web interface properties from the file
+        :return: Tuple with bool and dictionary with all web interface properties from the file
         """
         config = ConfigManager.get_framework_config()
-        return config['webconfigs']
+        if ConfigManager.check(config):
+            return True, config['webconfigs']
+        return False, None
 
     @staticmethod
     def get_web_interface_list() -> []:
@@ -214,13 +265,16 @@ class ConfigManager:
         """
         interface = ConfigManager.get_web_interface_dict()
 
+        if not interface[0]:
+            return []
+
         web_list = []
-        for x in interface:
+        for x in interface[1]:
 
             if 'default' in x:
                 continue
 
-            props = interface[x]
+            props = interface[1][x]
             web_list.append(props)
 
         if web_list:
@@ -238,7 +292,11 @@ class ConfigManager:
         :return: Value of the property from web interface
         """
         interface = ConfigManager.get_web_interface_dict()
-        for value in interface.values():
+
+        if not interface[0]:
+            return None
+
+        for value in interface[1].values():
             if prop in value:
                 return value[prop]
 
@@ -246,13 +304,15 @@ class ConfigManager:
 
     # power strip
     @staticmethod
-    def get_power_strip_dict() -> dict:
+    def get_power_strip_dict() -> (bool, dict):
         """
         Read the power strip config from the file
-        :return: Dictionary with all power strip properties from the file
+        :return: Tuple with bool and dictionary with all power strip properties from the file
         """
         config = ConfigManager.get_framework_config()
-        return config['powerstrip']
+        if ConfigManager.check(config):
+            return True, config['powerstrip']
+        return False, None
 
     @staticmethod
     def get_power_strip_list() -> []:
@@ -261,11 +321,11 @@ class ConfigManager:
         :return: List with any power strips objects from the file
         """
         power_strip = ConfigManager.get_power_strip_dict()
-        power_strip = power_strip['powerstripdefault']
 
-        if len(power_strip) != 8:  # FixME: nicht so die gute idee
-            logging.error("List must be length of 8 but has a length of {0}".format(len(power_strip)))
-            return None
+        if not power_strip[0]:
+            return []
+
+        power_strip = power_strip[1]['powerstripdefault']
 
         try:
             count = power_strip['Power_Strip_Count']
@@ -284,8 +344,8 @@ class ConfigManager:
 
                 power_strip_list.append(u)
 
-            # if power_strip_list:
-            #    power_strip_list = sorted(power_strip_list, key=lambda e: e.id)
+            if power_strip_list:
+                power_strip_list = sorted(power_strip_list, key=lambda e: e.id)
 
             return power_strip_list
 
@@ -294,14 +354,16 @@ class ConfigManager:
             return None
 
     @staticmethod
-    def get_test_dict() -> []:
+    def get_test_dict() -> (bool, dict):
         """
         Read the test config from the file
 
-        :return: Dictionary with all test properties from the file
+        :return: Tuple with bool and dictionary with all test properties from the file
         """
         config = ConfigManager.get_framework_config()
-        return config['tests']
+        if ConfigManager.check(config):
+            return True, config['tests']
+        return False, None
 
     @staticmethod
     def get_test_sets() -> []:
@@ -311,4 +373,6 @@ class ConfigManager:
         :return: List with all test properties from the file
         """
         tests = ConfigManager.get_test_dict()
-        return tests
+        if not tests[0]:
+            return []
+        return tests[1]

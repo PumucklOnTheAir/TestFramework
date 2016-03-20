@@ -12,7 +12,16 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_framework_config()
-        self.assertEqual(len(data), 6, "framework_config.yml: Wrong size of the List")
+        self.assertEqual(True, (data is not None), "Wrong data")
+
+    # schema
+    def test_get_schema_framework(self):
+        """
+        Tests the framework schema
+        :return: Tests results
+        """
+        schema = ConfigManager.get_framework_schema()
+        self.assertEqual(True, (schema is not None), "Wrong schema")
 
     # config path test
     def test_set_config_path(self):
@@ -21,15 +30,12 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         base_dir = path.dirname(path.dirname(__file__))  # This is your Project Root
+
         config_path = path.join(base_dir, 'framework_unittests/configs/config_no_vlan')
         ConfigManager.set_config_path(config_path)
         self.assertEqual(ConfigManager.CONFIG_PATH, config_path, "Wrong path")
 
-        data = ConfigManager.get_framework_config()
-        self.assertEqual((data is not None), True, "No data")
-
         config_path = path.join(base_dir, 'config')  # Join Project Root with config
-
         ConfigManager.set_config_path(config_path)
         self.assertEqual(ConfigManager.CONFIG_PATH, config_path, "Wrong path")
 
@@ -57,7 +63,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_routers_dict()
-        self.assertEqual(len(data), 3, "Routers: Wrong size of the List")
+        self.assertEqual(True, data[0], "Routers: Wrong config")
 
     def test_get_routers_list(self):
         """
@@ -65,7 +71,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_routers_list()
-        self.assertEqual(len(data), 2, "Routers: Wrong size of the List")
+        self.assertEqual(True, len(data) > 0, "Routers: Wrong size of the List")
 
     # server tests
     def test_server_dict(self):
@@ -74,7 +80,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_server_dict()
-        self.assertEqual(len(data), 1, "Server: Wrong size of the List")
+        self.assertEqual(True, data[0], "Server: Wrong config")
 
     def test_server_list(self):
         """
@@ -82,7 +88,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_server_list()
-        self.assertEqual(len(data), 3, "Server: Wrong size of the List")
+        self.assertEqual(True, len(data) > 0, "Server: Wrong size of the List")
 
     def test_server_prop(self):
         """
@@ -90,7 +96,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_server_property("Server_Name")
-        self.assertEqual(data, "TestServer", "Server: Wrong property")
+        self.assertEqual(True, type(data) == str, "Server: Wrong property")
 
     # firmware tests
     def test_firmware_dict(self):
@@ -99,7 +105,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_firmware_dict()
-        self.assertEqual(len(data), 1, "Firmware: Wrong size of the List")
+        self.assertEqual(True, data[0], "Firmware: Wrong config")
 
     def test_firmware_list(self):
         """
@@ -107,7 +113,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_firmware_list()
-        self.assertEqual(len(data), 4, "Firmware: Wrong size of the List")
+        self.assertEqual(True, len(data) > 0, "Firmware: Wrong size of the List")
 
     def test_firmware_property(self):
         """
@@ -115,7 +121,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_firmware_property("Firmware_Version")
-        self.assertEqual(data, "0.7.3", "Firmware: Wrong property")
+        self.assertEqual(True, type(data) == str, "Firmware: Wrong property")
 
     # web interface
     def test_web_interface_dict(self):
@@ -124,7 +130,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_web_interface_dict()
-        self.assertEqual(len(data), 3, "web_interface: Wrong size of the List")
+        self.assertEqual(True, data[0], "web_interface: Wrong config")
 
     def test_web_interface_list(self):
         """
@@ -132,8 +138,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_web_interface_list()
-        self.assertEqual(len(data), 2, "web_interface: Wrong size of the List")
-        self.assertEqual(len(data[0]), 30, "web_interface: Wrong size of the List")
+        self.assertEqual(True, len(data) > 0, "web_interface: Wrong size of the List")
 
     def test_web_interface_property(self):
         """
@@ -150,7 +155,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_power_strip_dict()
-        self.assertEqual(len(data), 1, "power_strip: Wrong size of the List")
+        self.assertEqual(True, data[0], "power_strip: Wrong config")
 
     def test_power_strip_list(self):
         """
@@ -158,7 +163,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_power_strip_list()
-        self.assertEqual(len(data), 1, "power_strip: Wrong size of the List")
+        self.assertEqual(True, len(data) > 0, "power_strip: Wrong size of the List")
 
         # tests
     def test_test_dict(self):
@@ -167,7 +172,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_test_dict()
-        self.assertEqual(len(data), 2, "test: Wrong size of the List")
+        self.assertEqual(True, data[0], "test: Wrong config")
 
     def test_test_set(self):
         """
@@ -175,7 +180,7 @@ class MyTestCase(unittest.TestCase):
         :return: Tests results
         """
         data = ConfigManager.get_test_sets()
-        self.assertEqual(len(data), 2, "test: Wrong size of the List")
+        self.assertEqual(True, len(data) > 0, "test: Wrong size of the List")
 
     if __name__ == '__main__':
         unittest.main()
