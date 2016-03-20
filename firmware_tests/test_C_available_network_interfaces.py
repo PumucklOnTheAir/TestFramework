@@ -1,6 +1,5 @@
 from server.test import FirmwareTest
 from router.router import Mode
-import logging
 
 
 class TestAvailableNetworkInterfaces(FirmwareTest):
