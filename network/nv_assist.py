@@ -84,5 +84,3 @@ class NVAssistent:
         for nsp in self.nsp_dict:
             self.delete_namespace(nsp)
         self.ipdb.release()
-        logging.debug("%sKill dhclient ...", LoggerSetup.get_log_deep(2))
-        os.system('pkill dhclient')
