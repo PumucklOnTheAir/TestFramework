@@ -122,9 +122,8 @@ class WebConfigurationAssist:
         div_public_key_xpath = "//*[@class='the-key']"
 
         div_public_key_field_element = self._get_element_by_xpath(div_public_key_xpath)
-        raw_public_key_info = div_public_key_field_element.getText()
-        logging.debug("raw_public_key_info: " + str(raw_public_key_info))
-        self.router.public_key = "<public key>"
+        raw_public_key_info = div_public_key_field_element.text
+        self.router.public_key = raw_public_key_info.split()[2]
 
     def setup_expert_private_wlan(self):
         """
