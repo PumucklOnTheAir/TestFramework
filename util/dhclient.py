@@ -13,13 +13,12 @@ class Dhclient:
     """""
 
     @staticmethod
-    def update_ip(interface: str, timeout: int = 20) -> int:
+    def update_ip(interface: str, timeout: int = 20):
         """
         Uses 'Popen' to start a dhclient in new process, for a given interface.
 
         :param interface: interface name
         :param timeout: time until break
-        :return: 0 = no error; 1 = error; 2 = a dhclient is already running
         """
         try:
             logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ")...", LoggerSetup.get_log_deep(2))
@@ -30,17 +29,24 @@ class Dhclient:
                 if timeout <= 0:
                     raise TimeoutError
                 timeout -= 1
-            Dhclient.kill()
             if "File exists" in str(stderr):
-                return 2
+                raise FileExistsError
             elif stderr.decode('utf-8') != "":
-                return 1
-            return 0
-        except KeyboardInterrupt:
-            return 3
+                raise Exception(stderr.decode('utf-8'))
+            else:
+                Dhclient.kill()
+        except KeyboardInterrupt as ki:
+            logging.warning("%s[!] KeyboardInterrupt", LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
+            raise ki
         except TimeoutError as te:
+            logging.warning("%s[!] Timeout: Couldn't get any IP", LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
             raise te
         except Exception as e:
+            logging.warning("%s[!] Couldn't get a new IP", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
             raise e
 
     @staticmethod
@@ -63,5 +69,5 @@ class Dhclient:
 
     @staticmethod
     def kill():
-        logging.debug("%sKill dhclients", LoggerSetup.get_log_deep(2))
+        logging.debug("%sKill dhclients", LoggerSetup.get_log_deep(3))
         Popen(['pkill', 'dhclient'])
