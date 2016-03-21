@@ -41,6 +41,8 @@ class Router(RemoteSystem):
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
+        self._public_name = ""
+        self._public_key = ""
         self._ssid = ''
         self.interfaces = dict()
         self.cpu_processes = list()
@@ -128,6 +130,26 @@ class Router(RemoteSystem):
         :return:
         """
         return self._usr_password
+
+    @property
+    def public_name(self) -> str:
+        """
+        Name of the Router, that is seen from the community.
+
+        :rtype: str
+        :return:
+        """
+        return self._public_name
+
+    @property
+    def public_key(self) -> str:
+        """
+        Public-key of the Router, that is used o communicate with outher Freifunk-Routers.
+
+        :rtype: str
+        :return:
+        """
+        return self._public_key
 
     @property
     def mac(self) -> str:
