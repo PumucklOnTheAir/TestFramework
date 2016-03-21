@@ -49,7 +49,7 @@ def print_routers(routers):
         string_list.append([routers[i].id,
                             routers[i].model,
                             routers[i].vlan_iface_id,
-                            routers[i].mode,
+                            routers[i].mode.name,
                             routers[i].ip + "/" + str(routers[i].ip_mask),
                             routers[i].mac])
 
@@ -65,6 +65,7 @@ def print_router_info(router_list, rid):
     :return:
     """
     router = [elem for elem in router_list if str(elem.id) == str(rid)]
+
     if not router:
         logging.info("No such router found, check the list again")
     else:
@@ -77,32 +78,73 @@ def print_router_info(router_list, rid):
                 ["IP", router.ip + "/" + str(router.ip_mask)],
                 ["VLan Name", router.vlan_iface_name],
                 ["VLan ID", router.vlan_iface_id],
-                ["Mode", router.mode],
-                ["username", router.usr_name],
-                ["password", router.usr_password],
-                ["SSID", router.ssid],
+                ["Mode", router.mode.name],
+                ["Username", router.usr_name],
+                ["Password", router.usr_password],
                 ["Firmware", router.firmware.name],
-                ["Power Socket", router.power_socket]]
+                ["Power Socket", router.power_socket],
+                ["Knotenname", router.public_name],
+                ["Public Key", router.public_key]]
 
-        if_list_headers = ["Name", "MAC", "Status", "IP Addresses"]
+        # Info on Memory
+        mem_list = [["Used", str(router.ram.used) + "/" + str(router.ram.total)],
+                    ["Free", str(router.ram.free) + "/" + str(router.ram.total)],
+                    ["Shared", router.ram.shared],
+                    ["Buffers", router.ram.buffers]]
+
+        # Info on all Interfaces on the router
+        if_list_headers = ["ID", "Name", "MAC", "Status", "IP Addresses", "Wifi Info"]
         if_list = []
-        print(router.interfaces.values())
-        for k, i in router.interfaces.values():
-            li = [k, i.name, i.mac, i.status, i.ipaddress_lst]
-            ips = ""
-            ips += str(i.ipaddress_lst[0])
-            del i.ipaddress_lst[0]
-            for ip in i.ipaddress_lst:
-                ips += ", " + str(ip)
-            if_list.append(li)
 
+        for i in sorted(router.interfaces.values(), key=lambda if_id: if_id.id):
+            wifi_info = ""
+            if i.wifi_information:
+                wifi_info = str(i.wifi_information.wdev) + ": " + str(i.wifi_information.ssid)
+                wifi_info += "\tType: " + str(i.wifi_information.type)
+                wifi_info += "\tCh: " + str(i.wifi_information.channel)
+                wifi_info += "\tWidth:" + str(i.wifi_information.channel_width) + " MHz"
+                wifi_info += "\tCenter: " + str(i.wifi_information.channel_center1) + " MHz"
+            ip_list = i.ipaddress_lst.copy()
+            # if more than 1 ip,
+            if len(ip_list) > 1:
+                ip = str(ip_list[0])
+                del ip_list[0]
+                li = [str(i.id), i.name, i.mac, i.status.name, ip, wifi_info]
+                if_list.append(li)
+                for ip in ip_list:
+                    li = ["", "", "", "", ip, ""]
+                    if_list.append(li)
+            # only 1 ip in the ip list
+            elif len(ip_list) == 1:
+                li = [str(i.id), i.name, i.mac, i.status.name, ip_list[0], wifi_info]
+                if_list.append(li)
+            # no ip in list
+            else:
+                li = [str(i.id), i.name, i.mac, i.status.name, "", wifi_info]
+                if_list.append(li)
+
+        # Info on processes on the router
         proc_list_headers = ["PID", "User", "CPU", "MEM", "Command"]
         proc_list = []
         for p in router.cpu_processes:
             li = [p.pid, p.user, str(p.cpu) + "%", str(p.mem) + "%", p.command]
             proc_list.append(li)
 
-        util.print_router(info, if_list_headers, if_list, proc_list_headers, proc_list)
+        # Info on sockets on the router
+        socket_list_headers = ["PID", "Protocol", "Local Address", "L. Port",
+                               "Foreign Address", "F. Port", "Status", "Program"]
+        socket_list = []
+        for s in router.sockets:
+            if not s.state:
+                state = ""
+            else:
+                state = str(s.state.name)
+            li = [s.pid, s.protocol.name, s.local_address, s.local_port, s.foreign_address, s.foreign_port,
+                  state, s.program_name]
+            socket_list.append(li)
+
+        util.print_router(info, if_list_headers, if_list, proc_list_headers, proc_list,
+                          socket_list_headers, socket_list, mem_list)
 
 
 def create_parsers():

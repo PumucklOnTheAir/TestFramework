@@ -86,40 +86,48 @@ class CLIUtil:
                 "".join("{}".format(" ") for _ in range(50 - progress)) + "]\t" + str(percentage) + "%")
 
     @staticmethod
-    def print_list(content, headers):
+    def print_list(content, headers, sort: bool, ind_line: bool, in_table_param: str):
         """
         prints a simple list(table) sorted by the first row and formatted
 
         :param content: list of list (table)
         :param headers: list of headers for table, leave empty if not wanted
+        :param sort: sort the list by first column, or not
+        :param ind_line: is there content to be inserted as a new line
+        :param in_table_param: which field contains the indent
         :return:
         """
-        # generate list of row widths
+        # generate list of column widths
         width_list = content.copy()
         width_list.append(headers)
         width_list = [[len(str(x)) for x in row] for row in width_list]
         width_list = list(map(max, zip(*width_list)))
 
-        # sort content by the first row
-        content.sort(key=lambda x: x[0])
+        # table in table remove column
+        if ind_line:
+            pos = headers.index(in_table_param)
+            print(pos)
+            width_list[pos] = 0
 
-        line = "+" + "-".join("-{}-".format("-".ljust(width_list[i], "-"))
-                              for i, x in content[0]) + "+"
+        # sort content by the first row
+        if sort:
+            content.sort(key=lambda x: x[0])
 
         # print headers only if wanted
         if len(headers) > 0:
-            print(line)
             print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(headers)))
+                                 for i, x in enumerate(headers)) + "\n")
 
         # print list
-        print(line)
         for c in content:
             print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
                                  for i, x in enumerate(c)))
-        print(line)
+            if ind_line:
+                if c[pos]:
+                    print("\t" + c[pos])
 
-    def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list):
+    def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list,
+                     socket_list_headers, socket_list, mem_list):
         """
         prints a detailed list of info on a router
 
@@ -128,17 +136,27 @@ class CLIUtil:
         :param if_list: list of interfaces
         :param proc_list_headers: headers for the CPU Process table
         :param proc_list: list of CPU processes running on router
+        :param socket_list_headers: header for the Socket table
+        :param socket_list: list of the Sockets
+        :param mem_list: list of info on memory
         :return:
         """
         print(OutputColors.bold + "------Detailed Router Info------" + OutputColors.clear)
         for elem in router_list:
             print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
 
+        print(OutputColors.bold + "\v------Memory------" + OutputColors.clear)
+        for elem in mem_list:
+            print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
+
         print(OutputColors.bold + "\v------Interfaces------" + OutputColors.clear)
-        self.print_list(if_list, if_list_headers)
+        self.print_list(if_list, if_list_headers, False, True, "Wifi Info")
 
         print(OutputColors.bold + "\v------CPU Processes------" + OutputColors.clear)
-        self.print_list(proc_list, proc_list_headers)
+        self.print_list(proc_list, proc_list_headers, True, False, "")
+
+        print(OutputColors.bold + "\v-------Sockets-------" + OutputColors.clear)
+        self.print_list(socket_list, socket_list_headers, True, False, "")
 
     @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
