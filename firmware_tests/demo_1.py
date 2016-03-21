@@ -1,7 +1,6 @@
 from server.test import FirmwareTest
 import os
 import time
-from jsonschema import validate
 
 
 class ConnectionTest(FirmwareTest):
