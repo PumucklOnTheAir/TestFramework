@@ -70,6 +70,7 @@ def print_router_info(router_list, rid):
     else:
         # Collect info on router [["header", info],...]
         router = router[0]
+        print(router.__str__())
         info = [["ID", router.id],
                 ["Model", router.model],
                 ["MAC", router.mac],
@@ -85,11 +86,14 @@ def print_router_info(router_list, rid):
 
         if_list_headers = ["Name", "MAC", "Status", "IP Addresses"]
         if_list = []
-        for k, i in router.interfaces:
+        print(router.interfaces.values())
+        for k, i in router.interfaces.values():
             li = [k, i.name, i.mac, i.status, i.ipaddress_lst]
             ips = ""
+            ips += str(i.ipaddress_lst[0])
+            del i.ipaddress_lst[0]
             for ip in i.ipaddress_lst:
-                ips += str(ip) + ", "
+                ips += ", " + str(ip)
             if_list.append(li)
 
         proc_list_headers = ["PID", "User", "CPU", "MEM", "Command"]

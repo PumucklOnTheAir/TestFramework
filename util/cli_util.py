@@ -22,7 +22,7 @@ class CLIUtil:
             if len(content[i]) != len(headers):
                 logging.warning("Content and headers do not match")
 
-            assert(len(i) == len(headers))
+            assert len(content[i]) == len(headers)
 
         # generate list of column widths, compare with strings in header
         table = [headers]
@@ -104,7 +104,7 @@ class CLIUtil:
         content.sort(key=lambda x: x[0])
 
         line = "+" + "-".join("-{}-".format("-".ljust(width_list[i], "-"))
-                              for i, x in enumerate(content[0])) + "+"
+                              for i, x in content[0]) + "+"
 
         # print headers only if wanted
         if len(headers) > 0:
