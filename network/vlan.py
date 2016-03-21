@@ -81,18 +81,11 @@ class Vlan:
         """
         logging.debug("%sWait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...",
                       LoggerSetup.get_log_deep(3))
+
         try:
-            ret = Dhclient.update_ip(self.vlan_iface_name)
-            if ret == 2:
-                logging.warning("[!] dhclient already exists")
-            elif ret == 1:
-                logging.debug("[-] Couldn't get an IP via dhclient")
-            else:
-                return True
-            return False
-        except Exception as e:
-            logging.debug("[-] Couldn't get an IP via dhclient")
-            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+            Dhclient.update_ip(self.vlan_iface_name)
+            return True
+        except:
             return False
 
     def ipdb_get_ip(self, not_this_ip: str = None):
@@ -119,7 +112,7 @@ class Vlan:
         :param ip: IP address
         :return: New IP address
         """
-        logging.debug("Set static IP for VLAN(" + str(self.vlan_iface_id) + ")")
+        logging.debug("%sSet static IP for VLAN(" + str(self.vlan_iface_id) + ")", LoggerSetup.get_log_deep(2))
         last_numer = int(ip.split(".")[-1])
         new_numer = last_numer
         if last_numer < 254:
