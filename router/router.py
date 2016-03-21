@@ -11,7 +11,6 @@ class Mode(Enum):
     """""
     normal = 1
     configuration = 2
-    reboot = 3
     unknown = 3
 
 
@@ -41,6 +40,8 @@ class Router(RemoteSystem):
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
+        self._public_name = ""
+        self._public_key = ""
         self._ssid = ''
         self.network_interfaces = dict()
         self.cpu_processes = list()
@@ -130,6 +131,34 @@ class Router(RemoteSystem):
         :return:
         """
         return self._usr_password
+
+    @property
+    def public_name(self) -> str:
+        """
+        Name of the Router, that is seen from the community.
+
+        :rtype: str
+        :return:
+        """
+        return self._public_name
+
+    @property
+    def public_key(self) -> str:
+        """
+        Public-key of the Router, that is used to communicate with other Freifunk-Routers.
+
+        :rtype: str
+        :return:
+        """
+        return self._public_key
+
+    @public_key.setter
+    def public_key(self, value: str):
+        """
+        :type value: str
+        """
+        assert isinstance(value, str)
+        self._public_key = value
 
     @property
     def mac(self) -> str:
@@ -286,7 +315,9 @@ class Router(RemoteSystem):
         string = "\nRouter: \n"
         string += "ID: " + str(self.id) + "\n"
         string += "MAC: " + self.mac + "\n"
-        string += "Model:" + self.model + "\n"
+        string += "Model: " + self.model + "\n"
+        string += "Public Name: " + self.public_name + "\n"
+        string += "Public Key: " + self.public_key + "\n"
         string += "Namespace: " + self.namespace_name + "\n"
         string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
         string += "IP: " + self.ip + "/" + str(self.ip_mask) + "\n"

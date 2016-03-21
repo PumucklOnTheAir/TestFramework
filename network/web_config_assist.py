@@ -104,9 +104,26 @@ class WebConfigurationAssist:
             altitude_field_element.clear()
             altitude_field_element.send_keys(self.config['altitude'])
 
+        contact_field_element.clear()
         contact_field_element.send_keys(self.config['contact'])
 
         safe_restart_button_element.click()
+
+        self._safe_public_key()
+
+    def _safe_public_key(self):
+        """
+        Safes the public-key that is given after the wizard-configuration.
+
+        Info:
+            #<public_name>
+            <public-key>
+        """
+        div_public_key_xpath = "//*[@class='the-key']"
+
+        div_public_key_field_element = self._get_element_by_xpath(div_public_key_xpath)
+        raw_public_key_info = div_public_key_field_element.text
+        self.router.public_key = raw_public_key_info.split()[2]
 
     def setup_expert_private_wlan(self):
         """

@@ -23,7 +23,6 @@ class Sysupdate(Thread):
     def run(self):
         """
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
-        :return:
         """
         logging.info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         firmware_handler = FirmwareHandler(str(ConfigManager.get_firmware_property('URL')))
@@ -88,7 +87,6 @@ class Sysupgrade(Thread):
         """
         Copies the firmware image onto the Router, proves if the firmware is in the right file(/tmp/<firmware_name>.bin)
         and does a Sysupgrade.
-        :return:
         """
         network_ctrl = NetworkCtrl(self.router)
         try:
@@ -106,19 +104,36 @@ class Sysupgrade(Thread):
             try:
                 network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
             except TimeoutError:
-                if Dhclient.update_ip(self.router.vlan_iface_name) == 1:
-                    self.router.mode = Mode.unknown
-                    logging.error("%s[-]Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
-                                  LoggerSetup.get_log_deep(2))
-                logging.info("%s[+]Router was set into config mode",
-                             LoggerSetup.get_log_deep(2))
-                self.router.mode = Mode.configuration
-            except Exception as e:
-                self.router.mode = Mode.unknown
-                logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
-                              LoggerSetup.get_log_deep(2))
-                logging.error(str(e))
+                try:
+                    Dhclient.update_ip(self.router.vlan_iface_name)
+                    self._success_handling()
+                except FileExistsError:
+                    self._success_handling()
+                    pass
+                except Exception:
+                    self._execption_hanling()
+            except Exception:
+                self._execption_hanling()
         network_ctrl.exit()
+
+    def _success_handling(self):
+        """
+        Sets the Router in config-mode.
+        """
+        if self.n:
+            logging.info("%s[+]Router was set into config mode", LoggerSetup.get_log_deep(2))
+            self.router.mode = Mode.configuration
+        else:
+            logging.info("%s[+]Router was set into normal mode", LoggerSetup.get_log_deep(2))
+            self.router.mode = Mode.normal
+
+    def _execption_hanling(self):
+        """
+        Sets the Router in unknown-mode.
+        """
+        logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
+                      LoggerSetup.get_log_deep(2))
+        self.router.mode = Mode.unknown
 
 
 class SysupgradeJob(RemoteSystemJob):
