@@ -56,16 +56,21 @@ class RouterWebConfiguration(Thread):
         time.sleep(90)
 
         try:
-            if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
-                self.router.mode = Mode.normal
-                logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
-            else:
-                logging.warning("%s[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")",
-                                LoggerSetup.get_log_deep(2))
-                self.router.mode = Mode.unknown
-        except TimeoutError:
-            logging.warning("%s[!] TimeoutError", LoggerSetup.get_log_deep(2))
-            self.router.mode = Mode.unknown
+            Dhclient.update_ip(self.router.vlan_iface_name)
+            self._success_handling()
+        except FileExistsError:
+            self._success_handling()
+        except Exception:
+            self._exception_handling()
+
+    def _success_handling(self):
+        self.router.mode = Mode.normal
+        logging.info("%s[+] Router was set into " + str(Mode.normal), LoggerSetup.get_log_deep(2))
+
+    def _exception_handling(self):
+        logging.warning("%s[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")",
+                        LoggerSetup.get_log_deep(2))
+        self.router.mode = Mode.unknown
 
     def _wca_setup_expert(self, config):
         """
