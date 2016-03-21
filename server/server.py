@@ -42,6 +42,7 @@ RemoteSystemJobClass = type(RemoteSystemJob)
 # initialization method for processes of the task pool
 def init_process(event):
     setproctitle("PoolProcess")
+
     # register the stop signal for CTRL+C
     def signal_handler(signal, frame):
         event.set()
@@ -143,7 +144,7 @@ class Server(ServerProxy):
         cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
         cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
                               initargs=(cls._server_stop_event,), maxtasksperchild=1)
-        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses*2))
+        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
 
         # add Namespace and Vlan for each Router
         if cls.VLAN:
