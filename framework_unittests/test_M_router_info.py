@@ -16,19 +16,20 @@ class TestRouterInfo(TestCase):
 
         # NVAssisten
         nv_assist = NVAssistent("eth0")
-        nv_assist.create_namespace_vlan(router)
-        # Set netns for the current process
-        netns.setns(router.namespace_name)
+        try:
+            nv_assist.create_namespace_vlan(router)
+            # Set netns for the current process
+            netns.setns(router.namespace_name)
 
-        print("Get informations via ssh-commands ...")
-        router_info = RouterInfo(router)
-        router_info.start()
-        router_info.join()
+            print("Get informations via ssh-commands ...")
+            router_info = RouterInfo(router)
+            router_info.start()
+            router_info.join()
 
-        print(str(router))
-
-        # Close Namespaces and VLANs
-        nv_assist.close()
+            print(str(router))
+        finally:
+            # Close Namespaces and VLANs
+            nv_assist.close()
 
     def _create_router(self):
         # Create router
@@ -36,6 +37,6 @@ class TestRouterInfo(TestCase):
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         # Has to be matched with the current mode (normal, configuration)
-        router.mode = Mode.configuration
+        router.mode = Mode.normal
         assert isinstance(router, Router)
         return router

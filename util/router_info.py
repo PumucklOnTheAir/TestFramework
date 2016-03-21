@@ -11,6 +11,7 @@ from router.socket import InternetSocket
 from typing import Dict, List
 import traceback
 import sys
+from router.bat_originator import BatOriginator
 
 
 class RouterInfo(Thread):
@@ -53,6 +54,10 @@ class RouterInfo(Thread):
             self.router.ram = self._get_router_mem_ram()
             # Sockets
             self.router.sockets = self._get_router_sockets()
+            # UCI
+            self.router.uci = self._get_router_uci()
+            # Bat Originators
+            self.router.bat_originators = self._get_bat_originator()
             logging.debug("%s[+] Infos updated", LoggerSetup.get_log_deep(2))
         except Exception as e:
             logging.warning("%s[-] Couldn't update all Infos", LoggerSetup.get_log_deep(2))
@@ -247,6 +252,40 @@ class RouterInfo(Thread):
             socket.program_name = raw_process[1]
             socket_lst.append(socket)
         return socket_lst
+
+    def _get_router_uci(self):
+        """
+        :return: All values of the UCI of a Router.
+        """
+        uci_dict = dict()
+        raw_uci_lst = self.network_ctrl.send_command("uci show")
+        for uci_info in raw_uci_lst:
+            key, value = uci_info.split("=")
+            uci_dict[key] = value.replace("\n", "")
+        return uci_dict
+
+    def _get_bat_originator(self):
+        """
+        :return: All reachable mesh-nodes(bat_originators) of a Router.
+        """
+        bat_originators = list()
+        raw_bat_originator_lst = self.network_ctrl.send_command("batctl o")[2:]
+        for raw_bat_originator in raw_bat_originator_lst:
+            raw_bat_originator = raw_bat_originator.split()
+            # raw_bat_originator: ['f6:f6:6d:85:d4:ae', '0.840s', '(', '52)', '32:b8:c3:e7:6f:f0', '[', 'mesh0]:',
+            # '02:2a:1a:cc:72:ae', '(', '3)', '32:b8:c3:e7:96:b0', '(', '26)', '32:b8:c3:e7:6f:f0', '(', '52)']
+            mac = raw_bat_originator[0]
+            tmp = raw_bat_originator[1].replace("s", "")
+            last_seen = float(tmp)
+            next_hop = raw_bat_originator[4]
+            outgoing_iface = raw_bat_originator[6].replace("]:", "")
+            potential_next_hops = list()
+            for raw_potential_next_hop in raw_bat_originator[7:]:
+                if ":" in raw_potential_next_hop:
+                    potential_next_hops.append(raw_potential_next_hop)
+            bat_originator = BatOriginator(mac, last_seen, next_hop, outgoing_iface, potential_next_hops)
+            bat_originators.append(bat_originator)
+        return bat_originators
 
 
 class RouterInfoJob(RemoteSystemJob):
