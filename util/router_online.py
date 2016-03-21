@@ -18,6 +18,7 @@ class RouterOnline(Thread):
         self.daemon = True
 
     def run(self):
+        # TODO: Es ist nötig, dass hier eine statische IP dem VLAN zugewiesen wir, bevor der PING gesendet wird.
         logging.debug("%sCheck if Router is online ...", LoggerSetup.get_log_deep(2))
         self.router.mode = Mode.normal
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
