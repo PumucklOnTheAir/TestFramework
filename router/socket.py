@@ -27,10 +27,10 @@ class Socket:
 
     def __init__(self):
         """
-        protocol can be tcp, udp or unix
-        state can be listen or established
-        pid is the process id of the program using the Socket
-        program_name is the name of the program using the Socket
+        protocol: can be tcp, udp or unix
+        state: can be listen or established
+        pid: is the process id of the program using the Socket
+        program_name: is the name of the program using the Socket
         """
         self._protocol = None
         self._state = None

@@ -232,7 +232,7 @@ class FirmwareHandler:
         :param router_model:
         :return: router_model_name and router_model_version
         """
-        logging.debug("Parse RouterModel ...", LoggerSetup.get_log_deep(2))
+        logging.debug("%sParse RouterModel ...", LoggerSetup.get_log_deep(2))
         tmp = router_model.split(' v')
         router_model_name = tmp[0]
         router_model_version = 'v' + tmp[1]
