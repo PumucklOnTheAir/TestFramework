@@ -23,6 +23,7 @@ import os
 import sys
 import signal
 import platform
+from setproctitle import setproctitle
 
 if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
     from util.router_info import RouterInfoJob
@@ -40,6 +41,7 @@ RemoteSystemJobClass = type(RemoteSystemJob)
 
 # initialization method for processes of the task pool
 def init_process(event):
+    setproctitle("PoolProcess")
     # register the stop signal for CTRL+C
     def signal_handler(signal, frame):
         event.set()
@@ -117,6 +119,8 @@ class Server(ServerProxy):
             debug_mode = True
         cls.DEBUG = debug_mode
 
+        setproctitle("fftserver")
+
         cls._server_stop_event = Event()
 
         cls._pid = os.getpid()
@@ -136,10 +140,10 @@ class Server(ServerProxy):
         t.start()
 
         # start process/thread pool for job and test handling
-        cls._max_subprocesses = (len(cls._routers) + 2)
+        cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
         cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
                               initargs=(cls._server_stop_event,), maxtasksperchild=1)
-        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses + 5))
+        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses*2))
 
         # add Namespace and Vlan for each Router
         if cls.VLAN:
@@ -340,13 +344,12 @@ class Server(ServerProxy):
         """
         assert(cls._pid == os.getpid())
         # Check if it is the the same PID as the PID Process which started the ProcessPool
-
         try:
             cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
             if job is None:  # no job given? look up for the next job in the queue
-                logging.debug("%sLookup for next task", LoggerSetup.get_log_deep(1))
+                logging.debug("%sLookup for next task in the queue %i", LoggerSetup.get_log_deep(1), remote_sys.id)
                 if not len(cls.get_waiting_task_queue(remote_sys)):
-                    logging.debug("%sNo tasks in the queue to run.", LoggerSetup.get_log_deep(2))
+                    logging.debug("%sNo tasks in the queue %i to run.", LoggerSetup.get_log_deep(2), remote_sys.id)
                     return False
                 else:
                     if cls.get_running_task(remote_sys) is not None:
@@ -384,6 +387,7 @@ class Server(ServerProxy):
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> {}:
         logging.debug("%sExecute job " + str(job) + " on Router(" + str(remote_sys.id) + ")",
                       LoggerSetup.get_log_deep(2))
+        setproctitle(str(remote_sys.id) + " - " + str(job))
         job.prepare(remote_sys)
 
         cls.__setns(remote_sys)
@@ -399,6 +403,7 @@ class Server(ServerProxy):
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
+        setproctitle(str(router.id) + " - " + str(test))
         logging.debug("%sExecute test " + str(test) + " on " + str(router), LoggerSetup.get_log_deep(2))
 
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
