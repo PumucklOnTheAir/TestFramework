@@ -16,3 +16,4 @@ pycrypto==2.6.1
 ecdsa==0.13
 ipaddress==1.0.16
 jsonschema==2.5.1
+setproctitle==1.1.9
