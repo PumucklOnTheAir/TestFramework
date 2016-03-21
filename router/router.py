@@ -71,6 +71,13 @@ class Router(RemoteSystem):
         """
         return self._id
 
+    def set_id(self, value: int):
+        """
+        :type value: int
+        """
+        assert isinstance(value, int)
+        self._id = value
+
     @property
     def ip(self) -> str:
         """
