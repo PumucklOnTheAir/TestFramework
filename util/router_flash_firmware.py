@@ -23,7 +23,6 @@ class Sysupdate(Thread):
     def run(self):
         """
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
-        :return:
         """
         logging.info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         firmware_handler = FirmwareHandler(str(ConfigManager.get_firmware_property('URL')))
@@ -88,7 +87,6 @@ class Sysupgrade(Thread):
         """
         Copies the firmware image onto the Router, proves if the firmware is in the right file(/tmp/<firmware_name>.bin)
         and does a Sysupgrade.
-        :return:
         """
         network_ctrl = NetworkCtrl(self.router)
         try:
@@ -119,6 +117,9 @@ class Sysupgrade(Thread):
         network_ctrl.exit()
 
     def _success_handling(self):
+        """
+        Sets the Router in config-mode.
+        """
         if self.n:
             logging.info("%s[+]Router was set into config mode", LoggerSetup.get_log_deep(2))
             self.router.mode = Mode.configuration
@@ -127,6 +128,9 @@ class Sysupgrade(Thread):
             self.router.mode = Mode.normal
 
     def _execption_hanling(self):
+        """
+        Sets the Router in unknown-mode.
+        """
         logging.error("%s[-] Something went wrong. Use command 'online -r " + str(self.router.id) + "'",
                       LoggerSetup.get_log_deep(2))
         self.router.mode = Mode.unknown

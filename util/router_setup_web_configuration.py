@@ -64,10 +64,16 @@ class RouterWebConfiguration(Thread):
             self._exception_handling()
 
     def _success_handling(self):
+        """
+        Sets the Router in normal-mode.
+        """
         self.router.mode = Mode.normal
         logging.info("%s[+] Router was set into " + str(Mode.normal), LoggerSetup.get_log_deep(2))
 
     def _exception_handling(self):
+        """
+        Sets the Router in unknown-mode.
+        """
         logging.warning("%s[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")",
                         LoggerSetup.get_log_deep(2))
         self.router.mode = Mode.unknown

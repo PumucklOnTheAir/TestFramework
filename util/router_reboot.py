@@ -77,11 +77,17 @@ class RouterReboot(Thread):
         network_ctrl.exit()
 
     def _success_handling(self):
+        """
+        Sets the Router in config/normal-mode depending on given mode.
+        """
         mode = Mode.configuration if self.configmode else Mode.normal
         logging.info("%s[+] Router was set into " + str(mode), LoggerSetup.get_log_deep(2))
         self.router.mode = mode
 
     def _execption_hanling(self):
+        """
+        Sets the Router in unkknown-mode.
+        """
         logging.warning("%s[!] The mode of the Router is unknown", LoggerSetup.get_log_deep(2))
         self.router.mode = Mode.unknown
 
