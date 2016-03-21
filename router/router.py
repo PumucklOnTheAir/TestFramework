@@ -153,6 +153,14 @@ class Router(RemoteSystem):
         """
         return self._public_key
 
+    @public_key.setter
+    def public_key(self, value: str):
+        """
+        :type value: str
+        """
+        assert isinstance(value, str)
+        self._public_key = value
+
     @property
     def mac(self) -> str:
         """
@@ -308,7 +316,9 @@ class Router(RemoteSystem):
         string = "\nRouter: \n"
         string += "ID: " + str(self.id) + "\n"
         string += "MAC: " + self.mac + "\n"
-        string += "Model:" + self.model + "\n"
+        string += "Model: " + self.model + "\n"
+        string += "Public Name: " + self.public_name + "\n"
+        string += "Public Key: " + self.public_key + "\n"
         string += "Namespace: " + self.namespace_name + "\n"
         string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
         string += "IP: " + self.ip + "/" + str(self.ip_mask) + "\n"
