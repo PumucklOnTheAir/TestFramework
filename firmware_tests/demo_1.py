@@ -1,6 +1,7 @@
 from server.test import FirmwareTest
 import os
 import time
+from jsonschema import validate
 
 
 class ConnectionTest(FirmwareTest):
@@ -14,6 +15,9 @@ class ConnectionTest(FirmwareTest):
 
     def test_self_router(self):
         assert self.remote_system.id == 0
+
+    def test_all_routers(self):
+        assert len(self.all_routers) >= 1
 
     def test_ping_local(self):
         response = os.system("ping -t 5 -c 1 " + "localhost")

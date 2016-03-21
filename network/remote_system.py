@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractproperty, abstractmethod, abstractstaticmethod
 from log.loggersetup import LoggerSetup
 import logging
+from typing import List
 # from server.server import Server
 
 
@@ -55,19 +56,22 @@ class RemoteSystemJob(metaclass=ABCMeta):
     """""
     def __init__(self):
         self.remote_system = None
+        self.all_routers = None
         self.__return_data = None
 
     def __str__(self):
         return self.__class__.__name__  # TODO: __str__ remotesystemjob"
 
-    def prepare(self, remote_sys: RemoteSystem) -> None:
+    def prepare(self, remote_sys: RemoteSystem, routers: List) -> None:
         """
         Prepares the system job before the run method will started
 
         :param remote_sys: the RemoteSystem which are connected to this job
+        :param routers: all routers as a copy
         """
         logging.debug("%sPrepare job", LoggerSetup.get_log_deep(5))
         self.remote_system = remote_sys
+        self.all_routers = routers
         RemoteSystemJob._prepare(remote_sys)
 
     @classmethod
