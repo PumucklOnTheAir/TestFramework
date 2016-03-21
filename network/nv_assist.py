@@ -4,7 +4,6 @@ from pyroute2.ipdb import IPDB
 from network.remote_system import RemoteSystem
 from log.loggersetup import LoggerSetup
 import logging
-import os
 
 
 class NVAssistent:
