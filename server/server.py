@@ -33,6 +33,7 @@ if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "
     from util.router_setup_web_configuration import RouterWebConfigurationJob
     from util.router_flash_firmware import SysupgradeJob
     from util.router_flash_firmware import Sysupdate
+    from util.register_public_key import RegisterPublicKey
 
 # type alias
 FirmwareTestClass = type(FirmwareTest)
@@ -752,6 +753,29 @@ class Server(ServerProxy):
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
                 cls.start_job(router, RouterRebootJob(configmode))
+
+    @classmethod
+    def register_key(cls, router_ids: Union[List[int], None], register_all: bool):
+        """
+        Sends the public-key of the given Routers to an email that is specified in the config-file.
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param register_all: Register the public-keys of all Routers
+        """
+
+        if register_all:
+            for router in cls.get_routers():
+                # TODO: config-file hinzufügen
+                reg_pub_key = RegisterPublicKey(router, )
+                reg_pub_key.start()
+                reg_pub_key.join()
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                # TODO: config-file hinzufügen
+                reg_pub_key = RegisterPublicKey(router, )
+                reg_pub_key.start()
+                reg_pub_key.join()
 
     @classmethod
     def control_switch(cls, router_ids: List[int], switch_all: bool, on_or_off: bool):
