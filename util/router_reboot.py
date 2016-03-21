@@ -38,6 +38,7 @@ class RouterReboot(Thread):
             logging.warning(str(e))
             network_ctrl.exit()
             return
+        # Reboot Router into configuration-mode
         if self.configmode:
             if self.router.mode == Mode.configuration:
                 logging.info("%s[+] Router is already in configuration mode", LoggerSetup.get_log_deep(2))
@@ -47,8 +48,8 @@ class RouterReboot(Thread):
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
                 network_ctrl.send_command("uci commit")
                 network_ctrl.send_command("reboot")
-                logging.info("Wait until Router rebooted (45sec) ...")
-                time.sleep(45)
+                logging.info("Wait until Router rebooted (60sec) ...")
+                time.sleep(60)
                 if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
                     self.router.mode = Mode.configuration
                     logging.info("%s[+] Router was set into configuration mode", LoggerSetup.get_log_deep(2))
@@ -58,6 +59,7 @@ class RouterReboot(Thread):
             except Exception as e:
                 logging.warning("%s[-] Couldn't set Router into configuration mode", LoggerSetup.get_log_deep(2))
                 logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+        # Reboot Router into normal-mode
         else:
             if self.router.mode == Mode.normal:
                 logging.info("%s[+] Router is already in normal mode", LoggerSetup.get_log_deep(2))
@@ -65,11 +67,11 @@ class RouterReboot(Thread):
                 return
             try:
                 network_ctrl.send_command("reboot")
-                logging.info("Wait until Router rebooted (45sec) ...")
-                time.sleep(45)
+                logging.info("Wait until Router rebooted (90sec) ...")
+                time.sleep(90)
                 if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
                     self.router.mode = Mode.normal
-                    logging.info("%s+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
+                    logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
                 else:
                     network_ctrl.exit()
                     raise Exception

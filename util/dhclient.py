@@ -22,15 +22,15 @@ class Dhclient:
         :return: 0 = no error; 1 = error; 2 = a dhclient is already running
         """
         try:
-            logging.debug("%sUpdate IP via dhclient ...", LoggerSetup.get_log_deep(2))
+            logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ")...", LoggerSetup.get_log_deep(2))
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             while Dhclient.get_ip(interface) is None:
-                time.sleep(0.5)
+                time.sleep(1)
                 if timeout <= 0:
-                    return TimeoutError
+                    raise TimeoutError
                 timeout -= 1
-
+            Dhclient.kill()
             if "File exists" in str(stderr):
                 return 2
             elif stderr.decode('utf-8') != "":
@@ -38,6 +38,8 @@ class Dhclient:
             return 0
         except KeyboardInterrupt:
             return 3
+        except TimeoutError as te:
+            raise te
         except Exception as e:
             raise e
 
@@ -58,3 +60,8 @@ class Dhclient:
             return None
         ip = struct.unpack('16sH2x4s8x', res)[2]
         return socket.inet_ntoa(ip)
+
+    @staticmethod
+    def kill():
+        logging.debug("%sKill dhclients", LoggerSetup.get_log_deep(2))
+        Popen(['pkill', 'dhclient'])
