@@ -59,7 +59,7 @@ class NetworkCtrl:
             logging.debug("%s[+] Sent the command (" + command + ") to the RemoteSystem", LoggerSetup.get_log_deep(2))
             return output
         except (PipeTimeout, socket.timeout):
-            logging.warning("[!] Timeout: No response from RemoteSystem")
+            logging.warning("%s[!] Timeout: No response from RemoteSystem", LoggerSetup.get_log_deep(2))
             raise TimeoutError
         except Exception as e:
             logging.error("%s[-] Couldn't send the command (" + command + ")", LoggerSetup.get_log_deep(2))
