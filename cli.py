@@ -4,7 +4,6 @@ from server.ipc import IPC
 from util.cli_util import CLIUtil
 import logging
 import argparse
-import time
 import sys
 import subprocess
 
@@ -20,9 +19,6 @@ def connect_to_server():
     global ipc_client
     ipc_client = IPC()
     ipc_client.connect()
-
-    # Wait for connection
-    time.sleep(1)
 
     if verbose:
         logging.info("Client successfully connected")
@@ -174,6 +170,15 @@ def create_parsers():
                                help="List of routers", nargs="+")
     parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
 
+    # subparser for power strip
+    parser_power = subparsers.add_parser("power", help="Switch power on router on or off")
+    parser_power.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                              default=[], action="store", help="List of routers", nargs="+")
+    parser_power.add_argument("-a", "--all", action="store_true", default=False,
+                              help="Apply to all routers")
+    parser_power.add_argument("-on", "--on", action="store_true", default=False, help="turn on")
+    parser_power.add_argument("-off", "--off", action="store_true", default=False, help="turn off")
+
     # subparser for test set
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
     parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
@@ -288,6 +293,18 @@ def main():
         """
         online_all = args.all
         server_proxy.router_online(args.routers, online_all)
+
+    elif args.mode == "power":
+        """
+        subparse: power
+        """
+        switch_all = args.all
+        on_or_off = True
+        if args.on:
+            on_or_off = True
+        elif args.off:
+            on_or_off = False
+        server_proxy.control_switch(args.routers, switch_all, on_or_off)
 
     elif args.mode == "start":
         """
