@@ -145,7 +145,7 @@ class Router(RemoteSystem):
     @property
     def public_key(self) -> str:
         """
-        Public-key of the Router, that is used o communicate with outher Freifunk-Routers.
+        Public-key of the Router, that is used to communicate with other Freifunk-Routers.
 
         :rtype: str
         :return:
