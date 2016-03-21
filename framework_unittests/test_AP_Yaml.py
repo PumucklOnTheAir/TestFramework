@@ -23,6 +23,16 @@ class MyTestCase(unittest.TestCase):
         schema = ConfigManager.get_framework_schema()
         self.assertEqual(True, (schema is not None), "Wrong schema")
 
+    # check config against schema
+    def test_check(self):
+        """
+        Test config vs. schema
+        :return: Test results
+        """
+        data = ConfigManager.get_framework_config()
+        result = ConfigManager.check(data)
+        self.assertEqual(True, result, "Wrong schema or data")
+
     # config path test
     def test_set_config_path(self):
         """

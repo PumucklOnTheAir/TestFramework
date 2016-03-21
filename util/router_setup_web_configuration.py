@@ -49,16 +49,34 @@ class RouterWebConfiguration(Thread):
             wca.setup_wizard()
             wca.exit()
         except Exception as e:
-            logging.error(str(e), 2)
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e
         # The Router should reboot
-        logging.info("Wait until Router rebooted (45sec) ...")
-        time.sleep(45)
-        if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
-            self.router.mode = Mode.normal
-            logging.info("%s[+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
-        else:
-            logging.warning("[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")")
+        logging.info("Wait until Router rebooted (90sec) ...")
+        time.sleep(90)
+
+        try:
+            Dhclient.update_ip(self.router.vlan_iface_name)
+            self._success_handling()
+        except FileExistsError:
+            self._success_handling()
+        except Exception:
+            self._exception_handling()
+
+    def _success_handling(self):
+        """
+        Sets the Router in normal-mode.
+        """
+        self.router.mode = Mode.normal
+        logging.info("%s[+] Router was set into " + str(Mode.normal), LoggerSetup.get_log_deep(2))
+
+    def _exception_handling(self):
+        """
+        Sets the Router in unknown-mode.
+        """
+        logging.warning("%s[!] Couldn't get a new IP for Router(" + str(self.router.id) + ")",
+                        LoggerSetup.get_log_deep(2))
+        self.router.mode = Mode.unknown
 
     def _wca_setup_expert(self, config):
         """
@@ -75,6 +93,7 @@ class RouterWebConfiguration(Thread):
             wca.setup_expert_mesh_vpn()
             wca.setup_expert_wlan()
             wca.setup_expert_autoupdate()
+            wca.exit()
         except Exception as e:
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e

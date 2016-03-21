@@ -13,32 +13,40 @@ class Dhclient:
     """""
 
     @staticmethod
-    def update_ip(interface: str, timeout: int = 20) -> int:
+    def update_ip(interface: str, timeout: int = 20):
         """
         Uses 'Popen' to start a dhclient in new process, for a given interface.
 
         :param interface: interface name
         :param timeout: time until break
-        :return: 0 = no error; 1 = error; 2 = a dhclient is already running
         """
         try:
-            logging.debug("%sUpdate IP via dhclient ...", LoggerSetup.get_log_deep(2))
+            logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ")...", LoggerSetup.get_log_deep(2))
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             while Dhclient.get_ip(interface) is None:
-                time.sleep(0.5)
+                time.sleep(1)
                 if timeout <= 0:
-                    return TimeoutError
+                    raise TimeoutError
                 timeout -= 1
-
             if "File exists" in str(stderr):
-                return 2
+                raise FileExistsError
             elif stderr.decode('utf-8') != "":
-                return 1
-            return 0
-        except KeyboardInterrupt:
-            return 3
+                raise Exception(stderr.decode('utf-8'))
+            else:
+                Dhclient.kill()
+        except KeyboardInterrupt as ki:
+            logging.warning("%s[!] KeyboardInterrupt", LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
+            raise ki
+        except TimeoutError as te:
+            logging.warning("%s[!] Timeout: Couldn't get any IP", LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
+            raise te
         except Exception as e:
+            logging.warning("%s[!] Couldn't get a new IP", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
             raise e
 
     @staticmethod
@@ -58,3 +66,8 @@ class Dhclient:
             return None
         ip = struct.unpack('16sH2x4s8x', res)[2]
         return socket.inet_ntoa(ip)
+
+    @staticmethod
+    def kill():
+        logging.debug("%sKill dhclients", LoggerSetup.get_log_deep(3))
+        Popen(['pkill', 'dhclient'])

@@ -34,49 +34,62 @@ class RouterReboot(Thread):
         try:
             network_ctrl.connect_with_remote_system()
         except Exception as e:
-            logging.warning("[-] Couldn't reboot Router(" + str(self.router.id) + ")")
-            logging.warning(str(e))
+            logging.warning("%s" + str(e), LoggerSetup.get_log_deep(2))
+            logging.warning("%s[-] Couldn't reboot Router(" + str(self.router.id) + ")", LoggerSetup.get_log_deep(2))
             network_ctrl.exit()
             return
+        # Reboot Router into configuration-mode
         if self.configmode:
             if self.router.mode == Mode.configuration:
-                logging.info("%s[+] Router is already in configuration mode", LoggerSetup.get_log_deep(2))
+                logging.info("%s[+] Router is already in " + str(Mode.configuration), LoggerSetup.get_log_deep(2))
                 network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
                 network_ctrl.send_command("uci commit")
                 network_ctrl.send_command("reboot")
-                logging.info("Wait until Router rebooted (45sec) ...")
-                time.sleep(45)
-                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
-                    self.router.mode = Mode.configuration
-                    logging.info("%s[+] Router was set into configuration mode", LoggerSetup.get_log_deep(2))
-                else:
-                    network_ctrl.exit()
-                    raise Exception
+                logging.info("Wait until Router rebooted (60sec) ...")
+                time.sleep(60)
+                Dhclient.update_ip(self.router.vlan_iface_name)
+                self._success_handling()
+            except FileExistsError:
+                self._success_handling()
+                pass
             except Exception as e:
-                logging.warning("%s[-] Couldn't set Router into configuration mode", LoggerSetup.get_log_deep(2))
-                logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+                self._execption_hanling()
+        # Reboot Router into normal-mode
         else:
             if self.router.mode == Mode.normal:
-                logging.info("%s[+] Router is already in normal mode", LoggerSetup.get_log_deep(2))
+                logging.info("%s[+] Router is already in " + str(Mode.normal), LoggerSetup.get_log_deep(2))
                 network_ctrl.exit()
                 return
             try:
                 network_ctrl.send_command("reboot")
-                logging.info("Wait until Router rebooted (45sec) ...")
-                time.sleep(45)
-                if Dhclient.update_ip(self.router.vlan_iface_name) == 0:
-                    self.router.mode = Mode.normal
-                    logging.info("%s+] Router was set into normal mode", LoggerSetup.get_log_deep(2))
-                else:
-                    network_ctrl.exit()
-                    raise Exception
+                logging.info("Wait until Router rebooted (90sec) ...")
+                time.sleep(90)
+                Dhclient.update_ip(self.router.vlan_iface_name)
+                self._success_handling()
+            except FileExistsError:
+                self._success_handling()
+                pass
             except Exception as e:
-                logging.warning("%s[-] Couldn't set Router into normal mode", LoggerSetup.get_log_deep(2))
-                logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+                self._execption_hanling()
         network_ctrl.exit()
+
+    def _success_handling(self):
+        """
+        Sets the Router in config/normal-mode depending on given mode.
+        """
+        mode = Mode.configuration if self.configmode else Mode.normal
+        logging.info("%s[+] Router was set into " + str(mode), LoggerSetup.get_log_deep(2))
+        self.router.mode = mode
+
+    def _execption_hanling(self):
+        """
+        Sets the Router in unkknown-mode.
+        """
+        logging.warning("%s[!] The mode of the Router is unknown", LoggerSetup.get_log_deep(2))
+        self.router.mode = Mode.unknown
 
 
 class RouterRebootJob(RemoteSystemJob):
