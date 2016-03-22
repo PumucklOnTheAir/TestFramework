@@ -755,7 +755,7 @@ class Server(ServerProxy):
                 cls.start_job(router, RouterRebootJob(configmode))
 
     @classmethod
-    def register_key(cls, router_ids: Union[List[int], None], register_all: bool):
+    def register_key(cls, router_ids: List[int], register_all: bool):
         """
         Sends the public-key of the given Routers to an email that is specified in the config-file.
 
