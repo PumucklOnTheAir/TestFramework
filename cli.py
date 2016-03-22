@@ -13,15 +13,9 @@ def connect_to_server():
     Initiates connection to the IPC server by creating a client
     """
 
-    if verbose:
-        logging.info("Setting up IPC client")
-
     global ipc_client
     ipc_client = IPC()
     ipc_client.connect()
-
-    if verbose:
-        logging.info("Client successfully connected")
 
     server_proxy = ipc_client.get_server_proxy()
 
@@ -71,7 +65,6 @@ def print_router_info(router_list, rid):
     else:
         # Collect info on router [["header", info],...]
         router = router[0]
-        print(router.__str__())
         info = [["ID", router.id],
                 ["Model", router.model],
                 ["MAC", router.mac],
@@ -83,7 +76,7 @@ def print_router_info(router_list, rid):
                 ["Password", router.usr_password],
                 ["Firmware", router.firmware.name],
                 ["Power Socket", router.power_socket],
-                ["Knotenname", router.public_name],
+                ["Node Name", router.public_name],
                 ["Public Key", router.public_key]]
 
         # Info on Memory
@@ -100,9 +93,9 @@ def print_router_info(router_list, rid):
             wifi_info = ""
             if i.wifi_information:
                 wifi_info = str(i.wifi_information.wdev) + ": " + str(i.wifi_information.ssid)
-                wifi_info += "\tType: " + str(i.wifi_information.type)
+                wifi_info += "\tType: " + str(i.wifi_information.type.name)
                 wifi_info += "\tCh: " + str(i.wifi_information.channel)
-                wifi_info += "\tWidth:" + str(i.wifi_information.channel_width) + " MHz"
+                wifi_info += "\tWidth: " + str(i.wifi_information.channel_width) + " MHz"
                 wifi_info += "\tCenter: " + str(i.wifi_information.channel_center1) + " MHz"
             ip_list = i.ipaddress_lst.copy()
             # if more than 1 ip,
@@ -143,8 +136,18 @@ def print_router_info(router_list, rid):
                   state, s.program_name]
             socket_list.append(li)
 
+        # Info on Bat Originators
+        bat_list = []
+        bat_list_headers = ["MAC", "Seen[s]", "Next Node", "Iface", "Alt. Nodes"]
+        for b in router.bat_originators:
+            next_hops = ""
+            for hop in b.potential_next_hops:
+                next_hops += hop + " "
+            li = [b.mac, str(b.last_seen), b.next_hop, b.outgoing_iface, next_hops]
+            bat_list.append(li)
+
         util.print_router(info, if_list_headers, if_list, proc_list_headers, proc_list,
-                          socket_list_headers, socket_list, mem_list)
+                          socket_list_headers, socket_list, mem_list, bat_list_headers, bat_list)
 
 
 def create_parsers():
@@ -157,10 +160,6 @@ def create_parsers():
     # Argument Parsing
     parser = argparse.ArgumentParser(description="\tA program to test the firmware on Freifunk routers")
     subparsers = parser.add_subparsers(help="help for subcommands", dest="mode")
-
-    # Verbose mode
-    parser.add_argument("-v", "--verbose", help="returns results in verbose mode",
-                        action="store_true")
 
     # subparser for status requests
     parser_status = subparsers.add_parser("status", help="Show status of routers, network or tests")
@@ -211,7 +210,7 @@ def create_parsers():
                                     help="Apply to all routers")
 
     # subparser for online
-    parser_online = subparsers.add_parser("online", help="")
+    parser_online = subparsers.add_parser("online", help="Ping routers to check IP")
     parser_online.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
                                help="List of routers", nargs="+")
     parser_online.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
@@ -255,9 +254,6 @@ def main():
     parser = create_parsers()
     args = parser.parse_args()
 
-    global verbose
-    verbose = args.verbose
-
     global util
     util = CLIUtil()
     # Isn't necessary
@@ -267,11 +263,7 @@ def main():
         server_proxy = connect_to_server()
     except ConnectionError as e:
         logging.warning("Failed to establish connection: " + str(e))
-        logging.info("Exiting")
         sys.exit(1)
-
-    if verbose:
-        logging.info("Mode set to verbose")
 
     if args.mode == "status":
         """

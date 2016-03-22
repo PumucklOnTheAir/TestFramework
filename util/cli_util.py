@@ -103,10 +103,10 @@ class CLIUtil:
         width_list = [[len(str(x)) for x in row] for row in width_list]
         width_list = list(map(max, zip(*width_list)))
 
-        # table in table remove column
+        # line in table remove column
+        pos = -1
         if ind_line:
             pos = headers.index(in_table_param)
-            print(pos)
             width_list[pos] = 0
 
         # sort content by the first row
@@ -116,18 +116,18 @@ class CLIUtil:
         # print headers only if wanted
         if len(headers) > 0:
             print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(headers)) + "\n")
+                                 for i, x in enumerate(headers) if i != pos) + "\n")
 
         # print list
         for c in content:
             print(" " + " ".join(" {} ".format(str(x).ljust(width_list[i]))
-                                 for i, x in enumerate(c)))
+                                 for i, x in enumerate(c) if i != pos))
             if ind_line:
                 if c[pos]:
                     print("\t" + c[pos])
 
     def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list,
-                     socket_list_headers, socket_list, mem_list):
+                     socket_list_headers, socket_list, mem_list, bat_list_headers, bat_list):
         """
         prints a detailed list of info on a router
 
@@ -139,6 +139,8 @@ class CLIUtil:
         :param socket_list_headers: header for the Socket table
         :param socket_list: list of the Sockets
         :param mem_list: list of info on memory
+        :param bat_list_headers: headers for Bat Originators
+        :param bat_list: list of Bat Originators
         :return:
         """
         print(OutputColors.bold + "------Detailed Router Info------" + OutputColors.clear)
@@ -158,6 +160,9 @@ class CLIUtil:
         print(OutputColors.bold + "\v-------Sockets-------" + OutputColors.clear)
         self.print_list(socket_list, socket_list_headers, True, False, "")
 
+        print(OutputColors.bold + "\v-----BatOriginators-----" + OutputColors.clear)
+        self.print_list(bat_list, bat_list_headers, False, False, "")
+
     @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
         """
@@ -169,13 +174,16 @@ class CLIUtil:
         headers = ["Router ID", "Test", "(S|F|E)"]
         content = []
         print("------Testresults------")
-        for result in result_list:
-            content.append([str(result[0]), result[1], "(" + str(result[2].testsRun - len(result[2].failures) -
-                                                                 len(result[2].errors)) +
-                            "|" + str(len(result[2].failures)) +
-                            "|" + str(len(result[2].errors)) + ")"])
+        if not result_list:
+            print("No Tests to show")
+        else:
+            for result in result_list:
+                content.append([str(result[0]), result[1], "(" + str(result[2].testsRun - len(result[2].failures) -
+                                                                     len(result[2].errors)) +
+                                "|" + str(len(result[2].failures)) +
+                                "|" + str(len(result[2].errors)) + ")"])
 
-        CLIUtil.print_dynamic_table(content, headers)
+            CLIUtil.print_dynamic_table(content, headers)
 
 
 class OutputColors:
