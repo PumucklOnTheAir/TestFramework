@@ -386,11 +386,11 @@ class Server(ServerProxy):
             # logging.debug(str(cls._running_task), 3)
 
     @classmethod
-    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem) -> {}:
+    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, routers: List[Router]) -> {}:
         logging.debug("%sExecute job " + str(job) + " on Router(" + str(remote_sys.id) + ")",
                       LoggerSetup.get_log_deep(2))
         setproctitle(str(remote_sys.id) + " - " + str(job))
-        job.prepare(remote_sys)
+        job.prepare(remote_sys, routers)
 
         cls.__setns(remote_sys)
         try:
@@ -401,7 +401,7 @@ class Server(ServerProxy):
         return result
 
     @classmethod
-    def _execute_test(cls, test: FirmwareTestClass, router: Router) -> TestResult:
+    def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router]) -> TestResult:
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
@@ -413,7 +413,7 @@ class Server(ServerProxy):
         # prepare all test cases
         for test_case in test_suite:
             logging.debug("%sTestCase " + str(test_case), LoggerSetup.get_log_deep(4))
-            test_case.prepare(router)
+            test_case.prepare(router, routers)
 
         result = TestResult()
 
@@ -446,7 +446,7 @@ class Server(ServerProxy):
         """
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
-            async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router))
+            async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
             result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
             logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
@@ -481,7 +481,7 @@ class Server(ServerProxy):
         :param job: job to execute
         :param remote_sys: the RemoteSystem
         """
-        async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys))
+        async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
         result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
         logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
         logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
