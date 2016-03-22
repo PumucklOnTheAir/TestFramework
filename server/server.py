@@ -24,6 +24,7 @@ import sys
 import signal
 import platform
 from setproctitle import setproctitle
+import dbm
 
 if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
     from util.router_info import RouterInfoJob
@@ -162,6 +163,13 @@ class Server(ServerProxy):
             cls.router_online(None, update_all=True, blocked=True)
             cls.update_router_info(None, update_all=True)
 
+        # open database and read old test results
+        with dbm.open('test_results', 'c') as db:
+            # read test values
+            key_list = db.keys()
+            for k in key_list:
+                cls._test_results.append(db[k])
+
         logging.info("Runtime Server started")
 
         try:
@@ -191,6 +199,11 @@ class Server(ServerProxy):
         assert(cls._pid == os.getpid())
 
         cls._server_stop_event.wait()
+
+        with dbm.open('test_results', 'n') as db:
+            # Record test values
+            for i, t in enumerate(cls._test_results):
+                db['i'] = t
 
         if not cls._stopped:
             print("Shutdown server")
@@ -451,6 +464,9 @@ class Server(ServerProxy):
             logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
 
             cls._test_results.append((router.id, str(test), result))
+
+            # TODO: schreibe in DB
+
         except Exception as e:
             # TODO #105
             logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
@@ -462,6 +478,8 @@ class Server(ServerProxy):
             # TODO exception handling for failed Tests
 
             cls._test_results.append((router.id, str(test), result))
+
+            # TODO: schreibe in DB
 
         finally:
             cls.set_running_task(router, None)
@@ -596,6 +614,9 @@ class Server(ServerProxy):
         """
         size_results = len(cls._test_results)
         cls._test_results = []
+        with dbm.open('test_results', 'n'):
+            pass
+
         return size_results
 
     @classmethod
