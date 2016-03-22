@@ -26,6 +26,10 @@ class NetworkCtrl:
 
         :param remote_system: Could e a Router or a powerstrip object
         """
+        # We don't want thet debug-level for paramiko
+        paramiko_logger = paramiko.util.logging.getLogger()
+        paramiko_logger.setLevel(logging.WARN)
+
         self.remote_system = remote_system
         self.ssh = paramiko.SSHClient()
 
