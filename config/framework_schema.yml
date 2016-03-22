@@ -10,7 +10,6 @@
             "Server_Name": {"type": "string"},
             "Log_Level": {"type": "integer"},
             "Vlan_On": {"type": "boolean"},
-            "Key": {"type": "string"},
             "smtp_server": {"type": "string"},
             "smtp_port": {"type": "number"},
             "email": {"type": "string"},
