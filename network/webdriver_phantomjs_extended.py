@@ -4,6 +4,7 @@ from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from .service_phantomjs_extended import ServicePhantomjsExtended
 import logging
 
+
 class WebdriverPhantomjsExtended(WebDriver):
     """
     Extend the WebDriver class with a option to call PhantomJS inside a network namespace.
