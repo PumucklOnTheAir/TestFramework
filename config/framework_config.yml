@@ -7,6 +7,12 @@ server:
     Log_Level: 10
     # set True or False
     Vlan_On: True
+    Key: Value
+    smtp_server: 'smtp.web.de'
+    smtp_port: 587
+    email: 'symenschmitt_trash@web.de'
+    email_password: 'passworder'
+    key_email: 'keys@darmstadt.freifunk.net'
 
 # default for config the Firmware
 # Properties: URL, Release_Model, Firmware_Version, Download_All
