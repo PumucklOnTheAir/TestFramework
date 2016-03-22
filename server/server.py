@@ -728,8 +728,8 @@ class Server(ServerProxy):
         """
 
         if setup_all:
-            for i, router in enumerate(cls.get_routers()):
-                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
+            for router in cls.get_routers():
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[router.id], wizard))
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
