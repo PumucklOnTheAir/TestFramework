@@ -1,6 +1,7 @@
 from server.test import FirmwareTest
 from network.network_ctrl import NetworkCtrl
 from log.loggersetup import LoggerSetup
+from router.router import Mode
 import logging
 
 
@@ -15,7 +16,9 @@ class TestGateway(FirmwareTest):
         Test:
             1. Google or FreiFunk is reachable via a Ping
         """
-        logging.debug("%sTest: Existence of Mesh-Connections", LoggerSetup.get_log_deep(1))
+        logging.debug("%sTest: Existence of an Internet-Connection", LoggerSetup.get_log_deep(1))
+        assert self.remote_system.mode == Mode.normal
+        logging.debug("%s[" + u"\u2713" + "] Correct Mode", LoggerSetup.get_log_deep(2))
         network_ctrl = NetworkCtrl(self.remote_system)
         network_ctrl.connect_with_remote_system()
         ping_result1 = network_ctrl.send_command("ping -c 5 8.8.8.8 | grep received")
