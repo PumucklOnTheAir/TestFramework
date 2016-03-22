@@ -42,7 +42,6 @@ class Router(RemoteSystem):
         self._mac = '00:00:00:00:00:00'
         self._public_name = ""
         self._public_key = ""
-        self._ssid = ''
         self.interfaces = dict()
         self.cpu_processes = list()
         self.sockets = list()
@@ -60,8 +59,17 @@ class Router(RemoteSystem):
         """
         self._model = new_router.model
         self._mac = new_router.mac
-        self._ssid = new_router.ssid
         self._mode = new_router.mode
+        self._public_name = new_router.public_name
+        self._public_key = new_router.public_key
+        self.interfaces = new_router.interfaces
+        self.cpu_processes = new_router.cpu_processes
+        self.sockets = new_router.sockets
+        self._ram = new_router.ram
+        self._flashdriver = new_router.flashdriver
+        self._firmware = new_router.firmware
+        self.uci = new_router.uci
+        self.bat_originators = new_router.bat_originators
 
     @property
     def id(self) -> int:
@@ -191,24 +199,6 @@ class Router(RemoteSystem):
         """
         assert isinstance(value, str)
         self._mac = value
-
-    @property
-    def ssid(self) -> str:
-        """
-        The SSID of the router
-
-        :rtype: str
-        :return:
-        """
-        return self._ssid
-
-    @ssid.setter
-    def ssid(self, value: str):
-        """
-        :type value: str
-        """
-        assert isinstance(value, str)
-        self._ssid = value
 
     @property
     def model(self) -> str:
