@@ -34,4 +34,5 @@ class TestCorrectMeshConnections(FirmwareTest):
             known_router_mac = router.network_interfaces["bat0"].mac
             cnt = my_bat__originators_macs.count(known_router_mac)
             assert cnt >= 1
-            logging.debug("%s[" + u"\u2713" + "] Connected with known Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
+            logging.debug("%s[" + u"\u2713" + "] Connected with known Router(" + str(router.id) + ")",
+                          LoggerSetup.get_log_deep(2))
