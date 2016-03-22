@@ -122,9 +122,44 @@ class CLIUtil:
             print("{:<15}{:<20}".format(str(elem[0]) + ":", str(elem[1])))
 
     @staticmethod
+    def print_test_sets(test_set_dict):
+        """
+        Prints a Test_Sets dict
+
+        :param test_set_dict:
+        """
+        MAX_SHOWN_TESTS = 4
+        headers = ["Set ID", "Test"]
+        content = []
+        print("------TestSets------")
+        for i in range(0, len(test_set_dict)):
+            test_set = test_set_dict["set_"+str(i+1)]
+            tests = ""
+            for j, test in enumerate(test_set):
+                if j > MAX_SHOWN_TESTS:
+                    tests += " ..."
+                    break
+                tests += test + " "
+            content.append([str(i), tests])
+
+        CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_test_set(test_set_dict, test_set_id: int):
+        """
+        Prints the tests of one Test_Set.
+
+        :param test_set: list of tests
+        """
+        test_set = test_set_dict["set_"+str(test_set_id+1)]
+        print("------Test of Test-Set" + str(test_set_id) + " ------")
+        for test in test_set:
+            print(test)
+
+    @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
         """
-        Prints a the TestResult list
+        Prints a TestResult list
 
         :param result_list:
         :return:

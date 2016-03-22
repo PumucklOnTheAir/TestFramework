@@ -163,7 +163,14 @@ def create_parsers():
     parser_power.add_argument("-on", "--on", action="store_true", default=False, help="turn on")
     parser_power.add_argument("-off", "--off", action="store_true", default=False, help="turn off")
 
-    # subparser for test set
+    # subparser for test sets
+    parser_status = subparsers.add_parser("test_sets", help="Show test_sets with tests")
+    parser_status.add_argument("-a", "--all", help="Show all test_sets with max. 4 tests",
+                               action="store_true")
+    parser_status.add_argument("-s", "--set", help="Shows all tests of a/multiple test_set/s", nargs=1,
+                               type=int, action="store", metavar="Set ID")
+
+    # subparser for start
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
     parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
                                  help="", nargs="+")
@@ -289,6 +296,23 @@ def main():
         elif args.off:
             on_or_off = False
         server_proxy.control_switch(args.routers, switch_all, on_or_off)
+
+    elif args.mode == "test_sets":
+        """
+        subparse: test_sets
+        """
+        if args.all:
+            # return status of all routers
+            routers = server_proxy.get_routers()
+            if not routers:
+                logging.warning("No routers in network")
+            else:
+                util.print_test_sets(server_proxy.get_test_sets())
+
+        elif args.set:
+            util.print_test_set(server_proxy.get_test_sets(), args.set[0])
+        else:
+            parser.print_help()
 
     elif args.mode == "start":
         """
