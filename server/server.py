@@ -178,9 +178,9 @@ class Server(ServerProxy):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_routers_list()
         for i, r in enumerate(cls._routers):
-            if len(ConfigManager.get_web_interface_dict()) >= i:
-                if 'node_name' in ConfigManager.get_web_interface_dict()[i].values():
-                    r.set_public_name(ConfigManager.get_web_interface_dict()[i]['node_name'])
+            if len(ConfigManager.get_web_interface_list()) >= i:
+                if 'node_name' in ConfigManager.get_web_interface_list()[i]:
+                    r.set_node_name(ConfigManager.get_web_interface_list()[i]['node_name'])
         cls._power_strips = ConfigManager.get_power_strip_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
@@ -769,13 +769,13 @@ class Server(ServerProxy):
 
         if register_all:
             for router in cls.get_routers():
-                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict())
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict()[1])
                 reg_pub_key.start()
                 reg_pub_key.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict())
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict()[1])
                 reg_pub_key.start()
                 reg_pub_key.join()
 

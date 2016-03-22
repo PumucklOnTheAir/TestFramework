@@ -76,7 +76,7 @@ def print_router_info(router_list, rid):
                 ["Password", router.usr_password],
                 ["Firmware", router.firmware.name],
                 ["Power Socket", router.power_socket],
-                ["Node Name", router.public_name],
+                ["Node Name", router.node_name],
                 ["Public Key", router.public_key]]
 
         # Info on Memory

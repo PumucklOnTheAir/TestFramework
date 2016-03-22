@@ -23,11 +23,11 @@ class RegisterPublicKey(Thread):
 
     def run(self):
         logging.info("%sRegister PublicKey ...", LoggerSetup.get_log_deep(1))
-        if self.router.public_name == "" or self.router.public_key == "":
+        if self.router.node_name == "" or self.router.public_key == "":
             logging.warning("%s[!] The PublicKey doesn't exist", LoggerSetup.get_log_deep(2))
             return
         # message that is send: node-name and public-key
-        msg = MIMEText("#" + self.router.public_name + "\n" + self.router.public_key)
+        msg = MIMEText("#" + self.router.node_name + "\n" + self.router.public_key)
         mailserver = smtplib.SMTP(self.config["smtp_server"], self.config["smtp_port"])
         # identify ourselves to smtp gmail client
         mailserver.ehlo()

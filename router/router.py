@@ -40,7 +40,7 @@ class Router(RemoteSystem):
         self._usr_name = usr_name
         self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
-        self._public_name = ""
+        self._node_name = ""
         self._public_key = ""
         self.interfaces = dict()
         self.cpu_processes = list()
@@ -60,7 +60,7 @@ class Router(RemoteSystem):
         self._model = new_router.model
         self._mac = new_router.mac
         self._mode = new_router.mode
-        self._public_name = new_router.public_name
+        self._node_name = new_router.node_name
         self._public_key = new_router.public_key
         self.interfaces = new_router.interfaces
         self.cpu_processes = new_router.cpu_processes
@@ -148,21 +148,21 @@ class Router(RemoteSystem):
         return self._usr_password
 
     @property
-    def public_name(self) -> str:
+    def node_name(self) -> str:
         """
         Name of the Router, that is seen from the community.
 
         :rtype: str
         :return:
         """
-        return self._public_name
+        return self._node_name
 
-    def set_public_name(self, value: str):
+    def set_node_name(self, value: str):
         """
         :type value: string
         """
-        assert isinstance(value, int)
-        self._public_name = value
+        assert isinstance(value, str)
+        self._node_name = value
 
     @property
     def public_key(self) -> str:
@@ -320,7 +320,7 @@ class Router(RemoteSystem):
         string += "ID: " + str(self.id) + "\n"
         string += "MAC: " + self.mac + "\n"
         string += "Model: " + self.model + "\n"
-        string += "Public Name: " + self.public_name + "\n"
+        string += "Public Name: " + self.node_name + "\n"
         string += "Public Key: " + self.public_key + "\n"
         string += "Namespace: " + self.namespace_name + "\n"
         string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
