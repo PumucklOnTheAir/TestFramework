@@ -731,9 +731,9 @@ class Server(ServerProxy):
             for i, router in enumerate(cls.get_routers()):
                 cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
         else:
-            for i, router_id in enumerate(router_ids):
+            for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[i], wizard))
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[router_id], wizard))
 
     @classmethod
     def reboot_router(cls, router_ids: Union[List[int], None], reboot_all: bool, configmode: bool):
