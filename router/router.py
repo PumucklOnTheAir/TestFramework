@@ -149,6 +149,13 @@ class Router(RemoteSystem):
         """
         return self._public_name
 
+    def set_public_name(self, value: str):
+        """
+        :type value: string
+        """
+        assert isinstance(value, int)
+        self._public_name = value
+
     @property
     def public_key(self) -> str:
         """

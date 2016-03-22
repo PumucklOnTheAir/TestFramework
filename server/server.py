@@ -177,6 +177,10 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_routers_list()
+        for i, r in enumerate(cls._routers):
+            if len(ConfigManager.get_web_interface_dict()) >= i:
+                if 'node_name' in ConfigManager.get_web_interface_dict()[i].values():
+                    r.set_public_name(ConfigManager.get_web_interface_dict()[i]['node_name'])
         cls._power_strips = ConfigManager.get_power_strip_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
