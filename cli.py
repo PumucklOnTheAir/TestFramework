@@ -95,8 +95,8 @@ def print_router_info(router_list, rid):
                 wifi_info = str(i.wifi_information.wdev) + ": " + str(i.wifi_information.ssid)
                 wifi_info += "\tType: " + str(i.wifi_information.type.name)
                 wifi_info += "\tCh: " + str(i.wifi_information.channel)
-                wifi_info += "\tWidth: " + str(i.wifi_information.channel_width) + " MHz"
-                wifi_info += "\tCenter: " + str(i.wifi_information.channel_center1) + " MHz"
+                wifi_info += "\tWidth: " + str(i.wifi_information.channel_width) + "MHz"
+                wifi_info += "\tCenter: " + str(i.wifi_information.channel_center1) + "MHz"
             ip_list = i.ipaddress_lst.copy()
             # if more than 1 ip,
             if len(ip_list) > 1:
