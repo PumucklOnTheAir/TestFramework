@@ -167,4 +167,6 @@ tests:
   set_2: [demo_2, demo_1]
   set_3: [test_B_gateway]
   set_4: [test_C_accessibility_web_config]
-  set_5: [test_N_available_network_interfaces]
+  set_5: [test_C_available_network_interfaces]
+  set_6: [test_N_available_network_interfaces]
+  set_7: [test_N_mesh_connections, test_N_correct_mesh_connections]
