@@ -2,12 +2,14 @@ import urllib.request
 import re
 import os
 import errno
+import logging
 from firmware.firmware import Firmware
 from log.loggersetup import LoggerSetup
-import logging
 
-BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
-FIRMWARE_PATH = os.path.join(BASE_DIR, 'firmware/firmwares')  # Join the path to the webserver files with firmwares
+# This is your Project Root
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+# Join the path to the webserver files with firmwares
+FIRMWARE_PATH = os.path.join(BASE_DIR, 'firmware/firmwares')
 
 
 class FirmwareHandler:
@@ -15,26 +17,28 @@ class FirmwareHandler:
     The FirmwareHandler manages:
         1. The import of existing Firmwares stored in 'TestFramework/firmware/firmwares'
         2. The correct download of the Manifest for a given release_model(stable, beta, experimental)
-        3, The correct download of a single or all Firmwares for a given release_model(stable, beta, experimental)
+        3. The correct download of a single or all Firmwares for a given release_model(stable, beta, experimental)
         4. Creates the Firmware-Objects and lists them
-    """
+    """""
 
+    # There would also be 'factory'
     UPDATE_TYPE = "sysupgrade"
 
     def __init__(self, url: str):
         """
-        :param url: alike "https://firmware.darmstadt.freifunk.net"
+        :param url: URL of the server where the firmware-image can be downloaded.
         """
         self.firmwares = []
         self.url = url
 
     def get_firmware(self, router_model: str, release_model: str, download_all: bool) -> Firmware:
         """
-        Returns the correct Firmware of a Router_Model and in the specific Release_Model
-        :param router_model:
-        :param release_model: stable, beta, experimental
-        :param download_all: if all Firmwares in the Manifest should be downloaded
-        :return: Firmware
+        Returns the correct Firmware of a Router_Model and in the specific Release_Model.
+
+        :param router_model: Like 'TP-LINK TL-WR841N/ND v9'
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :param download_all: If all Firmwares in the Manifest should be downloaded
+        :return: Firmware-Obj
         """
         logging.info("%sConfigure download of Firmware for Router(" + router_model + ")", LoggerSetup.get_log_deep(1))
         self.import_firmwares(release_model)
@@ -52,9 +56,10 @@ class FirmwareHandler:
 
     def get_stored_firmware(self, router_model: str) -> Firmware:
         """
-        Returns the matching Firmware if stored in the list self.firmwares
-        :param router_model:
-        :return: Firmware
+        Returns the matching Firmware, if stored in the list 'self.firmwares'.
+
+        :param router_model: Like 'TP-LINK TL-WR841N/ND v9'
+        :return: Firmware-Obj
         """
         router_model_name, router_model_version = self._parse_router_model(router_model)
         parsed_router_model = router_model_name + "-" + router_model_version
@@ -67,11 +72,12 @@ class FirmwareHandler:
 
     def _verified_download(self, firmware: Firmware, hash_firmware: str, max_attempts: int) -> bool:
         """
-        Downloads the given Firmware and checks if the download was correct and if the hash is matching
-        :param firmware:
-        :param hash_firmware:
-        :param max_attempts: max number of attemps to download a firmware
-        :return: bool
+        Downloads the given Firmware and checks if the download was correct and if the hash is matching.
+
+        :param firmware: Firmware-Obj
+        :param hash_firmware: Expected hash
+        :param max_attempts: Maximal number of attempts to download a Firmware
+        :return: 'True' if the Firmware could be downloaded and the hash is correct
         """
         valid_download = False
         count = 0
@@ -91,11 +97,12 @@ class FirmwareHandler:
 
     def download_firmware(self, router_model: str, release_model: str, max_attemps: int=3) -> Firmware:
         """
-        Downloads only one Firmware which matches a Firmware in the Manifest
-        :param router_model:
-        :param release_model: stable, beta, experimental
-        :param max_attemps: max number of attemps to download a firmware
-        :return: Firmware
+        Downloads only one Firmware which matches a Firmware in the Manifest.
+
+        :param router_model: Like 'TP-LINK TL-WR841N/ND v9'
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :param max_attemps: Maximal number of attempts to download a Firmware
+        :return: Firmware-Obj
         """
         logging.debug("%sDownload single Firmware ...", LoggerSetup.get_log_deep(2))
         firmwares, hashs = self._get_all_firmwares(release_model)
@@ -109,11 +116,12 @@ class FirmwareHandler:
 
     def download_all_firmwares(self, release_model: str, max_attemps: int=3):
         """
-        Downloads all Firmwares which are found in the manifest and proves the hash.
-        If a download more than 3 times fails, the file will not be downloaded
-        :param release_model: stable, beta, experimental
-        :param max_attemps: max number of attemps to download a firmware
-        :return: A List of all Firmware-Objects
+        Downloads all Firmwares which are found in the Manifest and proves the hash.
+        If a download more than 3 times fails, the file will not be downloaded.
+
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :param max_attemps: Maximal number of attempts to download a Firmware
+        :return: A List of all Firmware-Obj
         """
         logging.debug("%sDownload all Firmwares ...", LoggerSetup.get_log_deep(2))
         firmwares, hashs = self._get_all_firmwares(release_model)
@@ -129,10 +137,11 @@ class FirmwareHandler:
 
     def _get_all_firmwares(self, release_model: str):
         """
-        Creats a list of Firmwares and a list of related Hashs.
+        Creats a list of Firmwares and a list of related hashs.
         All Firmwares are given from the Manifest which is downloaded first.
-        :param release_model: stable, beta, experimental
-        :return:
+
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :return: Tuple of a list of Firmware-Obj and a list of hashs
         """
         firmwares = []
         hashs = []
@@ -154,9 +163,10 @@ class FirmwareHandler:
 
     def _read_firmwares_from_manifest(self, release_model: str) -> str:
         """
-        Creates a list of non pared Firmware_Names from the Manifest.
-        :param release_model: stable, beta, experimental
-        :return: list of firmwares written like in the manifest
+        Creates a list of non pared Firmware_names from the Manifest.
+
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :return: List of Firmwares written like in the Manifest
         """
         logging.debug("%sCreate a list of firmwares from the manifest ...", LoggerSetup.get_log_deep(4))
         file = self._download_manifest(release_model)
@@ -172,10 +182,11 @@ class FirmwareHandler:
 
     def firmware_available_in_manifest(self, release_model: str, firmware_name: str) -> bool:
         """
-        Checks if the given firmware is written inside the manifest
-        :param release_model: stable, beta, experimental
-        :param firmware_name:
-        :return: bool
+        Checks if the given Firmware is written inside the Manifest.
+
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :param firmware_name: Including: router_model_name, router_model_version, firmware_version, freifunk_verein
+        :return: 'True' if the Firmware_name was found in the Manifest
         """
         file = (FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                 release_model + '.manifest')
@@ -187,11 +198,12 @@ class FirmwareHandler:
 
     def _download_file(self, url: str, file: str, release_model: str) -> bool:
         """
-        Downloads the firmware from the url and saves it into the given file
-        :param url: the url to the firmware
-        :param file: the path/file were the firmware should be stored on the system
-        :param release_model: stable, beta, experimental
-        :return: True if the firmware was successfully downloaded
+        Downloads the Firmware from the URL and saves it into the given file.
+
+        :param url: URL of the server where the firmware-image can be downloaded
+        :param file: The path/file where the Firmware should be stored on the device
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :return: 'True' if the Firmware was successfully downloaded
         """
         logging.info("%sDownload " + url + " ...", LoggerSetup.get_log_deep(2))
         self._create_path(FIRMWARE_PATH + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE)
@@ -206,9 +218,10 @@ class FirmwareHandler:
 
     def _download_manifest(self, release_model: str, max_count: int=3) -> str:
         """
-        Downloads the manifest and saves it.
-        :param release_model: stable, beta, experimental
-        :return: The path/file were the manifest is stored.(builds from the url a path)
+        Downloads the manifest and saves it.Builds from the URL a path.
+
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
+        :return: The path/file where the Firmware should be stored on the device
         """
         url = (self.url + '/' + release_model + '/' + FirmwareHandler.UPDATE_TYPE + '/' +
                release_model + '.manifest')
@@ -228,9 +241,10 @@ class FirmwareHandler:
 
     def _parse_router_model(self, router_model: str):
         """
-        Transform a str like "TP-LINK TL-WR841N/ND v9" into "tp-link-tl-wr841n-nd-v9"
-        :param router_model:
-        :return: router_model_name and router_model_version
+        Transform a str like "TP-LINK TL-WR841N/ND v9" into "tp-link-tl-wr841n-nd-v9".
+
+        :param router_model:  Like 'TP-LINK TL-WR841N/ND v9'
+        :return: Router_model_name and Router_model_version
         """
         logging.debug("%sParse RouterModel ...", LoggerSetup.get_log_deep(2))
         tmp = router_model.split(' v')
@@ -245,8 +259,9 @@ class FirmwareHandler:
 
     def _create_path(self, path: str):
         """
-        Creates directories if necessary
-        :param path:
+        Creates directories if necessary.
+
+        :param path: Path where the firmware-image should be stored on the device
         """
         try:
             logging.debug("%sCreate path " + path + " ...", LoggerSetup.get_log_deep(3))
@@ -259,8 +274,9 @@ class FirmwareHandler:
 
     def import_firmwares(self, release_model: str):
         """
-        Imports the stored Firmwares, so the firmware_handler can use them.
-        :param release_model: stable, beta, experimental
+        Imports the stored Firmwares, so the Firmware_Handler can use them.
+
+        :param release_model: Can be set to: 'stable', 'beta' or 'experimental'. Used in the url
         """
         path = FIRMWARE_PATH + '/' + release_model + '/' + self.UPDATE_TYPE + '/'
         logging.debug("%sImport Firmwares from '" + path + "'", LoggerSetup.get_log_deep(2))
