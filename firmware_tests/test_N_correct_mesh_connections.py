@@ -29,7 +29,7 @@ class TestCorrectMeshConnections(FirmwareTest):
         my_bat__originators_macs = [originator.mac for originator in my_bat__originators]
 
         for router in self.all_routers:
-            if router.mode == Mode.configuration:
+            if router.id == self.remote_system.id or router.mode == Mode.configuration:
                 continue
             known_router_mac = router.network_interfaces["bat0"].mac
             cnt = my_bat__originators_macs.count(known_router_mac)
