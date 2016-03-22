@@ -2,7 +2,7 @@ from selenium.webdriver.phantomjs.webdriver import WebDriver
 from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
 from .service_phantomjs_extended import ServicePhantomjsExtended
-
+import logging
 
 class WebdriverPhantomjsExtended(WebDriver):
     """
@@ -28,6 +28,10 @@ class WebdriverPhantomjsExtended(WebDriver):
          - service_args : A List of command line arguments to pass to PhantomJS
          - service_log_path: Path for phantomjs service to log to.
         """
+
+        # We don't want thet debug-level for selenium
+        selenium_logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
+        selenium_logger.setLevel(logging.WARNING)
 
         self.service = ServicePhantomjsExtended(executable_path, port=port, pre_command=pre_command, service_args=service_args, log_path=service_log_path)
         self.service.start()

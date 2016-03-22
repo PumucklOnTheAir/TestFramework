@@ -1,6 +1,7 @@
 import platform
 import subprocess
 import time
+import logging
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.phantomjs.service import Service
@@ -27,6 +28,9 @@ class ServicePhantomjsExtended(Service):
         """
         super().__init__(executable_path, port, service_args, log_path)
         self.pre_command = pre_command
+        # We don't want thet debug-level for selenium
+        selenium_logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
+        selenium_logger.setLevel(logging.WARNING)
 
     def start(self):
         """
