@@ -765,15 +765,13 @@ class Server(ServerProxy):
 
         if register_all:
             for router in cls.get_routers():
-                # TODO: config-file hinzufügen
-                reg_pub_key = RegisterPublicKey(router, )
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict())
                 reg_pub_key.start()
                 reg_pub_key.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                # TODO: config-file hinzufügen
-                reg_pub_key = RegisterPublicKey(router, )
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict())
                 reg_pub_key.start()
                 reg_pub_key.join()
 
