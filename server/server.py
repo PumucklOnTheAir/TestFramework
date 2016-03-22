@@ -607,6 +607,13 @@ class Server(ServerProxy):
         raise NotImplementedError
 
     @classmethod
+    def get_test_sets(cls):
+        """
+        :return: Dictionary of Test_Sets
+        """
+        return cls._test_sets
+
+    @classmethod
     def get_firmwares(cls) -> []:
         """
         :return: List of known firmwares
