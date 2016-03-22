@@ -114,8 +114,6 @@ class ConfigManager:
 
         routers = []
 
-        # i must defined before 'for', because 'default' increase i and then the router.id has wrong count
-        i = 0
         for data in output[1].items():
 
             name, router_info = data
@@ -128,18 +126,20 @@ class ConfigManager:
             # router = Router(i, **router_info)
 
             try:
-                router = Router(i, router_info['Name'], router_info['Id'], router_info['IP'], router_info['IP_Mask'],
+                router = Router(0, router_info['Name'], router_info['Id'], router_info['IP'], router_info['IP_Mask'],
                                 router_info['CONFIG_IP'], router_info['CONFIG_IP_MASK'],
                                 router_info['Username'], router_info['Password'], router_info['PowerSocket'])
                 routers.append(router)
-                i += 1
 
             except KeyError as ex:
                 logging.error("Error at building the list of Router's\nError: {0}".format(ex))
                 return None
 
         if routers:
-            routers = sorted(routers, key=lambda e: e.id)
+            routers = sorted(routers, key=lambda e: e.vlan_iface_id)
+
+        for i, r in enumerate(routers):
+            r.set_id(i)
 
         return routers
 

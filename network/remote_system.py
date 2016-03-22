@@ -1,6 +1,7 @@
 from abc import ABCMeta, abstractproperty, abstractmethod, abstractstaticmethod
 from log.loggersetup import LoggerSetup
 import logging
+from typing import List
 # from server.server import Server
 
 
@@ -45,7 +46,10 @@ class RemoteSystem(metaclass=ABCMeta):
 
 class RemoteSystemJob(metaclass=ABCMeta):
     """
-    An extended Thread for job which are associated with an RemoteSystem.
+    The abstract class for Tasks which are executed in the specific namespace of a remote system.
+
+    It has the vars self/cls.remote_system and self/cls.all_routers.
+
     The Server handles the job and is working in the following order:
         - data = job.pre_process(Server)
         -    job.prepare(remote_sys)
@@ -55,24 +59,28 @@ class RemoteSystemJob(metaclass=ABCMeta):
     """""
     def __init__(self):
         self.remote_system = None
+        self.all_routers = None
         self.__return_data = None
 
     def __str__(self):
         return self.__class__.__name__  # TODO: __str__ remotesystemjob"
 
-    def prepare(self, remote_sys: RemoteSystem) -> None:
+    def prepare(self, remote_sys: RemoteSystem, routers: List) -> None:
         """
         Prepares the system job before the run method will started
 
         :param remote_sys: the RemoteSystem which are connected to this job
+        :param routers: all routers as a copy
         """
         logging.debug("%sPrepare job", LoggerSetup.get_log_deep(5))
         self.remote_system = remote_sys
-        RemoteSystemJob._prepare(remote_sys)
+        self.all_routers = routers
+        RemoteSystemJob._prepare(remote_sys, routers)
 
     @classmethod
-    def _prepare(cls, remote_sys: RemoteSystem):
+    def _prepare(cls, remote_sys: RemoteSystem, routers: List):
         cls.remote_system = remote_sys
+        cls.all_routers = routers
 
     @abstractstaticmethod
     def pre_process(self, server) -> {}:
