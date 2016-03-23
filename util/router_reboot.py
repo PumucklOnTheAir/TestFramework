@@ -48,7 +48,7 @@ class RouterReboot(Thread):
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
                 network_ctrl.send_command("uci commit")
                 network_ctrl.send_command("reboot")
-                logging.info("%sWait until Router rebooted (60sec) ...",LoggerSetup.get_log_deep(2))
+                logging.info("%sWait until Router rebooted (60sec) ...", LoggerSetup.get_log_deep(2))
                 time.sleep(60)
                 Dhclient.update_ip(self.router.vlan_iface_name)
                 self._success_handling()
