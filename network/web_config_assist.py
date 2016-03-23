@@ -1,7 +1,7 @@
 from selenium.webdriver.support.ui import WebDriverWait
 from log.loggersetup import LoggerSetup
-import logging
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
+import logging
 
 
 class WebConfigurationAssist:
@@ -17,14 +17,14 @@ class WebConfigurationAssist:
           But PhantomJS works only correctly in cooperation with namespaces,
           if a special command (ip netns exec <namespace>) is added too.
           Therefore I added a parameter to the webdriver function from selenium.
-    """
+    """""
 
     def __init__(self, config, router):
         """
-        Starts the browser Phantomjs to configure the webpage of the router in the given namespace
+        Starts the browser Phantomjs to configure the webpage of the router in the given namespace.
 
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
-        :param router: Remote object
+        :param router: Router-Obj
         """
 
         logging.debug("%sCreate WebConfigurationAssist ...", LoggerSetup.get_log_deep(2))

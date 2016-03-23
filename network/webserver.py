@@ -1,15 +1,19 @@
-from log.loggersetup import LoggerSetup
-import logging
 from http.server import SimpleHTTPRequestHandler
-import socketserver
+from log.loggersetup import LoggerSetup
 from threading import Thread
+import logging
+import socketserver
 import time
 import os
 
 
 class WebServer(Thread):
+    """
+    This class make it possible to start and stop a WebServer in a new thread.
+    """""
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+    # This is your Project Root
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
     PORT_WEBSERVER = 8000
 
     def __init__(self):
@@ -20,6 +24,11 @@ class WebServer(Thread):
         self.httpd = socketserver.TCPServer(("", WebServer.PORT_WEBSERVER), self.Handler)
 
     def run(self):
+        """
+        Starts the WebServer.
+
+        :exception Exception: If the WebServer couldn't get started
+        """
         logging.info("%sStart WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...", LoggerSetup.get_log_deep(1))
         try:
             self.httpd.serve_forever()
@@ -28,6 +37,9 @@ class WebServer(Thread):
             raise e
 
     def join(self):
+        """
+        Stops the WebServer.
+        """
         logging.info("%sStop WebServer ...", LoggerSetup.get_log_deep(1))
         time.sleep(2)
         try:
