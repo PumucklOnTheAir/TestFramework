@@ -45,7 +45,7 @@ class Vlan:
             iface.mtu = 1400
 
             logging.debug("%s[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
-                          ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip(),
+                          ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip("169.254.235.157"),
                           LoggerSetup.get_log_deep(3))
         except Exception as e:
             logging.debug("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
