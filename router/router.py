@@ -62,7 +62,7 @@ class Router(RemoteSystem):
         self._mode = new_router.mode
         self._node_name = new_router.node_name
         self._public_key = new_router.public_key
-        self.interfaces = new_router.interfaces
+        self.network_interfaces = new_router.network_interfaces
         self.cpu_processes = new_router.cpu_processes
         self.sockets = new_router.sockets
         self._ram = new_router.ram
