@@ -177,7 +177,7 @@ class CLIUtil:
         if not result_list:
             print("No Tests to show")
         else:
-            for i, result in result_list:
+            for i, result in enumerate(result_list):
                 content.append([str(i), str(result[0]), result[1],
                                 "(" + str(result[2].testsRun - len(result[2].failures) -
                                           len(result[2].errors)) +
@@ -196,13 +196,13 @@ class CLIUtil:
         if not err.errors:
             print("No Errors produced by this Test")
         else:
-            print("\v----------------------------------------------------------")
+            print("\v" + "=" * 35)
             print("The following Errors were produced:")
-            print("----------------------------------------------------------\v")
+            print("=" * 35)
             for e in err.errors:
                 # print traceback of Errors
                 print(e[1])
-                print("----------------------------------------------------------")
+                print("-" * 35)
 
     @staticmethod
     def print_result_failures(fail: TestResult):
@@ -214,15 +214,15 @@ class CLIUtil:
         if not fail.failures:
             print("No Failures produced by this Test")
         else:
-            print("\v----------------------------------------------------------")
+            print("\v" + "=" * 35)
             print("The following Failures occurred:")
             print("Total: [" + str(len(fail.failures)) + "]")
-            print("----------------------------------------------------------\v")
+            print("=" * 35)
             for f in fail.failures:
                 # print traceback of Failures
                 print(f[0])
                 print(f[1])
-                print("----------------------------------------------------------")
+                print("-" * 35)
 
 
 class OutputColors:

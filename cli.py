@@ -382,13 +382,13 @@ def main():
             print("Removed all " + str(removed) + " results.")
         elif args.failures:
             results = server_proxy.get_test_results(-1)
-            if len(results) < args.failures[0]:
+            if len(results) <= args.failures[0]:
                 print("No Entry found in List")
             else:
                 util.print_result_failures(results[args.failures[0]][2])
         elif args.errors:
             results = server_proxy.get_test_results(-1)
-            if len(results) < args.errors[0]:
+            if len(results) <= args.errors[0]:
                 print("No Entry found in List")
             else:
                 util.print_result_errors(results[args.errors[0]][2])
@@ -405,6 +405,12 @@ def main():
         """
         register_all = args.all
         server_proxy.register_key(args.routers, register_all)
+
+    elif args.mode == "show_jobs":
+        """
+        subparse: show_jobs
+        """
+        pass
 
     else:
         logging.info("Check --help for help")
