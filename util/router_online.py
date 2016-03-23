@@ -18,8 +18,17 @@ class RouterOnline(Thread):
         self.daemon = True
 
     def run(self):
-        # TODO: Es ist nötig, dass hier eine statische IP dem VLAN zugewiesen wir, bevor der PING gesendet wird.
-        logging.debug("%sCheck if Router is online ...", LoggerSetup.get_log_deep(2))
+        logging.debug("%sCheck if Router is online ...", LoggerSetup.get_log_deep(1))
+        try:
+            Dhclient.update_ip(self.router.vlan_iface_name)
+            self._test_connection()
+        except FileExistsError:
+            self._test_connection()
+        except Exception:
+            logging.debug("%s[*] Try again in a minute", LoggerSetup.get_log_deep(2))
+        return
+
+    def _test_connection(self):
         self.router.mode = Mode.normal
         process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
         stdout, sterr = process.communicate()
@@ -28,16 +37,10 @@ class RouterOnline(Thread):
             process = Popen(["ping", "-c", "1", self.router.ip], stdout=PIPE, stderr=PIPE)
             stdout, sterr = process.communicate()
             if not(sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8')):
-                logging.warning("%s[!] Router is not online", LoggerSetup.get_log_deep(3))
+                logging.warning("%s[!] Router is not online", LoggerSetup.get_log_deep(2))
                 self.router.mode = Mode.unknown
                 return
-        logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(3))
-        # Try to get an IP via dhclient
-        try:
-            Dhclient.update_ip(self.router.vlan_iface_name)
-        except Exception:
-            logging.debug("%s[*] Try again in a minute", LoggerSetup.get_log_deep(3))
-        return
+        logging.debug("%s[+] Router online with IP " + str(self.router.ip), LoggerSetup.get_log_deep(2))
 
 
 class RouterOnlineJob(RemoteSystemJob):

@@ -291,6 +291,12 @@ class LoggerSetup:
             LoggerSetup._log_format = log_format
             LoggerSetup._stream_paths.append('/dev/console')
 
+            # set log level from paramiko and selenium to warning
+            selenium_logger = logging.getLogger('selenium')
+            selenium_logger.setLevel(logging.WARNING)
+            paramiko_logger = logging.getLogger('paramiko')
+            paramiko_logger.setLevel(logging.WARNING)
+
         except logging.ERROR as ex:
             logging.error("Error at the setup of the logger object:\nError: {0}".format(ex))
 

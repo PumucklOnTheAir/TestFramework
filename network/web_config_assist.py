@@ -116,7 +116,7 @@ class WebConfigurationAssist:
         Safes the public-key that is given after the wizard-configuration.
 
         Info:
-            #<public_name>
+            #<node_name>
             <public-key>
         """
         div_public_key_xpath = "//*[@class='the-key']"

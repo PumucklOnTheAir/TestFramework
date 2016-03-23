@@ -134,6 +134,10 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
+    def register_key(cls, router_ids: List[int], register_all: bool):
+        pass
+
+    @classmethod
     def delete_test_results(cls) -> int:
         pass
 
