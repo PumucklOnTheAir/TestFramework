@@ -21,7 +21,7 @@ class Dhclient:
         :param timeout: time until break
         """
         try:
-            logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ")...", LoggerSetup.get_log_deep(2))
+            logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ") ...", LoggerSetup.get_log_deep(2))
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             while Dhclient.get_ip(interface) is None:
@@ -43,6 +43,10 @@ class Dhclient:
             logging.warning("%s[!] Timeout: Couldn't get any IP", LoggerSetup.get_log_deep(3))
             Dhclient.kill()
             raise te
+        except FileExistsError as fee:
+            logging.warning("%s[!] A Dhclient already exist", LoggerSetup.get_log_deep(3))
+            Dhclient.kill()
+            raise fee
         except Exception as e:
             logging.warning("%s[!] Couldn't get a new IP", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))

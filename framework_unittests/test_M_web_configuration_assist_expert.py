@@ -22,7 +22,6 @@ class TestWebConfigurationAssistExpert(TestCase):
         netns.setns(router.namespace_name)
 
         # Config
-
         config = ConfigManager().get_web_interface_list()[router.id]
         self.assertEqual(len(config), 30, "Wrong size of the Config-Directory")
         self.assertEqual(config["node_name"], "64293-testframework1", "Wrong Node_name")

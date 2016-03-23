@@ -34,8 +34,8 @@ class RouterReboot(Thread):
         try:
             network_ctrl.connect_with_remote_system()
         except Exception as e:
-            logging.warning("%s" + str(e), LoggerSetup.get_log_deep(2))
-            logging.warning("%s[-] Couldn't reboot Router(" + str(self.router.id) + ")", LoggerSetup.get_log_deep(2))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] Couldn't reboot Router(" + str(self.router.id) + ")", LoggerSetup.get_log_deep(2))
             network_ctrl.exit()
             return
         # Reboot Router into configuration-mode
@@ -48,7 +48,7 @@ class RouterReboot(Thread):
                 network_ctrl.send_command("uci set 'gluon-setup-mode.@setup_mode[0].enabled=1'")
                 network_ctrl.send_command("uci commit")
                 network_ctrl.send_command("reboot")
-                logging.info("Wait until Router rebooted (60sec) ...")
+                logging.info("%sWait until Router rebooted (60sec) ...", LoggerSetup.get_log_deep(2))
                 time.sleep(60)
                 Dhclient.update_ip(self.router.vlan_iface_name)
                 self._success_handling()
@@ -65,7 +65,7 @@ class RouterReboot(Thread):
                 return
             try:
                 network_ctrl.send_command("reboot")
-                logging.info("Wait until Router rebooted (90sec) ...")
+                logging.info("%sWait until Router rebooted (90sec) ...", LoggerSetup.get_log_deep(2))
                 time.sleep(90)
                 Dhclient.update_ip(self.router.vlan_iface_name)
                 self._success_handling()

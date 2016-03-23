@@ -190,6 +190,16 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
+    def register_key(self, router_ids: List[int], register_all: bool):
+        """
+        Sends the public-key of the given Routers to an email that is specified in the config-file.
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param register_all: Register the public-keys of all Routers
+        """
+        pass
+
+    @abstractclassmethod
     def get_server_version(self) -> str:
         """
         Returns the server version as a string
