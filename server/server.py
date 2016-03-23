@@ -203,6 +203,7 @@ class Server(ServerProxy):
         with dbm.open('test_results', 'n') as db:
             # Record test values
             for i, t in enumerate(cls._test_results):
+                print(t)
                 db['i'] = t
 
         if not cls._stopped:
@@ -464,6 +465,7 @@ class Server(ServerProxy):
             logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
 
             cls._test_results.append((router.id, str(test), result))
+            print((router.id, str(test), result))
 
             # TODO: schreibe in DB
 
@@ -478,6 +480,7 @@ class Server(ServerProxy):
             # TODO exception handling for failed Tests
 
             cls._test_results.append((router.id, str(test), result))
+            print((router.id, str(test), result))
 
             # TODO: schreibe in DB
 

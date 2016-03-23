@@ -5,6 +5,8 @@ import os
 
 class MyTestCase(unittest.TestCase):
 
+    path_cli = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cli.py')
+
     def test_clear_all(self):
         """
 
