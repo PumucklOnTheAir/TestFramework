@@ -19,13 +19,13 @@ class TestAccessibilityWebConfig(FirmwareTest):
         """
         logging.debug("%sTest: Accessibility of the WebInterface: Wizard-Page", LoggerSetup.get_log_deep(1))
         assert self.remote_system.mode == Mode.configuration
-        logging.debug("%s[" + u"\u2713" + "] Correct Mode", LoggerSetup.get_log_deep(2))
+        logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
         pre_command = ['ip', 'netns', 'exec', self.remote_system.namespace_name]
         browser = WebdriverPhantomjsExtended(pre_command=pre_command)
         browser.get(self.remote_system.ip)
         browser.get('http://' + self.remote_system.ip + '/cgi-bin/luci/gluon-config-mode/')
-        assert browser.title != ""
-        logging.debug("%s[" + u"\u2713" + "] The Wizard-Page is accessible", LoggerSetup.get_log_deep(2))
+        self.assertEqual(browser.title != "", "The Wizard-Page isn't accessible")
+        logging.debug("%s[" + u"\u2714" + "] The Wizard-Page is accessible", LoggerSetup.get_log_deep(2))
         browser.close()
 
     def test_accessibility_of_expert(self):
@@ -40,6 +40,6 @@ class TestAccessibilityWebConfig(FirmwareTest):
         browser = WebdriverPhantomjsExtended(pre_command=pre_command)
         browser.get(self.remote_system.ip)
         browser.get('http://' + self.remote_system.ip + '/cgi-bin/luci/admin/')
-        assert browser.title != ""
-        logging.debug("%s[" + u"\u2713" + "] The Expert-Page is accessible", LoggerSetup.get_log_deep(2))
+        self.assertTrue(browser.title != "", "The Expert-Page isn't accessible")
+        logging.debug("%s[" + u"\u2714" + "] The Expert-Page is accessible", LoggerSetup.get_log_deep(2))
         browser.close()

@@ -18,13 +18,14 @@ class TestGateway(FirmwareTest):
         """
         logging.debug("%sTest: Existence of an Internet-Connection", LoggerSetup.get_log_deep(1))
         assert self.remote_system.mode == Mode.normal
-        logging.debug("%s[" + u"\u2713" + "] Correct Mode", LoggerSetup.get_log_deep(2))
+        logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
         network_ctrl = NetworkCtrl(self.remote_system)
         network_ctrl.connect_with_remote_system()
         ping_result1 = network_ctrl.send_command("ping -c 5 8.8.8.8 | grep received")
         ping_result2 = network_ctrl.send_command("ping -c 5 freifunk.net | grep received")
-        assert (self._ping_successful(ping_result1[0]) or self._ping_successful(ping_result2[0]))
-        logging.debug("%s[" + u"\u2713" + "] At least one Ping was successful => An internet-connection exist",
+        self.assertTrue(self._ping_successful(ping_result1[0]) or self._ping_successful(ping_result2[0]),
+                        "No Internet-Connection")
+        logging.debug("%s[" + u"\u2714" + "] At least one Ping was successful => An Internet-Connection exist",
                       LoggerSetup.get_log_deep(2))
         network_ctrl.exit()
 

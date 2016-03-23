@@ -20,10 +20,10 @@ class TestCorrectMeshConnections(FirmwareTest):
         """
         logging.debug("%sTest: Correctness of the Mesh-Connections", LoggerSetup.get_log_deep(1))
         assert self.remote_system.mode == Mode.normal
-        logging.debug("%s[" + u"\u2713" + "] Correct Mode", LoggerSetup.get_log_deep(2))
+        logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
         bat_originators = self.remote_system.bat_originators
-        assert len(bat_originators) > 0
-        logging.debug("%s[" + u"\u2713" + "] Connected Mesh-Nodes exist", LoggerSetup.get_log_deep(2))
+        self.assertTrue(len(bat_originators) > 0, "No connected Mesh-Nodes exist")
+        logging.debug("%s[" + u"\u2714" + "] Connected Mesh-Nodes exist", LoggerSetup.get_log_deep(2))
 
         my_bat__originators = self.remote_system.bat_originators
         my_bat__originators_macs = [originator.mac for originator in my_bat__originators]
@@ -33,6 +33,6 @@ class TestCorrectMeshConnections(FirmwareTest):
                 continue
             known_router_mac = router.network_interfaces["bat0"].mac
             cnt = my_bat__originators_macs.count(known_router_mac)
-            assert cnt >= 1
+            self.assertTrue(cnt >= 1, "Not connected with  known Router(" + str(router.id) + ")")
             logging.debug("%s[" + u"\u2713" + "] Connected with known Router(" + str(router.id) + ")",
                           LoggerSetup.get_log_deep(2))

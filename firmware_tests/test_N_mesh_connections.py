@@ -17,7 +17,7 @@ class TestMeshConnections(FirmwareTest):
         """
         logging.debug("%sTest: Existence of Mesh-Connections", LoggerSetup.get_log_deep(1))
         assert self.remote_system.mode == Mode.normal
-        logging.debug("%s[" + u"\u2713" + "] Correct Mode", LoggerSetup.get_log_deep(2))
+        logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
         bat_originators = self.remote_system.bat_originators
-        assert len(bat_originators) > 0
-        logging.debug("%s[" + u"\u2713" + "] Connected Mesh-Nodes exist", LoggerSetup.get_log_deep(2))
+        self.assertTrue(len(bat_originators) > 0, "No connected Mesh-Nodes exist")
+        logging.debug("%s[" + u"\u2714" + "] Connected Mesh-Nodes exist", LoggerSetup.get_log_deep(2))
