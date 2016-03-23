@@ -1,11 +1,11 @@
-import re
-import sys
-import traceback
-import logging
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
 from log.loggersetup import LoggerSetup
 from pyroute2 import netns
+import re
+import sys
+import traceback
+import logging
 
 
 class Namespace:

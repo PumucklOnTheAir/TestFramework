@@ -1,35 +1,29 @@
-import os
-import paramiko
 from log.loggersetup import LoggerSetup
 from paramiko.buffered_pipe import PipeTimeout
-import socket
-import logging
 from network.webserver import WebServer
 from network.remote_system import RemoteSystem
 from typing import List
+import os
+import paramiko
+import socket
+import logging
 
 
 class NetworkCtrl:
     """
-    The NetworkCtrl manages:
-        1. Creates a Vlan and a Namespace
-        2. Encapsulates the Vlan inside the Namespace
-        3. Provides a SSH-Connection via paramiko
-        4. Provides a WebServer
-    """
+    The NetworkCtrl manages the SSH-Connection between RemoteSystem and PI, using paramiko.
+    Features:
+        1. Open a SSH-Connection to a RemoteSystem
+        2. Sending Commands that are executed on the RemoteSystem
+        3. Sending data with scp
+        4. Cause the RemoteSystem to download data from a started Web-Server
+        5. Close a SSH-Connection
+    """""
 
     def __init__(self, remote_system: RemoteSystem):
         """
-        Creats a VLAN and a Namespace for the specific RemoteSystem(Router,PowerStrip) and 'eth0' as the link-interface.
-        The VLAN will be encapsulate in the Namespace.
-        Also the a SSHClient will be created.
-
-        :param remote_system: Could e a Router or a powerstrip object
+        :param remote_system: Router-Obj or Powerstrip-Obj with which we want to connect to.
         """
-        # We don't want thet debug-level for paramiko
-        paramiko_logger = paramiko.util.logging.getLogger()
-        paramiko_logger.setLevel(logging.WARN)
-
         self.remote_system = remote_system
         self.ssh = paramiko.SSHClient()
 
@@ -37,6 +31,8 @@ class NetworkCtrl:
         """
         Connects to the remote_system via SSH(Paramiko).
         Ignores a missing signatur.
+
+        :exception Exception: If connecting fails
         """
         logging.info("%sConnect with RemoteSystem (" + str(self.remote_system.ip) + ") ...", LoggerSetup.get_log_deep(1))
         try:
@@ -53,9 +49,11 @@ class NetworkCtrl:
         """
         Sends the given command via SSH to the RemoteSystem.
 
-        :param command: like "ping 8.8.8.8"
-        :param timeout: timeout in sec
-        :return: The output of the command given by the RemoteSystem
+        :param command: Like 'ping 8.8.8.8'
+        :param timeout: Timeout in seconds
+        :return: The output of the command inside a list. Each output-line is a list-element
+        :exception TimeoutError: If the timeout-limit is reached
+        :exception Exception: If sending the command fails
         """
         try:
             stdin, stdout, stderr = self.ssh.exec_command(command, timeout=timeout)
@@ -71,7 +69,7 @@ class NetworkCtrl:
 
     def send_data(self, local_file: str, remote_file: str):
         """
-        Sends Data via sftp to the RemoteSystem
+        Sends Data via sftp to the RemoteSystem.
 
         :param local_file: Path to the local file
         :param remote_file: Path on the Router, where the file should be saved
@@ -103,10 +101,12 @@ class NetworkCtrl:
 
     def remote_system_wget(self, file: str, remote_path: str, web_server_ip: str):
         """
-        The RemoteSystem downloads the file from the PI and stores it at remote_file
-        :param file: like /root/TestFramework/firmware/.../<firmware>.bin
-        :param remote_path: like /tmp/
-        :param web_server_ip: IP-address of the raspberryPI
+        The RemoteSystem downloads the file from the PI and stores it at remote_file.
+        Therefore this function starts a webserver in a new thread.
+
+        :param file: Like '/root/TestFramework/firmware/.../<firmware>.bin'
+        :param remote_path: Like '/tmp/'
+        :param web_server_ip: IP-address of the PI
         """
         webserver = WebServer()
         try:
@@ -122,8 +122,9 @@ class NetworkCtrl:
 
     def test_connection(self) -> bool:
         """
-        Sends a 'Ping' to the RemoteSystem
-        :return:
+        Sends a 'Ping' to the RemoteSystem.
+
+        :return: 'True' if successful package-transmission
         """
         output = os.system("ping -c 1 " + str(self.remote_system.ip))
         if not output:
@@ -132,4 +133,7 @@ class NetworkCtrl:
             return False
 
     def exit(self):
+        """
+        Close the SSHClient from paramiko.
+        """
         self.ssh.close()

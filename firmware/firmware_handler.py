@@ -1,10 +1,10 @@
+from firmware.firmware import Firmware
+from log.loggersetup import LoggerSetup
 import urllib.request
 import re
 import os
 import errno
 import logging
-from firmware.firmware import Firmware
-from log.loggersetup import LoggerSetup
 
 # This is your Project Root
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
