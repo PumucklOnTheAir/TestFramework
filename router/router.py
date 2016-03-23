@@ -157,7 +157,8 @@ class Router(RemoteSystem):
         """
         return self._node_name
 
-    def set_node_name(self, value: str):
+    @node_name.setter
+    def node_name(self, value: str):
         """
         :type value: string
         """
