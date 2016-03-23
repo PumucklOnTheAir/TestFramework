@@ -26,9 +26,6 @@ class WebConfigurationAssist:
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude,contact, ...}
         :param router: Remote object
         """
-        # We don't want thet debug-level for selenium
-        selenium_logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
-        selenium_logger.setLevel(logging.WARNING)
 
         logging.debug("%sCreate WebConfigurationAssist ...", LoggerSetup.get_log_deep(2))
         self.config = config

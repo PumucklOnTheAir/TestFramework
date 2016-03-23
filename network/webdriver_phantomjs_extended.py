@@ -30,10 +30,6 @@ class WebdriverPhantomjsExtended(WebDriver):
          - service_log_path: Path for phantomjs service to log to.
         """
 
-        # We don't want thet debug-level for selenium
-        selenium_logger = logging.getLogger('selenium.webdriver.remote.remote_connection')
-        selenium_logger.setLevel(logging.WARNING)
-
         self.service = ServicePhantomjsExtended(executable_path, port=port, pre_command=pre_command, service_args=service_args, log_path=service_log_path)
         self.service.start()
 
