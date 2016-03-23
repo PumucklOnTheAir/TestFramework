@@ -80,6 +80,7 @@ def print_router_info(router_list, rid):
                 ["Public Key", router.public_key]]
 
         # Info on Memory
+
         mem_list = [["Used", str(router.ram.used) + "/" + str(router.ram.total)],
                     ["Free", str(router.ram.free) + "/" + str(router.ram.total)],
                     ["Shared", router.ram.shared],
@@ -89,7 +90,8 @@ def print_router_info(router_list, rid):
         if_list_headers = ["ID", "Name", "MAC", "Status", "IP Addresses", "Wifi Info"]
         if_list = []
 
-        for i in sorted(router.interfaces.values(), key=lambda if_id: if_id.id):
+        for i in sorted(router.network_interfaces.values(), key=lambda if_id: if_id.id):
+            print(str(i))
             wifi_info = ""
             if i.wifi_information:
                 wifi_info = str(i.wifi_information.wdev) + ": " + str(i.wifi_information.ssid)

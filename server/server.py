@@ -271,7 +271,7 @@ class Server(ServerProxy):
         """
         queue = cls.get_waiting_task_queue(remote_system)
         queue.appendleft(task)
-        logging.debug("%sAdded " + str(task) + " to queue of " + str(remote_system) + ". Queue length: " + str(len(queue)),
+        logging.debug("%sAdded " + str(task) + " to queue of Router(" + str(remote_system.id) + "). Queue length: " + str(len(queue)),
                       LoggerSetup.get_log_deep(3))
 
     @classmethod
@@ -453,7 +453,7 @@ class Server(ServerProxy):
             async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
             result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
-            logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
+            logging.debug("%sFrom Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
 
             cls._test_results.append((router.id, str(test), result))
         except Exception as e:
