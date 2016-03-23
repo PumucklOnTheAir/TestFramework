@@ -13,7 +13,8 @@ class ConnectionTest(FirmwareTest):
         assert cls.remote_system.id == 0
 
     def test_self_router(self):
-        assert self.remote_system.id == 0
+        assert not self.remote_system.id > 1
+        self.assertEqual(3, 5, "Not really equal, is it?")
 
     def test_all_routers(self):
         assert len(self.all_routers) >= 1

@@ -171,17 +171,37 @@ class CLIUtil:
         :param result_list:
         :return:
         """
-        headers = ["Router ID", "Test", "(S|F|E)"]
+        headers = ["Router ID", "Test", "(S|F|E)", "Errors"]
         content = []
         print("------Testresults------")
         if not result_list:
             print("No Tests to show")
         else:
             for result in result_list:
-                content.append([str(result[0]), result[1], "(" + str(result[2].testsRun - len(result[2].failures) -
-                                                                     len(result[2].errors)) +
+                err = ""
+                if result[2].errors:
+                    err = ""
+                    for e in result[2].errors:
+                        e = e[1].splitlines()
+                        err += e[-1] + ": " + e[-2]
+                content.append([str(result[0]), result[1],
+                                "(" + str(result[2].testsRun - len(result[2].failures) -
+                                          len(result[2].errors)) +
                                 "|" + str(len(result[2].failures)) +
-                                "|" + str(len(result[2].errors)) + ")"])
+                                "|" + str(len(result[2].errors)) + ")",
+                                err])
+                print(result)
+                print(result[2].failures) #.format_exc().splitlines()[-1])
+                print(result[2].errors)
+
+                if result[2].errors:
+                    print("ERRORS:")
+                for e in result[2].errors:
+                    print(e[0])
+                    print(e[1])
+                # formatted_lines = traceback.format_exc().splitlines()
+                # formatted_lines[0]
+                # formatted_lines[-1]
 
             CLIUtil.print_dynamic_table(content, headers)
 
