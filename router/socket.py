@@ -27,10 +27,10 @@ class Socket:
 
     def __init__(self):
         """
-        protocol: can be tcp, udp or unix
-        state: can be listen or established
-        pid: is the process id of the program using the Socket
-        program_name: is the name of the program using the Socket
+        protocol: Can be tcp, udp or unix
+        state: Can be listen or established
+        pid: Is the process id of the program using the Socket
+        program_name: Is the name of the program using the Socket
         """
         self._protocol = None
         self._state = None
@@ -40,10 +40,9 @@ class Socket:
     @property
     def protocol(self) -> Protocol:
         """
-        The Protocol of the socket. (like tcp, upd, unix)
+        The Protocol of the Socket. (like tcp, upd, unix)
 
-        :rtype: Protocol
-        :return:
+        :return: Socket_protocal
         """
         return self._protocol
 
@@ -65,10 +64,9 @@ class Socket:
     @property
     def state(self) -> State:
         """
-        The State of the socket. (like listen, established)
+        The State of the Docket. (like listen, established)
 
-        :rtype: State
-        :return:
+        :return: Socket_state
         """
         return self._state
 
@@ -88,10 +86,9 @@ class Socket:
     @property
     def pid(self) -> int:
         """
-        The process id of the program using the socket.
+        The process-id of the program using the Socket.
 
-        :rtype: int
-        :return:
+        :return: Socket_pid
         """
         return self._pid
 
@@ -106,10 +103,9 @@ class Socket:
     @property
     def program_name(self) -> str:
         """
-        The name of the program that use the socket.
+        The name of the program that use the Socket.
 
-        :rtype: str
-        :return:
+        :return: Socket_program_name
         """
         return self._program_name
 
@@ -123,6 +119,9 @@ class Socket:
 
 
 class InternetSocket(Socket):
+    """
+     This class represents a Internet-Socket of the Router, with the local-IP, local-port, foreign-IP, foreign-port.
+    """""
 
     def __init__(self):
         super().__init__()
@@ -134,7 +133,7 @@ class InternetSocket(Socket):
     @property
     def local_address(self) -> ipaddress:
         """
-        The local ip address.
+        The local IP.
 
         :rtype: ipaddress
         :return:
@@ -151,10 +150,9 @@ class InternetSocket(Socket):
     @property
     def local_port(self) -> str:
         """
-        The local port of the socket.
+        The local port of the Socket.
 
-        :rtype: str
-        :return:
+        :return: Socket_local_port
         """
         return self._local_port
 
@@ -169,7 +167,7 @@ class InternetSocket(Socket):
     @property
     def foreign_address(self) -> ipaddress:
         """
-        The foreign ip address.
+        The foreign IP.
 
         :rtype: ipaddress
         :return:
@@ -186,10 +184,9 @@ class InternetSocket(Socket):
     @property
     def foreign_port(self) -> str:
         """
-        The foreign port of the socket.
+        The foreign port of the Socket.
 
-        :rtype: str
-        :return:
+        :return: Socket_foreign_port
         """
         return self._local_port
 
