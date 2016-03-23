@@ -52,7 +52,7 @@ class RouterWebConfiguration(Thread):
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e
         # The Router should reboot
-        logging.info("Wait until Router rebooted (90sec) ...")
+        logging.info("%sWait until Router rebooted (90sec) ...", LoggerSetup.get_log_deep(2))
         time.sleep(90)
 
         try:
