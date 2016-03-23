@@ -10,8 +10,9 @@ server:
     smtp_server: 'smtp.web.de'
     smtp_port: 587
     email: 'symenschmitt_trash@web.de'
-    email_password: 'passworder'
-    key_email: 'keys@darmstadt.freifunk.net'
+    email_password: 'passworter'
+    key_email: 'symenschmitt@aol.com'
+    #'keys@darmstadt.freifunk.net'
 
 # default for config the Firmware
 # Properties: URL, Release_Model, Firmware_Version, Download_All
