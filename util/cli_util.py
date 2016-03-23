@@ -171,39 +171,58 @@ class CLIUtil:
         :param result_list:
         :return:
         """
-        headers = ["Router ID", "Test", "(S|F|E)", "Errors"]
+        headers = ["Index", "Router ID", "Test", "(S|F|E)"]
         content = []
         print("------Testresults------")
         if not result_list:
             print("No Tests to show")
         else:
-            for result in result_list:
-                err = ""
-                if result[2].errors:
-                    err = ""
-                    for e in result[2].errors:
-                        e = e[1].splitlines()
-                        err += e[-1] + ": " + e[-2]
-                content.append([str(result[0]), result[1],
+            for i, result in result_list:
+                content.append([str(i), str(result[0]), result[1],
                                 "(" + str(result[2].testsRun - len(result[2].failures) -
                                           len(result[2].errors)) +
                                 "|" + str(len(result[2].failures)) +
-                                "|" + str(len(result[2].errors)) + ")",
-                                err])
-                print(result)
-                print(result[2].failures) #.format_exc().splitlines()[-1])
-                print(result[2].errors)
-
-                if result[2].errors:
-                    print("ERRORS:")
-                for e in result[2].errors:
-                    print(e[0])
-                    print(e[1])
-                # formatted_lines = traceback.format_exc().splitlines()
-                # formatted_lines[0]
-                # formatted_lines[-1]
+                                "|" + str(len(result[2].errors)) + ")"])
 
             CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_result_errors(err: TestResult):
+        """
+        Prints the error a Test produced
+
+        :param err: unittest TestResult
+        """
+        if not err.errors:
+            print("No Errors produced by this Test")
+        else:
+            print("\v----------------------------------------------------------")
+            print("The following Errors were produced:")
+            print("----------------------------------------------------------\v")
+            for e in err.errors:
+                # print traceback of Errors
+                print(e[1])
+                print("----------------------------------------------------------")
+
+    @staticmethod
+    def print_result_failures(fail: TestResult):
+        """
+        Prints the failures a Test produced
+
+        :param fail: unittest TestResult
+        """
+        if not fail.failures:
+            print("No Failures produced by this Test")
+        else:
+            print("\v----------------------------------------------------------")
+            print("The following Failures occurred:")
+            print("Total: [" + str(len(fail.failures)) + "]")
+            print("----------------------------------------------------------\v")
+            for f in fail.failures:
+                # print traceback of Failures
+                print(f[0])
+                print(f[1])
+                print("----------------------------------------------------------")
 
 
 class OutputColors:
