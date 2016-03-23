@@ -39,7 +39,7 @@ class RegisterPublicKey(Thread):
         mailserver.login(self.config["email"], self.config["email_password"])
         logging.info("%s[+] Login successful", LoggerSetup.get_log_deep(3))
         logging.info("%sSend Public-Key ...", LoggerSetup.get_log_deep(2))
-        mailserver.sendmail(self.config["email"],self.config["key_email"],msg.as_string())
+        mailserver.sendmail(self.config["email"], self.config["key_email"], msg.as_string())
         logging.info("%s[+] Send Public-Key successfully", LoggerSetup.get_log_deep(3))
 
         mailserver.quit()
