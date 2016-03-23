@@ -24,7 +24,6 @@ class CLITestClass(TestCaseParser):
     def test_no_args(self):
         args = self.parser.parse_args([])
         assert args.mode is None
-        assert not args.verbose
 
     def test_status(self):
         args = self.parser.parse_args(["status", "-a"])
@@ -101,6 +100,16 @@ class CLITestClass(TestCaseParser):
         args = self.parser.parse_args(["update_info", "-a"])
         assert args.all
         assert args.mode == "update_info"
+
+    def online(self):
+        args = self.parser.parse_args(["online", "-r", "1", "2", "3"])
+        assert not args.all
+        assert args.routers == [1, 2, 3]
+        assert args.mode == "online"
+
+        args = self.parser.parse_args(["online", "-a"])
+        assert args.all
+        assert args.mode == "online"
 
 
 class TestCLItoServerConnection(unittest.TestCase):
