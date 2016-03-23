@@ -216,7 +216,7 @@ class CLIUtil:
         else:
             print("\v" + "=" * 35)
             print("The following Failures occurred:")
-            print("Total: [" + str(len(fail.failures)) + "]")
+            print("Total Failures: [" + str(len(fail.failures)) + "]")
             print("=" * 35)
             for f in fail.failures:
                 # print traceback of Failures
