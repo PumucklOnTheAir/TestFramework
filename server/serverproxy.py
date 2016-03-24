@@ -47,6 +47,9 @@ class ServerProxy(metaclass=ABCMeta):
     def get_task_queue_description(cls, router_id: int = -1) -> List[(int, RemoteSystemJob)]:
         """
         List of waiting and running tasks.
+
+        :param router_id: the specific router or all router if id = -1
+        :return: List of results
         """
         pass
 

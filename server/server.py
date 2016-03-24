@@ -567,21 +567,23 @@ class Server(ServerProxy):
         """
         List of waiting and running tasks.
 
-
-        :return:
+        :param router_id: the specific router or all router if id = -1
+        :return: List of results
         """
-        # FIXME
-        raise NotImplementedError
         if router_id == -1:
-            for router_queue in cls._waiting_tasks.size():
-
-            return
+            result = []
+            for router_queue_id in range(cls._waiting_tasks.size()):
+                for task in cls._waiting_tasks[router_queue_id]:
+                    result.append((router_id, str(task)))
+                running_task = cls._running_task[router_queue_id]
+                if running_task is not None:
+                    result.append(running_task)
+            return result
         else:
             result = []
             for task in cls._waiting_tasks[router_id]:
                 result.append((router_id, str(task)))
             return result
-
 
     @classmethod
     def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
