@@ -253,6 +253,13 @@ def create_parsers():
     parser_reg_key.add_argument("-a", "--all", action="store_true", default=False,
                                 help="Apply to all routers")
 
+    # subparser for show jobs
+    parser_jobs = subparsers.add_parser("show_jobs", help="Show all Jobs")
+    parser_jobs.add_argument("-r", "--router", metavar="Router ID", type=int,
+                             default=0, action="store", help="Router ID", nargs=1)
+    parser_jobs.add_argument("-a", "--all", action="store_true", default=False,
+                             help="Apply to all routers")
+
     return parser
 
 
@@ -410,7 +417,11 @@ def main():
         """
         subparse: show_jobs
         """
-        util.print_jobs(server_proxy.get_task_queue_description())
+        if args.all:
+            router = -1
+        elif args.router:
+            router = args.router[0]
+        util.print_jobs(server_proxy.get_task_queue_description(router))
 
     else:
         logging.info("Check --help for help")

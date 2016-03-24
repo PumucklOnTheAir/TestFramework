@@ -563,7 +563,7 @@ class Server(ServerProxy):
         return len(task_queue) + result
 
     @classmethod
-    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, str, bool)]:
+    def get_task_queue_description(cls, router_id: int = -1) -> [(int, str, bool)]:
         """
         List of waiting and running tasks.
 
@@ -574,10 +574,10 @@ class Server(ServerProxy):
             result = []
             for router_queue_id in range(len(cls._waiting_tasks)):
                 for task in cls._waiting_tasks[router_queue_id]:
-                    result.append((router_id, str(task), False))
+                    result.append((router_queue_id, str(task), False))
                 running_task = cls._running_task[router_queue_id]
                 if running_task is not None:
-                    result.append((router_id, str(running_task), True))
+                    result.append((router_queue_id, str(running_task), True))
             return result
         else:
             result = []

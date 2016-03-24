@@ -44,7 +44,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, str, bool)]:
+    def get_task_queue_description(self, router_id: int = -1) -> [(int, str, bool)]:
         """
         List of waiting and running tasks.
 
