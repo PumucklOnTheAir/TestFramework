@@ -563,15 +563,25 @@ class Server(ServerProxy):
         return len(task_queue) + result
 
     @classmethod
-    def get_running_tests(cls) -> List[FirmwareTestClass]:
+    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, RemoteSystemJob)]:
         """
-        List of running test on the test server.
+        List of waiting and running tasks.
 
-        :return: List as a copy of the original list.
+
+        :return:
         """
         # FIXME
         raise NotImplementedError
-        return cls._running_tasks.copy()
+        if router_id == -1:
+            for router_queue in cls._waiting_tasks.size():
+
+            return
+        else:
+            result = []
+            for task in cls._waiting_tasks[router_id]:
+                result.append((router_id, str(task)))
+            return result
+
 
     @classmethod
     def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
