@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractclassmethod
 from typing import List
 from router.router import Router
 from unittest import TestResult
+from network.remote_system import RemoteSystemJob
 
 
 class ServerProxy(metaclass=ABCMeta):
@@ -43,11 +44,9 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_running_tests(self) -> []:
+    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, RemoteSystemJob)]:
         """
-        List of running test on the test server.
-
-        :return: List as a copy of the original list.
+        List of waiting and running tasks.
         """
         pass
 
