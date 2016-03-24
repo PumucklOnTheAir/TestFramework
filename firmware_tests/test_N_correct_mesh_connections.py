@@ -31,7 +31,7 @@ class TestCorrectMeshConnections(FirmwareTest):
         for router in self.all_routers:
             if router.id == self.remote_system.id or router.mode == Mode.configuration:
                 continue
-            known_router_mac = router.network_interfaces["bat0"].mac
+            known_router_mac = router.network_interfaces["mesh0"].mac
             cnt = my_bat__originators_macs.count(known_router_mac)
             self.assertTrue(cnt >= 1, "Not connected with  known Router(" + str(router.id) + ")")
             logging.debug("%s[" + u"\u2713" + "] Connected with known Router(" + str(router.id) + ")",

@@ -21,7 +21,7 @@ class TestAvailableNetworkInterfaces(FirmwareTest):
                       str(necessary_network_interfaces), LoggerSetup.get_log_deep(1))
         assert self.remote_system.mode == Mode.configuration
         logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
-        existing_network_interfaces = self.remote_system.interfaces.values()
+        existing_network_interfaces = self.remote_system.network_interfaces.values()
         existing_network_interfaces = [interface.name for interface in existing_network_interfaces]
         common_network_interfaces = list(set(necessary_network_interfaces) & set(existing_network_interfaces))
         self.assertTrue(len(common_network_interfaces) >= len(necessary_network_interfaces),
