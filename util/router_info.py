@@ -44,8 +44,6 @@ class RouterInfo(Thread):
             self.router.model = self._get_router_model()
             # MAC
             self.router.mac = self._get_router_mac()
-            # SSID
-            self.router.ssid = self._get_router_ssid()
             # NetworkInterfaces
             self.router.interfaces = self._get_router_network_interfaces()
             # CPUProcesses

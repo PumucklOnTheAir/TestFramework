@@ -177,6 +177,10 @@ class Server(ServerProxy):
     def __load_configuration(cls):
         logging.debug("Load configuration")
         cls._routers = ConfigManager.get_routers_list()
+        for i, r in enumerate(cls._routers):
+            if len(ConfigManager.get_web_interface_list()) >= i:
+                if 'node_name' in ConfigManager.get_web_interface_list()[i]:
+                    r.node_name = ConfigManager.get_web_interface_list()[i]['node_name']
         cls._power_strips = ConfigManager.get_power_strip_list()
         cls._test_sets = ConfigManager.get_test_sets()
 
@@ -755,7 +759,7 @@ class Server(ServerProxy):
                 cls.start_job(router, RouterRebootJob(configmode))
 
     @classmethod
-    def register_key(cls, router_ids: Union[List[int], None], register_all: bool):
+    def register_key(cls, router_ids: List[int], register_all: bool):
         """
         Sends the public-key of the given Routers to an email that is specified in the config-file.
 
@@ -765,15 +769,13 @@ class Server(ServerProxy):
 
         if register_all:
             for router in cls.get_routers():
-                # TODO: config-file hinzufügen
-                reg_pub_key = RegisterPublicKey(router, )
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict()[1]["serverdefaults"])
                 reg_pub_key.start()
                 reg_pub_key.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                # TODO: config-file hinzufügen
-                reg_pub_key = RegisterPublicKey(router, )
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict()[1]["serverdefaults"])
                 reg_pub_key.start()
                 reg_pub_key.join()
 

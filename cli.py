@@ -76,7 +76,7 @@ def print_router_info(router_list, rid):
                 ["Password", router.usr_password],
                 ["Firmware", router.firmware.name],
                 ["Power Socket", router.power_socket],
-                ["Node Name", router.public_name],
+                ["Node Name", router.node_name],
                 ["Public Key", router.public_key]]
 
         # Info on Memory
@@ -242,6 +242,13 @@ def create_parsers():
     parser_test_result.add_argument("-rm", "--remove", action="store_true", default=False,
                                     help="Remove all results. Ignoring parameter -r.")
 
+    # subparser for register keys
+    parser_reg_key = subparsers.add_parser("register_key", help="Registers the key for the node")
+    parser_reg_key.add_argument("-r", "--routers", metavar="Router ID", type=int,
+                                default=[], action="store", help="List of routers", nargs="+")
+    parser_reg_key.add_argument("-a", "--all", action="store_true", default=False,
+                                help="Apply to all routers")
+
     return parser
 
 
@@ -375,6 +382,13 @@ def main():
             else:
                 router_id = args.routers[0]
             util.print_test_results(server_proxy.get_test_results(router_id))
+
+    elif args.mode == "register_key":
+        """
+        subparse: register key
+        """
+        register_all = args.all
+        server_proxy.register_key(args.routers, register_all)
 
     else:
         logging.info("Check --help for help")
