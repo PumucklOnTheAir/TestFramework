@@ -101,7 +101,7 @@ class CLITestClass(TestCaseParser):
         assert args.all
         assert args.mode == "update_info"
 
-    def online(self):
+    def test_online(self):
         args = self.parser.parse_args(["online", "-r", "1", "2", "3"])
         assert not args.all
         assert args.routers == [1, 2, 3]
@@ -110,6 +110,43 @@ class CLITestClass(TestCaseParser):
         args = self.parser.parse_args(["online", "-a"])
         assert args.all
         assert args.mode == "online"
+
+    def test_power(self):
+        args = self.parser.parse_args(["power", "-r", "0", "-off"])
+        self.assertFalse(args.all)
+        self.assertEquals(args.routers, [0], "Not router 0")
+        self.assertEquals(args.mode, "power", "Wrong Mode")
+        self.assertTrue(args.off)
+
+        args = self.parser.parse_args(["power", "-a", "-on"])
+        self.assertTrue(args.all)
+        self.assertTrue(args.on)
+
+    def test_start(self):
+        pass
+
+    def test_results(self):
+        pass
+
+    def test_register_key(self):
+        args = self.parser.parse_args(["register_key", "-r", "0", "1", "2"])
+        self.assertEquals(args.mode, "register_key", "Wrong Mode")
+        self.assertEquals(args.routers, [0, 1, 2], "Routers not correct")
+        self.assertFalse(args.all)
+
+        args = self.parser.parse_args(["register_key", "-a"])
+        self.assertEquals(args.mode, "register_key", "Wrong Mode")
+        self.assertTrue(args.all)
+
+    def test_show_jobs(self):
+        args = self.parser.parse_args(["show_jobs", "-r", "0"])
+        self.assertFalse(args.all)
+        self.assertEquals(args.router, [0], "Wrong Router")
+        self.assertEquals(args.mode, "show_jobs")
+
+        args = self.parser.parse_args(["show_jobs", "-a"])
+        self.assertTrue(args.all)
+        self.assertEquals(args.mode, "show_jobs")
 
 
 class TestCLItoServerConnection(unittest.TestCase):
