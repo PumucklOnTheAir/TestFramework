@@ -78,7 +78,7 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_test_sets(cls):
+    def get_test_sets(self):
         """
         :return: Dictionary of Test_Sets
         """
