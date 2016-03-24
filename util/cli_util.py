@@ -178,11 +178,12 @@ class CLIUtil:
             print("No Tests to show")
         else:
             for i, result in enumerate(result_list):
-                content.append([str(i), str(result[0]), result[1],
-                                "(" + str(result[2].testsRun - len(result[2].failures) -
-                                          len(result[2].errors)) +
-                                "|" + str(len(result[2].failures)) +
-                                "|" + str(len(result[2].errors)) + ")"])
+                if not result[0] == -1:
+                    content.append([str(i), str(result[0]), result[1],
+                                    "(" + str(result[2].testsRun - len(result[2].failures) -
+                                            len(result[2].errors)) +
+                                    "|" + str(len(result[2].failures)) +
+                                    "|" + str(len(result[2].errors)) + ")"])
 
             CLIUtil.print_dynamic_table(content, headers)
 

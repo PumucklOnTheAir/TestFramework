@@ -589,6 +589,10 @@ class Server(ServerProxy):
             for result in cls._test_results:
                 if result[0] == router_id:
                     results.append(result)
+                else:
+                    # Dummy Result for not in List
+                    r = (-1, "None", None)
+                    results.append(r)
             return results
 
     @classmethod
