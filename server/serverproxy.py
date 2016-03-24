@@ -2,7 +2,6 @@ from abc import ABCMeta, abstractclassmethod
 from typing import List
 from router.router import Router
 from unittest import TestResult
-from network.remote_system import RemoteSystemJob
 
 
 class ServerProxy(metaclass=ABCMeta):
