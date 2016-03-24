@@ -1,5 +1,5 @@
 import logging
-from subprocess import Popen, PIPE
+from subprocess import Popen
 from selenium.webdriver.support.ui import WebDriverWait
 from log.loggersetup import LoggerSetup
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
