@@ -146,7 +146,7 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert response == 0
 
     def test_cli_start_test_set(self):
-        response = os.system(self.path_cli + " start -s set_1 -r 0")
+        response = os.system(self.path_cli + " start -s set_0 -r 0")
         assert response == 0
 
         # assumes that there is only one test in the set
@@ -155,7 +155,7 @@ class TestCLItoServerConnection(unittest.TestCase):
                     print('.', end="", flush=True)
         assert len(self.server_proxy.get_test_results())
 
-        response = os.system(self.path_cli + " start -s set_1 -a")
+        response = os.system(self.path_cli + " start -s set_0 -a")
         assert response == 0
 
         routers = self.server_proxy.get_routers()
@@ -166,13 +166,13 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert len(self.server_proxy.get_test_results()) == len(routers) + 1
 
         os.system(self.path_cli + " results -rm")
-        response = os.system(self.path_cli + " start -s set_1 -r 0 -b")
+        response = os.system(self.path_cli + " start -s set_0 -r 0 -b")
         assert response == 0
         assert len(self.server_proxy.get_test_results()) == 1
 
     def test_cli_test_results(self):
         assert not os.system(self.path_cli + " results -rm -a")
-        os.system(self.path_cli + " start -s set_1 -a")
+        os.system(self.path_cli + " start -s set_0 -a")
 
         routers = self.server_proxy.get_routers()
         for router in routers:
