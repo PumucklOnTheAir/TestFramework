@@ -1,9 +1,9 @@
 from threading import Thread
 from router.router import Router
-import logging
 from log.loggersetup import LoggerSetup
-import smtplib
 from email.mime.text import MIMEText
+import logging
+import smtplib
 
 
 class RegisterPublicKey(Thread):
