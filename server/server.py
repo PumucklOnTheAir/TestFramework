@@ -424,10 +424,13 @@ class Server(ServerProxy):
         cls.__setns(router)
         try:
 
-            result = test_suite.run(result)  # TODO if debug set, run as debug()
+            result = test_suite.run(result)
         except Exception as e:
-            logging.error("%sTestCase raised an exception", LoggerSetup.get_log_deep(3))
+            logging.error("%sTestCase execution raised an exception", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+
+            test_obj = test()
+            result.addError(test_obj, sys.exc_info())  # add the reason of the exception
         finally:
 
             # I'm sry for this dirty hack, but if you don't do this you get an
@@ -457,14 +460,11 @@ class Server(ServerProxy):
 
             cls._test_results.append((router.id, str(test), result))
         except Exception as e:
-            # TODO #105
             logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
 
             result = TestResult()
             result._original_stdout = None
             result._original_stderr = None
-            # result.addError(None, (type(exception), exception, None))
-            # TODO exception handling for failed Tests
 
             cls._test_results.append((router.id, str(test), result))
 
