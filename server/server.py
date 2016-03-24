@@ -563,7 +563,7 @@ class Server(ServerProxy):
         return len(task_queue) + result
 
     @classmethod
-    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, RemoteSystemJob)]:
+    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, str)]:
         """
         List of waiting and running tasks.
 
