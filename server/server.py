@@ -399,8 +399,9 @@ class Server(ServerProxy):
         cls.__setns(remote_sys)
         try:
             result = job.run()
-        except Exception:
-            logging.debug("Error while execute job " + str(job))
+        except Exception as e:
+            logging.error("%sError while execute job " + str(job), LoggerSetup.get_log_deep(1))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
 
         return result
 
@@ -486,16 +487,14 @@ class Server(ServerProxy):
         :param remote_sys: the RemoteSystem
         """
         async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
-        result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
-        logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
-        logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
         try:
-            exception = None  # task.exception() # TODO #105
-            if exception is not None:
-                logging.error("%sTask raised an exception: " + str(exception), LoggerSetup.get_log_deep(1))
-            else:
-                job.post_process(result, cls)
+            result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
+            logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
+            logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
+            job.post_process(result, cls)
 
+        except Exception as e:
+                logging.error("%sTask raised an exception: " + str(e), LoggerSetup.get_log_deep(1))
         finally:
             cls.set_running_task(remote_sys, None)
             # start next test in the queue
