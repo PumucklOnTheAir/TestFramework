@@ -410,7 +410,7 @@ class Server(ServerProxy):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
         setproctitle(str(router.id) + " - " + str(test))
-        logging.debug("%sExecute test " + str(test) + " on " + str(router), LoggerSetup.get_log_deep(2))
+        logging.debug("%sExecute test " + str(test) + " on Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
 
         test_suite = defaultTestLoader.loadTestsFromTestCase(test)
 
@@ -441,7 +441,7 @@ class Server(ServerProxy):
     @classmethod
     def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router, done_event: DoneEvent) -> None:
         """
-        Wait 5 minutes until the test is done.
+        Wait 2 minutes until the test is done.
         Handles the result from the tests.
         Triggers the next job/test.
 
@@ -451,7 +451,7 @@ class Server(ServerProxy):
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
             async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
-            result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
+            result = async_result.get(120)  # wait 5 minutes or raise an TimeoutError
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
             logging.debug("%sFrom Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
 
@@ -478,7 +478,7 @@ class Server(ServerProxy):
     @classmethod
     def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, done_event: DoneEvent) -> None:
         """
-        Wait 5 minutes until the job is done.
+        Wait 2 minutes until the job is done.
         Handles the result from the job with the job.prepare(data) method.
         Triggers the next job/test.
 
@@ -486,7 +486,7 @@ class Server(ServerProxy):
         :param remote_sys: the RemoteSystem
         """
         async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
-        result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
+        result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
         logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
         logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
         try:
@@ -652,7 +652,7 @@ class Server(ServerProxy):
         """
 
         if blocked:
-            wait = 300
+            wait = 120
         else:
             wait = -1
 
