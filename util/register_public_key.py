@@ -1,14 +1,15 @@
 from threading import Thread
 from router.router import Router
-import logging
 from log.loggersetup import LoggerSetup
-import smtplib
 from email.mime.text import MIMEText
+import logging
+import smtplib
 
 
 class RegisterPublicKey(Thread):
     """
     Sends the Public-Key of the Router to a given Email-Address.
+    This is only possible if the key has been read from the wizard-page.
     """""
 
     def __init__(self, router: Router, config):
@@ -22,6 +23,9 @@ class RegisterPublicKey(Thread):
         self.daemon = True
 
     def run(self):
+        """
+        The Public-Key is send with the Router_node_name to a given email-address.
+        """
         logging.info("%sRegister PublicKey ...", LoggerSetup.get_log_deep(1))
         if self.router.node_name == "" or self.router.public_key == "":
             logging.warning("%s[!] The PublicKey doesn't exist", LoggerSetup.get_log_deep(2))

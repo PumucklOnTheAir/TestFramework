@@ -2,23 +2,21 @@ from threading import Thread
 from network.network_ctrl import NetworkCtrl
 from router.router import Router, Mode
 from log.loggersetup import LoggerSetup
-import logging
 from network.remote_system import RemoteSystemJob
 from util.dhclient import Dhclient
+import logging
 import time
 
 
 class RouterReboot(Thread):
     """
-    The RouterInfo collects in a new Thread informations about the Routers
+    Reboots the Router into normal-mode or configuration-mode.
     """""
 
     def __init__(self, router: Router, configmode: bool):
         """
-        Init the new thread which is rebooting the Router
-
         :param router: Router Object
-        :param configmode: if the Router should reboot in the configuration mode
+        :param configmode: 'True' if the Router should reboot in the configuration mode
         """
         Thread.__init__(self)
         self.router = router
@@ -94,13 +92,18 @@ class RouterReboot(Thread):
 
 class RouterRebootJob(RemoteSystemJob):
     """
-    Encapsulate  RouterReboot as a job for the Server
+    Encapsulate RouterReboot as a job for the Server.
     """""
     def __init__(self, configmode: bool):
         super().__init__()
         self.configmode = configmode
 
     def run(self):
+        """
+        Starts RotuerReboot in a new thread.
+
+        :return: Router-Obj in a dictionary
+        """
         router = self.remote_system
         router_info = RouterReboot(router, self.configmode)
         router_info.start()
@@ -114,9 +117,9 @@ class RouterRebootJob(RemoteSystemJob):
         """
         Updates the router in the Server with the new information
 
-        :param data: result from run()
-        :param server: the Server
-        :return:
+        :param data: Result from run()
+        :param server: The Server
         """
         ref_router = server.get_router_by_id(data['router'].id)
-        ref_router.update(data['router'])  # Don't forget to update this method
+        # Don't forget to update this method
+        ref_router.update(data['router'])

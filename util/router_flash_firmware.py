@@ -1,28 +1,31 @@
 from threading import Thread
 from firmware.firmware_handler import FirmwareHandler
 from log.loggersetup import LoggerSetup
-import logging
 from network.network_ctrl import NetworkCtrl
 from router.router import Router
 from network.remote_system import RemoteSystemJob
 from util.dhclient import Dhclient
 from router.router import Mode
 from config.configmanager import ConfigManager
+import logging
 
 
 class Sysupdate(Thread):
     """
-    Downloads the firmware image from an update-server
+    Downloads the firmware-image from an update-server.
     """""
 
     def __init__(self, router: Router):
+        """
+        :param router: Router-Obj
+        """
         Thread.__init__(self)
         self.router = router
         self.daemon = True
 
     def run(self):
         """
-        Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin)
+        Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin).
         """
         logging.info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
         firmware_handler = FirmwareHandler(str(ConfigManager.get_firmware_property('URL')))
@@ -34,13 +37,18 @@ class Sysupdate(Thread):
 
 class SysupdateJob(RemoteSystemJob):
     """
-    Encapsulate  Sysupdate as a job for the Server
+    Encapsulate Sysupdate as a job for the Server.
     """""
     def __init__(self, firmware_config: dict):
         super().__init__()
         self.firmware_config = firmware_config
 
     def run(self):
+        """
+        Starts Sysupdate in a new thread.
+
+        :return: The Router-Object in a dictionary
+        """
         router = self.remote_system
         router_info = Sysupdate(router)
         router_info.start()
@@ -54,9 +62,8 @@ class SysupdateJob(RemoteSystemJob):
         """
         Updates the router in the Server with the new information
 
-        :param data: result from run()
-        :param server: the Server
-        :return:
+        :param data: Result from run()
+        :param server: The Server
         """
         ref_router = server.get_router_by_id(data['router'].id)
         ref_router.update(data['router'])  # Don't forget to update this method
@@ -69,10 +76,10 @@ class Sysupgrade(Thread):
     """""
     def __init__(self, router: Router, n: bool, web_server_ip: str, debug: bool= False):
         """
-        :param router: Router object
-        :param n: reject the last firmware configurations
-        :param web_server_ip: the IP where the Router can download the firmware image (should be the frameworks IP)
-        :param debug: if we don't want to realy sysupgrade the firmware
+        :param router: Router-Obj
+        :param n: Reject the last firmware configurations
+        :param web_server_ip: The IP where the Router can download the firmware image (should be the frameworks IP)
+        :param debug: If we don't want to realy sysupgrade the firmware
         """
         Thread.__init__(self)
         logging.info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
@@ -138,15 +145,25 @@ class Sysupgrade(Thread):
 
 class SysupgradeJob(RemoteSystemJob):
     """
-    Encapsulate  Sysupgrade as a job for the Server
+    Encapsulate  Sysupgrade as a job for the Server.
     """""
     def __init__(self, n: bool, web_server_ip: str, debug: bool= False):
+        """
+        :param n: Reject the last firmware configurations
+        :param web_server_ip: The IP where the Router can download the firmware image (should be the frameworks IP)
+        :param debug: If we don't want to realy sysupgrade the firmware
+        """
         super().__init__()
         self.n = n
         self.web_server_ip = web_server_ip
         self.debug = debug
 
     def run(self):
+        """
+        Starts Sysupgrade in a new thread.
+
+        :return: The Router-Object in a dictionary
+        """
         router = self.remote_system
         router_info = Sysupgrade(router, self.n, self.web_server_ip, self.debug)
         router_info.start()
@@ -158,11 +175,11 @@ class SysupgradeJob(RemoteSystemJob):
 
     def post_process(self, data: {}, server) -> None:
         """
-        Updates the router in the Server with the new information
+        Updates the router in the Server with the new information.
 
-        :param data: result from run()
-        :param server: the Server
-        :return:
+        :param data: Result from run()
+        :param server: The Server
         """
         ref_router = server.get_router_by_id(data['router'].id)
-        ref_router.update(data['router'])  # Don't forget to update this method
+        # Don't forget to update this method
+        ref_router.update(data['router'])

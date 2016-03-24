@@ -3,30 +3,35 @@ from network.network_ctrl import NetworkCtrl
 from network.remote_system import RemoteSystemJob
 from router.router import Router
 from log.loggersetup import LoggerSetup
-import logging
 from router.network_interface import NetworkInterface, Status, WifiInformation
 from router.cpu_process import CPUProcess
 from router.memory import RAM
 from router.socket import InternetSocket
 from typing import Dict, List
-import traceback
-import sys
 from router.bat_originator import BatOriginator
+import sys
+import logging
+import traceback
 
 
 class RouterInfo(Thread):
     """
+    The RouterInfo collects in a new Thread informations about the Routers.
     This class gets the following information via SSH:
         1. RouterModel
         2. MAC-Address
-        3. SSID
-        4. NetworkInterfaces
-        5. CPU-Processes-Information
-        6. Memory-Information
-        7. Sockets
+        3. Network-Interfaces
+        4. CPU-Processes-Information
+        5. Memory-Information
+        6. Sockets
+        7. UCI-Configurations
+        8. Bat-Originators
     """""
 
     def __init__(self, router: Router):
+        """
+        :param router: Router-Obj
+        """
         Thread.__init__(self)
         self.router = router
         self.network_ctrl = NetworkCtrl(self.router)
@@ -34,7 +39,7 @@ class RouterInfo(Thread):
 
     def run(self):
         """
-        Runs new thread and gets the information from the Router via ssh
+        Runs new thread and gets the information from the Router via ssh.
         """
         logging.info("%sUpdate the Infos of the Router(" + str(self.router.id) + ") ...", LoggerSetup.get_log_deep(1))
         try:
@@ -291,6 +296,11 @@ class RouterInfoJob(RemoteSystemJob):
     Encapsulate RouterInfo as a job for the Server
     """""
     def run(self):
+        """
+        Starts RouterInfo in a new thread.
+
+        :return: Router-Obj in a dictionary
+        """
         router = self.remote_system
         router_info = RouterInfo(router)
         router_info.start()
@@ -302,11 +312,11 @@ class RouterInfoJob(RemoteSystemJob):
 
     def post_process(self, data: {}, server) -> None:
         """
-        Updates the router in the Server with the new information
+        Updates the router in the Server with the new information.
 
-        :param data: result from run()
-        :param server: the Server
-        :return:
+        :param data: Result from run()
+        :param server: The Server
         """
         ref_router = server.get_router_by_id(data['router'].id)
-        ref_router.update(data['router'])  # Don't forget to update this method
+        # Don't forget to update this method
+        ref_router.update(data['router'])
