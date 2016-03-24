@@ -1,7 +1,5 @@
 from server.test import FirmwareTest
 from router.router import Mode
-from router.bat_originator import BatOriginator
-from router.network_interface import NetworkInterface
 import logging
 from log.loggersetup import LoggerSetup
 
