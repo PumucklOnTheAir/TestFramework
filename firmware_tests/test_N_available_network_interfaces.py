@@ -25,6 +25,6 @@ class TestAvailableNetworkInterfaces(FirmwareTest):
         existing_network_interfaces = self.remote_system.network_interfaces.values()
         existing_network_interfaces = [interface.name for interface in existing_network_interfaces]
         common_network_interfaces = list(set(necessary_network_interfaces) & set(existing_network_interfaces))
-        self.assertTrue(len(common_network_interfaces) >= len(necessary_network_interfaces),
-                         "Some Network-Interfaces are missing")
+        self.assertTrue(len(common_network_interfaces) >=
+                        len(necessary_network_interfaces), "Some Network-Interfaces are missing")
         logging.debug("%s[" + u"\u2714" + "] All specified Network-Interfaces exist", LoggerSetup.get_log_deep(2))
