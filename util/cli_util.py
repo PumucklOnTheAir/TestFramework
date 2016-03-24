@@ -175,7 +175,7 @@ class CLIUtil:
         content = []
         print("------TestSets------")
         for i in range(0, len(test_set_dict)):
-            test_set = test_set_dict["set_"+str(i)]
+            test_set = test_set_dict["set_" + str(i)]
             tests = ""
             for j, test in enumerate(test_set):
                 if j > max_shown_tests:
