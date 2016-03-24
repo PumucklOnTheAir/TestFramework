@@ -126,6 +126,10 @@ class DummyServer(ServerProxy):
         pass
 
     @classmethod
+    def get_task_queue_description(cls, router_id: int = -1) -> [(int, str, bool)]:
+        pass
+
+    @classmethod
     def get_routers_task_queue_size(cls, router_id: int) -> [str]:
         pass
 
