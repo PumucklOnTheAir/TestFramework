@@ -44,12 +44,12 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_task_queue_description(self, router_id: int = -1) -> List[(int, str)]:
+    def get_task_queue_description(cls, router_id: int = -1) -> List[(int, str, bool)]:
         """
         List of waiting and running tasks.
 
         :param router_id: the specific router or all router if id = -1
-        :return: List of results
+        :return: List of (router_id, str(Job), job_running)
         """
         pass
 
