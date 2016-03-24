@@ -170,7 +170,7 @@ class CLIUtil:
 
         :param test_set_dict:
         """
-        MAX_SHOWN_TESTS = 4
+        max_shown_tests = 4
         headers = ["Set ID", "Test"]
         content = []
         print("------TestSets------")
@@ -178,7 +178,7 @@ class CLIUtil:
             test_set = test_set_dict["set_"+str(i)]
             tests = ""
             for j, test in enumerate(test_set):
-                if j > MAX_SHOWN_TESTS:
+                if j > max_shown_tests:
                     tests += " ..."
                     break
                 tests += test + " "
@@ -191,9 +191,10 @@ class CLIUtil:
         """
         Prints the tests of one Test_Set.
 
-        :param test_set: list of tests
+        :param test_set_dict: Dictionary of Test-Sets
+        :param test_set_id: The id of the chosen Test-Set
         """
-        test_set = test_set_dict["set_"+str(test_set_id)]
+        test_set = test_set_dict["set_" + str(test_set_id)]
         print("------Test of Test-Set" + str(test_set_id) + " ------")
         for test in test_set:
             print(test)
