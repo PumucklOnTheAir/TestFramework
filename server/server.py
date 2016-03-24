@@ -316,7 +316,6 @@ class Server(ServerProxy):
         :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if test was successful added in the queue
         """
-
         for file_name in cls._test_sets[test_set_name]:
             module = importlib.import_module("firmware_tests." + file_name)
             import inspect
@@ -455,7 +454,7 @@ class Server(ServerProxy):
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
             async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
-            result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
+            result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
             logging.debug("%sFrom Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
 
@@ -488,7 +487,7 @@ class Server(ServerProxy):
         """
         async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
         try:
-            result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
+            result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
             logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
             logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
             job.post_process(result, cls)
