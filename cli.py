@@ -410,7 +410,7 @@ def main():
         """
         subparse: show_jobs
         """
-        pass
+        util.print_jobs(server_proxy.get_task_queue_description())
 
     else:
         logging.info("Check --help for help")

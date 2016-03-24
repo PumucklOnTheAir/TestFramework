@@ -181,9 +181,22 @@ class CLIUtil:
                 if not result[0] == -1:
                     content.append([str(i), str(result[0]), result[1],
                                     "(" + str(result[2].testsRun - len(result[2].failures) -
-                                            len(result[2].errors)) +
+                                              len(result[2].errors)) +
                                     "|" + str(len(result[2].failures)) +
                                     "|" + str(len(result[2].errors)) + ")"])
+
+            CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_jobs(jobs: [(int, str, bool)]):
+        if not jobs:
+            print("No Jobs to show")
+        else:
+            headers = ["Router ID", "Job Name", "Running"]
+            content = []
+            for j in jobs:
+                li = [str(j[0]), j[1], str(j[2])]
+                content.append(li)
 
             CLIUtil.print_dynamic_table(content, headers)
 
