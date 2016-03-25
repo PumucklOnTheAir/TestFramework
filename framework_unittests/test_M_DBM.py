@@ -1,26 +1,22 @@
 import unittest
-from server.server import Server
-import os
+import shelve
+from server.dbtestresult import DBTestResult
 
 
 class MyTestCase(unittest.TestCase):
 
-    path_cli = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'cli.py')
-
-    def test_clear_all(self):
-        """
-
-        :return:
-        """
-        Server.start()
-        Server.delete_test_results()
-        Server.stop()
-
-    def test_run_test(self):
-        """
-
-        :return:
-        """
-        Server.start()
-        os.system(self.path_cli + " start -s set_1 -a")
-        Server.stop()
+    def test_dbm(self):
+        with shelve.open('test_results') as db:
+            t = DBTestResult()
+            print(len(db))
+            db.clear()
+            print(len(db))
+            db['t1'] = t
+            print(len(db))
+            dbt = db['t1']
+            t1 = unittest.TestResult()
+            t1.failures = dbt.failures
+            t1.errors = dbt.errors
+            db.clear()
+            print(len(db))
+        self.assertTrue(True, True)

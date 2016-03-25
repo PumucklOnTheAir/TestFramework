@@ -24,7 +24,8 @@ import sys
 import signal
 import platform
 from setproctitle import setproctitle
-import dbm
+import shelve
+from .dbtestresult import DBTestResult
 
 if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
     from util.router_info import RouterInfoJob
@@ -165,11 +166,18 @@ class Server(ServerProxy):
             cls.update_router_info(None, update_all=True)
 
         # open database and read old test results
-        with dbm.open('test_results', 'c') as db:
-            # read test values
-            key_list = db.keys()
-            for k in key_list:
-                cls._test_results.append(db[k])
+        try:
+            with shelve.open('test_results', 'c') as db:
+                # read test values
+                key_list = db.keys()
+                for k in key_list:
+                    t = DBTestResult()
+                    dbt = db[str(k)]
+                    t.failures = dbt.failures
+                    t.errors = dbt.errors
+                    cls._test_results.append((dbt.router_id, dbt.test_name, t))
+        except Exception as e:
+            print(e)
 
         logging.info("Runtime Server started")
 
@@ -205,11 +213,19 @@ class Server(ServerProxy):
 
         cls._server_stop_event.wait()
 
-        with dbm.open('test_results', 'n') as db:
-            # Record test values
-            for i, t in enumerate(cls._test_results):
-                print(t)
-                db['i'] = t
+        try:
+            with shelve.open('test_results', 'c') as db:
+                # Record test values
+                db.clear()
+                for i, t in enumerate(cls._test_results):
+                    dbt = DBTestResult()
+                    dbt.router_id = t[0]
+                    dbt.test_name = t[1]
+                    dbt.failures = t[2].failures
+                    dbt.errors = t[2].errors
+                    db[str(i)] = dbt
+        except Exception as e:
+            print(e)
 
         if not cls._stopped:
             print("Shutdown server")
@@ -473,6 +489,18 @@ class Server(ServerProxy):
             print((router.id, str(test), result))
 
             # TODO: schreibe in DB
+            try:
+                with shelve.open('test_results', 'c') as db:
+                    length = len(cls._test_results)
+                    t = cls._test_results[(length - 1)]
+                    dbt = DBTestResult()
+                    dbt.router_id = t[0]
+                    dbt.test_name = t[1]
+                    dbt.failures = t[2].failures
+                    dbt.errors = t[2].errors
+                    db[str(length)] = dbt
+            except Exception as e:
+                print(e)
 
         except Exception as e:
             # TODO #105
@@ -488,6 +516,18 @@ class Server(ServerProxy):
             print((router.id, str(test), result))
 
             # TODO: schreibe in DB
+            try:
+                with shelve.open('test_results', 'c') as db:
+                    length = len(cls._test_results)
+                    t = cls._test_results[(length - 1)]
+                    dbt = DBTestResult()
+                    dbt.router_id = t[0]
+                    dbt.test_name = t[1]
+                    dbt.failures = t[2].failures
+                    dbt.errors = t[2].errors
+                    db[str(length)] = dbt
+            except Exception as e:
+                print(e)
 
         finally:
             cls.set_running_task(router, None)
@@ -622,8 +662,8 @@ class Server(ServerProxy):
         """
         size_results = len(cls._test_results)
         cls._test_results = []
-        with dbm.open('test_results', 'n'):
-            pass
+        with shelve.open('test_results', 'c') as db:
+            db.clear()
 
         return size_results
 
