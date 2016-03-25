@@ -1,7 +1,7 @@
 from server.test import FirmwareTest
 from router.router import Mode
-import logging
 from log.loggersetup import LoggerSetup
+import logging
 
 
 class TestCorrectMeshConnections(FirmwareTest):
