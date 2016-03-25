@@ -137,7 +137,6 @@ class Server(ServerProxy):
             cls._running_task.append(None)
             cls._waiting_tasks.append(deque())
 
-
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
         cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
@@ -147,6 +146,7 @@ class Server(ServerProxy):
         # start thread for multiprocess stop wait
         t = threading.Thread(target=cls._close_wait)
         t.start()
+
         # add Namespace and Vlan for each Router
         if cls.VLAN:
             cls._nv_assistent = NVAssistent("eth0")
