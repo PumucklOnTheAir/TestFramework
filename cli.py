@@ -241,6 +241,10 @@ def create_parsers():
     parser_test_result.add_argument("-a", "--all", action="store_true", default=False, help="Apply to all routers")
     parser_test_result.add_argument("-rm", "--remove", action="store_true", default=False,
                                     help="Remove all results. Ignoring parameter -r.")
+    parser_test_result.add_argument("-fail", "--failures", action="store", nargs=1, type=int, metavar="List ID",
+                                    help="Show Failures in Test Case")
+    parser_test_result.add_argument("-err", "--errors", action="store", nargs=1, type=int, metavar="List ID",
+                                    help="Show Errors in Test Case")
 
     # subparser for register keys
     parser_reg_key = subparsers.add_parser("register_key", help="Registers the key for the node")
@@ -376,6 +380,18 @@ def main():
         if args.remove:
             removed = server_proxy.delete_test_results()
             print("Removed all " + str(removed) + " results.")
+        elif args.failures:
+            results = server_proxy.get_test_results(-1)
+            if len(results) <= args.failures[0]:
+                print("No Entry found in List")
+            else:
+                util.print_result_failures(results[args.failures[0]][2])
+        elif args.errors:
+            results = server_proxy.get_test_results(-1)
+            if len(results) <= args.errors[0]:
+                print("No Entry found in List")
+            else:
+                util.print_result_errors(results[args.errors[0]][2])
         else:
             if args.all:
                 router_id = -1
@@ -389,6 +405,12 @@ def main():
         """
         register_all = args.all
         server_proxy.register_key(args.routers, register_all)
+
+    elif args.mode == "show_jobs":
+        """
+        subparse: show_jobs
+        """
+        pass
 
     else:
         logging.info("Check --help for help")
