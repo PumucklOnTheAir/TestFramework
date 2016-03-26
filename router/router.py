@@ -32,13 +32,13 @@ class Router(RemoteSystem):
         self._vlan_iface_id = vlan_iface_id
         self._vlan_iface_name = vlan_iface_name
         self._namespace_name = "nsp" + str(self._vlan_iface_id)
+        self._usr_name = usr_name
+        self._usr_password = usr_password
         self._power_socket = power_socket
 
         # Optional values
         self._mode = Mode.unknown
         self._model = ""
-        self._usr_name = usr_name
-        self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
         self._node_name = ""
         self._public_key = ""
