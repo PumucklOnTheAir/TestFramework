@@ -7,7 +7,9 @@ class TestNetworkInterface(TestCase):
 
     def test_create_network_interface(self):
         network_interface = NetworkInterface(0, "eth0")
+
         assert isinstance(network_interface, NetworkInterface)
+
         self.assertEqual(Status.unknown, network_interface.status)
 
         network_interface.mac = "d8:31:26:45:56:2f"
@@ -32,10 +34,36 @@ class TestNetworkInterface(TestCase):
 
     def _get_wifi_informations(self) -> WifiInformation:
         wifi_info = WifiInformation()
+
         assert isinstance(wifi_info, WifiInformation)
+
         wifi_info.wdev = "0x1"
         wifi_info.type = WlanType.managed
         wifi_info.channel = 1
         wifi_info.channel_width = 20
         wifi_info.channel_center1 = 2412
         return wifi_info
+
+    def test_wifi_type_setter(self):
+        wifi_info = WifiInformation()
+
+        assert isinstance(wifi_info, WifiInformation)
+
+        self.assertEqual(WlanType.unkown, wifi_info.type)
+        wifi_info.type = "AP"
+        self.assertEqual(WlanType.ap, wifi_info.type)
+        wifi_info.type = "managed"
+        self.assertEqual(WlanType.managed, wifi_info.type)
+        wifi_info.type = "monitor"
+        self.assertEqual(WlanType.monitor, wifi_info.type)
+        wifi_info.type = "IBSS"
+        self.assertEqual(WlanType.ibss, wifi_info.type)
+        wifi_info.type = "adhoc"
+        self.assertEqual(WlanType.ibss, wifi_info.type)
+        wifi_info.type = "wds"
+        self.assertEqual(WlanType.wds, wifi_info.type)
+        wifi_info.type = "WDS"
+        self.assertEqual(WlanType.wds, wifi_info.type)
+        wifi_info.type = "mesh"
+        self.assertEqual(WlanType.mesh, wifi_info.type)
+
