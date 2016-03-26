@@ -66,4 +66,3 @@ class TestNetworkInterface(TestCase):
         self.assertEqual(WlanType.wds, wifi_info.type)
         wifi_info.type = "mesh"
         self.assertEqual(WlanType.mesh, wifi_info.type)
-

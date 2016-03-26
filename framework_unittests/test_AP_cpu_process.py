@@ -29,4 +29,3 @@ class TestCPUProcess(TestCase):
         self.assertEqual(7.4, cpu_process.cpu)
         self.assertEqual(3.4, cpu_process.mem)
         self.assertEqual("firefox", cpu_process.command)
-
