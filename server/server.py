@@ -86,6 +86,7 @@ class Server(ServerProxy):
     _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
     _test_sets = {}  # Dict[List[str]]
+    _task_errors = []  # List[(int, (type, value, traceback))] like in sys.exc_info()
 
     # NVAssistent
     _nv_assistent = None
@@ -468,6 +469,7 @@ class Server(ServerProxy):
             result._original_stderr = None
 
             cls._test_results.append((router.id, str(test), result))
+            cls._task_errors.append((router.id, sys.exc_info()))
 
         finally:
             cls.set_running_task(router, None)
@@ -495,6 +497,7 @@ class Server(ServerProxy):
 
         except Exception as e:
                 logging.error("%sTask raised an exception: " + str(e), LoggerSetup.get_log_deep(1))
+                cls._task_errors.append((remote_sys.id, sys.exc_info()))
         finally:
             cls.set_running_task(remote_sys, None)
             # start next test in the queue
@@ -561,6 +564,18 @@ class Server(ServerProxy):
 
         task_queue = cls.get_waiting_task_queue(remote_sys)
         return len(task_queue) + result
+
+    @classmethod
+    def get_task_errors(cls): #-> List[(int, (str, str, str))]:
+        """
+        Return a list of task errors
+        :return:
+        """
+
+        result = []
+        for err in cls._task_errors:
+            result.append((err[0], (str(err[1][0]), str(err[1][1]), str(err[1][2]))))
+        return result
 
     @classmethod
     def get_running_tests(cls) -> List[FirmwareTestClass]:

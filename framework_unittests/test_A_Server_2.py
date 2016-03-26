@@ -52,6 +52,8 @@ class ServerCore(object):
                     time.sleep(2)
                     print('.', end="", flush=True)
 
+        assert not len(self.server_proxy.get_task_errors())  # check if an error happens
+
     def test_get_routers(self):
         routers = self.server_proxy.get_routers()
         assert len(routers) != 0

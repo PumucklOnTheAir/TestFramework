@@ -43,6 +43,10 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
+    def get_task_errors(self):  # -> List[(int, (str, str, str))]:
+        pass
+
+    @abstractclassmethod
     def get_running_tests(self) -> []:
         """
         List of running test on the test server.
