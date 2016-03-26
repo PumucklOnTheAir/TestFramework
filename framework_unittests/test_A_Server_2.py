@@ -52,6 +52,7 @@ class ServerCore(object):
                     time.sleep(2)
                     print('.', end="", flush=True)
 
+    def tearDown(self):
         assert not len(self.server_proxy.get_task_errors())  # check if an error happens
 
     def test_get_routers(self):
