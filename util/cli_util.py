@@ -171,31 +171,31 @@ class CLIUtil:
         :param test_set_dict:
         """
         max_shown_tests = 4
-        headers = ["Set ID", "Test"]
+        headers = ["Set Name", "Test"]
         content = []
         print("------TestSets------")
-        for i in range(0, len(test_set_dict)):
-            test_set = test_set_dict["set_" + str(i)]
+        for test_set_name in test_set_dict.keys():
+            test_set = test_set_dict[test_set_name]
             tests = ""
             for j, test in enumerate(test_set):
                 if j > max_shown_tests:
                     tests += " ..."
                     break
                 tests += test + " "
-            content.append([str(i), tests])
+            content.append([test_set_name, tests])
 
         CLIUtil.print_dynamic_table(content, headers)
 
     @staticmethod
-    def print_test_set(test_set_dict, test_set_id: int):
+    def print_test_set(test_set_dict, test_set_name: str):
         """
         Prints the tests of one Test_Set.
 
         :param test_set_dict: Dictionary of Test-Sets
-        :param test_set_id: The id of the chosen Test-Set
+        :param test_set_name: The name of the chosen Test-Set
         """
-        test_set = test_set_dict["set_" + str(test_set_id)]
-        print("------Test of Test-Set" + str(test_set_id) + " ------")
+        test_set = test_set_dict[test_set_name]
+        print("------Tests of Test-Set(" + test_set_name + ") ------")
         for test in test_set:
             print(test)
 

@@ -229,8 +229,8 @@ def create_parsers():
     parser_status = subparsers.add_parser("test_sets", help="Show test_sets with tests")
     parser_status.add_argument("-a", "--all", help="Show all test_sets with max. 4 tests",
                                action="store_true")
-    parser_status.add_argument("-s", "--set", help="Shows all tests of a/multiple test_set/s", nargs=1,
-                               type=int, action="store", metavar="Set ID")
+    parser_status.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
+                                 help="Shows all tests of a/multiple test_set/s")
 
     # subparser for start
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
