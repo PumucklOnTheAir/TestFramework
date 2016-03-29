@@ -158,7 +158,7 @@ class CLITestClass(TestCaseParser):
         self.assertEquals(args.mode, "show_jobs")
 
         args = self.parser.parse_args(["show_jobs"])
-        self.assertFalse(args.routers)
+        self.assertFalse(args.router)
         self.assertEquals(args.mode, "show_jobs")
 
 
