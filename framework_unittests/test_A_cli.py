@@ -105,12 +105,12 @@ class CLITestClass(TestCaseParser):
         self.assertEquals(args.mode, "online", "Wrong Mode")
 
     def test_power(self):
-        args = self.parser.parse_args(["power", "-r", "0", "-off"])
+        args = self.parser.parse_args(["power", "-r", "0", "--off"])
         self.assertEquals(args.routers, [0], "Not router 0")
         self.assertEquals(args.mode, "power", "Wrong Mode")
         self.assertTrue(args.off)
 
-        args = self.parser.parse_args(["power", "-on"])
+        args = self.parser.parse_args(["power", "--on"])
         self.assertFalse(args.routers)
         self.assertTrue(args.on)
 

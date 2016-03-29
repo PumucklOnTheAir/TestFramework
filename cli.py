@@ -204,8 +204,8 @@ def create_parsers():
     parser_power = subparsers.add_parser("power", help="Switch power on router on or off")
     parser_power.add_argument("-r", "--routers", metavar="Router ID", type=int,
                               default=[], action="store", help="List of routers", nargs="+")
-    parser_power.add_argument("-on", "--on", action="store_true", default=False, help="turn on")
-    parser_power.add_argument("-off", "--off", action="store_true", default=False, help="turn off")
+    parser_power.add_argument("--on", action="store_true", default=False, help="turn on")
+    parser_power.add_argument("--off", action="store_true", default=False, help="turn off")
 
     # subparser for test set
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
