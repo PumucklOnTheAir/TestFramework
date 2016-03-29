@@ -191,7 +191,7 @@ class InternetSocket(Socket):
         :rtype: str
         :return:
         """
-        return self._local_port
+        return self._foreign_port
 
     @foreign_port.setter
     def foreign_port(self, value: str):
