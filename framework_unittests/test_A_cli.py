@@ -161,6 +161,7 @@ class TestCLItoServerConnection(unittest.TestCase):
                     print('.', end="", flush=True)
         assert len(self.server_proxy.get_test_results())
 
+        os.system(self.path_cli + " results -rm")
         response = os.system(self.path_cli + " start -s set_0 -a")
         assert response == 0
 
