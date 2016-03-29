@@ -801,11 +801,12 @@ class Server(ServerProxy):
         if switch_all:
             for router in cls.get_routers():
                 port_id = router.power_socket
-                cls.start_job(power_strip, PowerStripControlJob(on_or_off, port_id))
+                cls.start_job(power_strip, PowerStripControlJob(router, on_or_off, port_id))
         else:
             for router_id in router_ids:
-                port_id = cls.get_router_by_id(router_id).power_socket
-                cls.start_job(power_strip, PowerStripControlJob(on_or_off, port_id))
+                router = cls.get_router_by_id(router_id)
+                port_id = router.power_socket
+                cls.start_job(power_strip, PowerStripControlJob(router, on_or_off, port_id))
 
     @classmethod
     def get_server_version(cls) -> str:

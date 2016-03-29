@@ -12,6 +12,7 @@ class Mode(Enum):
     normal = 1
     configuration = 2
     unknown = 3
+    off = 4
 
 
 class Router(RemoteSystem):
