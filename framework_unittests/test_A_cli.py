@@ -148,7 +148,7 @@ class TestCLItoServerConnection(unittest.TestCase):
     def test_test_sets(self):
         response = os.system(self.path_cli + " test_sets -a")
         assert response == 0
-        response = os.system(self.path_cli + " test_sets -s 0")
+        response = os.system(self.path_cli + " test_sets -s set_0")
         assert response == 0
 
     def test_cli_start_test_set(self):
