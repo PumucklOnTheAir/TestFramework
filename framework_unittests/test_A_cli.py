@@ -27,118 +27,138 @@ class CLITestClass(TestCaseParser):
 
     def test_status(self):
         args = self.parser.parse_args(["status"])
-        assert not args.routers
-        assert args.mode == "status"
+        self.assertFalse(args.router)
+        self.assertEquals(args.mode, "status", "Wrong Mode")
 
         args = self.parser.parse_args(["status", "-r", "1"])
-        assert args.router
-        assert args.mode == "status"
-        assert args.router == [1]
+        self.assertTrue(args.router)
+        self.assertEquals(args.mode, "status", "Wrong Mode")
+        self.assertEquals(args.router, [1], "Wrong Router")
 
     def test_sysupgrade(self):
         args = self.parser.parse_args(["sysupgrade"])
-        assert not args.routers
-        assert not args.n
-        assert args.mode == "sysupgrade"
+        self.assertFalse(args.routers)
+        self.assertFalse(args.n)
+        self.assertEquals(args.mode, "sysupgrade", "Wrong Mode")
 
         args = self.parser.parse_args(["sysupgrade", "-r", "1", "2", "3", "-n"])
-        assert args.routers == [1, 2, 3]
-        assert args.n
-        assert args.mode == "sysupgrade"
+        self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
+        self.assertTrue(args.n)
+        self.assertEquals(args.mode, "sysupgrade", "Wrong Mode")
 
     def test_sysupdate(self):
         args = self.parser.parse_args(["sysupdate", "-r", "1", "2", "3"])
-        assert args.routers == [1, 2, 3]
-        assert args.mode == "sysupdate"
+        self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
+        self.assertEquals(args.mode, "sysupdate", "Wrong Mode")
 
         args = self.parser.parse_args(["sysupdate"])
-        assert not args.routers
-        assert args.mode == "sysupdate"
+        self.assertFalse(args.routers)
+        self.assertEquals(args.mode, "sysupdate", "Wrong Mode")
 
     def test_reboot(self):
         args = self.parser.parse_args(["reboot", "-c"])
-        assert not args.routers
-        assert args.config
-        assert args.mode == "reboot"
+        self.assertFalse(args.routers)
+        self.assertTrue(args.config)
+        self.assertEquals(args.mode, "reboot", "Wrong Mode")
 
         args = self.parser.parse_args(["reboot"])
-        assert not args.routers
-        assert not args.config
-        assert args.mode == "reboot"
+        self.assertFalse(args.routers)
+        self.assertFalse(args.config)
+        self.assertEquals(args.mode, "reboot", "Wrong Mode")
 
         args = self.parser.parse_args(["reboot", "-c"])
-        assert args.config
-        assert args.mode == "reboot"
+        self.assertTrue(args.config)
+        self.assertEquals(args.mode, "reboot", "Wrong Mode")
 
         args = self.parser.parse_args(["reboot", "-r", "1", "2", "3", "-c"])
-        assert args.config
-        assert args.routers == [1, 2, 3]
-        assert args.mode == "reboot"
+        self.assertTrue(args.config)
+        self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
+        self.assertEquals(args.mode, "reboot", "Wrong Mode")
 
     def test_webconfig(self):
         args = self.parser.parse_args(["webconfig", "-r", "1", "2", "3"])
-        assert args.routers == [1, 2, 3]
-        assert args.mode == "webconfig"
-        assert not args.wizard
+        self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
+        self.assertEquals(args.mode, "webconfig", "Wrong Mode")
+        self.assertFalse(args.wizard)
 
         args = self.parser.parse_args(["webconfig", "-w"])
-        assert not args.routers
-        assert args.mode == "webconfig"
-        assert args.wizard
+        self.assertFalse(args.routers)
+        self.assertEquals(args.mode, "webconfig", "Wrong Mode")
+        self.assertTrue(args.wizard)
 
     def test_update_info(self):
         args = self.parser.parse_args(["update_info", "-r", "1", "2", "3"])
-        assert args.routers == [1, 2, 3]
-        assert args.mode == "update_info"
+        self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
+        self.assertEquals(args.mode, "update_info", "Wrong Mode")
 
         args = self.parser.parse_args(["update_info"])
-        assert not args.routers
-        assert args.mode == "update_info"
+        self.assertFalse(args.routers)
+        self.assertEquals(args.mode, "update_info", "Wrong Mode")
 
     def test_online(self):
         args = self.parser.parse_args(["online", "-r", "1", "2", "3"])
-        assert args.routers == [1, 2, 3]
-        assert args.mode == "online"
+        self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
+        self.assertEquals(args.mode, "online", "Wrong Mode")
 
         args = self.parser.parse_args(["online"])
-        assert not args.routers
-        assert args.mode == "online"
+        self.assertFalse(args.routers)
+        self.assertEquals(args.mode, "online", "Wrong Mode")
 
     def test_power(self):
         args = self.parser.parse_args(["power", "-r", "0", "-off"])
-        self.assertFalse(args.all)
         self.assertEquals(args.routers, [0], "Not router 0")
         self.assertEquals(args.mode, "power", "Wrong Mode")
         self.assertTrue(args.off)
 
         args = self.parser.parse_args(["power", "-on"])
-        self.assertTrue(args.all)
+        self.assertFalse(args.routers)
         self.assertTrue(args.on)
 
     def test_start(self):
-        pass
+        args = self.parser.parse_args(["start", "-s", "set_1", "-b"])
+        self.assertEquals(args.mode, "start", "Wrong Mode")
+        self.assertFalse(args.routers)
+        self.assertTrue(args.blocking)
+        self.assertEquals(args.set, "set_1", "Wrong Set")
+
+        args = self.parser.parse_args(["start", "-s", "set_2", "-r", "5"])
+        self.assertEquals(args.set, "set_2", "Wrong Set")
+        self.assertFalse(args.blocking)
+        self.assertEquals(args.routers, [5], "Wrong Router")
 
     def test_results(self):
-        pass
+        args = self.parser.parse_args(["results"])
+        self.assertEquals(args.mode, "results", "Wrong Mode")
+        self.assertFalse(args.routers)
+
+        args = self.parser.parse_args(["results", "-rm"])
+        self.assertTrue(args.remove)
+        self.assertFalse(args.routers)
+
+        args = self.parser.parse_args(["results", "-err",  "0"])
+        self.assertFalse(args.routers)
+        self.assertEquals(args.errors, [0], "Wrong List Index")
+
+        args = self.parser.parse_args(["results", "-fail", "1"])
+        self.assertFalse(args.routers)
+        self.assertEquals(args.failures, [1], "Wrong List Index")
 
     def test_register_key(self):
         args = self.parser.parse_args(["register_key", "-r", "0", "1", "2"])
         self.assertEquals(args.mode, "register_key", "Wrong Mode")
         self.assertEquals(args.routers, [0, 1, 2], "Routers not correct")
-        self.assertFalse(args.all)
 
         args = self.parser.parse_args(["register_key"])
         self.assertEquals(args.mode, "register_key", "Wrong Mode")
-        self.assertTrue(args.all)
+        self.assertFalse(args.routers)
 
     def test_show_jobs(self):
         args = self.parser.parse_args(["show_jobs", "-r", "0"])
-        self.assertFalse(args.all)
         self.assertEquals(args.router, [0], "Wrong Router")
         self.assertEquals(args.mode, "show_jobs")
 
         args = self.parser.parse_args(["show_jobs"])
-        self.assertTrue(args.all)
+        self.assertFalse(args.routers)
         self.assertEquals(args.mode, "show_jobs")
 
 
