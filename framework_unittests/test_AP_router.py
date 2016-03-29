@@ -68,7 +68,7 @@ class TestRouter(TestCase):
         self.assertEqual("e8:de:27:b7:7c:e2", router.mac)
         self.assertEqual("64293-testframework1", router.node_name)
         self.assertEqual("1234567890abcdef16171819", router.public_key)
-        self.assertEqual(network_interface, router.interfaces[network_interface.name])
+        self.assertEqual(network_interface, router.network_interfaces[network_interface.name])
         self.assertEqual(cpu_process, router.cpu_processes.pop())
         self.assertEqual(socket, router.sockets.pop())
         self.assertEqual(ram, router.ram)
