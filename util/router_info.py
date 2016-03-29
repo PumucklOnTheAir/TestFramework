@@ -269,7 +269,7 @@ class RouterInfo(Thread):
         bat_originators = list()
         raw_bat_originator_lst = self.network_ctrl.send_command("batctl o")[2:]
         for raw_bat_originator in raw_bat_originator_lst:
-            raw_bat_originator = raw_bat_originator.replace("( ", "(").replace("[ ","").split()
+            raw_bat_originator = raw_bat_originator.replace("( ", "(").replace("[ ", "").split()
             # raw_bat_originator: ['f6:f6:6d:85:d4:ae', '0.840s', '(52)', '32:b8:c3:e7:6f:f0', 'mesh0]:',
             # '02:2a:1a:cc:72:ae', '(3)', '32:b8:c3:e7:96:b0', '(26)', '32:b8:c3:e7:6f:f0', '(52)']
             mac = raw_bat_originator[0]
