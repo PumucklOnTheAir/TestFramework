@@ -25,7 +25,7 @@ class TestRouter(TestCase):
         self.assertEqual("root", router.usr_password)
         self.assertEqual(1, router.power_socket)
 
-    def test_otional_getter_setter(self):
+    def test_optional_getter_setter(self):
         router = Router(0, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
 
         assert isinstance(router, Router)
@@ -38,7 +38,7 @@ class TestRouter(TestCase):
 
         network_interface = NetworkInterface(0, "eth0")
         assert isinstance(network_interface, NetworkInterface)
-        router.interfaces[network_interface.name] = network_interface
+        router.network_interfaces[network_interface.name] = network_interface
 
         cpu_process = CPUProcess(11, "root", 1.1, 11.2, "echo")
         assert isinstance(cpu_process, CPUProcess)
@@ -68,7 +68,7 @@ class TestRouter(TestCase):
         self.assertEqual("e8:de:27:b7:7c:e2", router.mac)
         self.assertEqual("64293-testframework1", router.node_name)
         self.assertEqual("1234567890abcdef16171819", router.public_key)
-        self.assertEqual(network_interface, router.interfaces[network_interface.name])
+        self.assertEqual(network_interface, router.network_interfaces[network_interface.name])
         self.assertEqual(cpu_process, router.cpu_processes.pop())
         self.assertEqual(socket, router.sockets.pop())
         self.assertEqual(ram, router.ram)

@@ -51,15 +51,6 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_running_tests(self) -> []:
-        """
-        List of running test on the test server.
-
-        :return: List as a copy of the original list.
-        """
-        pass
-
-    @abstractclassmethod
     def get_test_results(self, router_id: int = -1) -> [(int, str, TestResult)]:
         """
         Returns the firmware test results for the router
@@ -79,16 +70,9 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_tests(self) -> []:
+    def get_test_sets(self):
         """
-        :return: List of available tests on the server
-        """
-        pass
-
-    @abstractclassmethod
-    def get_firmwares(self) -> []:
-        """
-        :return: List of known firmwares
+        :return: Dictionary of Test_Sets
         """
         pass
 

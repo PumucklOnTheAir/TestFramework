@@ -164,9 +164,45 @@ class CLIUtil:
         self.print_list(bat_list, bat_list_headers, False, False, "")
 
     @staticmethod
+    def print_test_sets(test_set_dict):
+        """
+        Prints a Test_Sets dict
+
+        :param test_set_dict:
+        """
+        max_shown_tests = 4
+        headers = ["Set Name", "Test"]
+        content = []
+        print("------TestSets------")
+        for test_set_name in test_set_dict.keys():
+            test_set = test_set_dict[test_set_name]
+            tests = ""
+            for j, test in enumerate(test_set):
+                if j > max_shown_tests:
+                    tests += " ..."
+                    break
+                tests += test + " "
+            content.append([test_set_name, tests])
+
+        CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_test_set(test_set_dict, test_set_name: str):
+        """
+        Prints the tests of one Test_Set.
+
+        :param test_set_dict: Dictionary of Test-Sets
+        :param test_set_name: The name of the chosen Test-Set
+        """
+        test_set = test_set_dict[test_set_name]
+        print("------Tests of Test-Set(" + test_set_name + ") ------")
+        for test in test_set:
+            print(test)
+
+    @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
         """
-        Prints a the TestResult list
+        Prints a TestResult list
 
         :param result_list:
         :return:

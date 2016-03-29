@@ -61,7 +61,7 @@ class ServerCore(object):
         assert isinstance(routers[0], Router)
 
     def test_test_set(self):
-        started = self.server_proxy.start_test_set(0, "set_2")
+        started = self.server_proxy.start_test_set(0, "set_1")
 
         assert started
 
@@ -74,7 +74,7 @@ class ServerCore(object):
         assert len(reports) == 2
         assert len(reports[-1][2].errors) == 0  # check last report
 
-        started = self.server_proxy.start_test_set(0, "set_1")
+        started = self.server_proxy.start_test_set(0, "set_0")
 
         assert started
 
@@ -90,7 +90,7 @@ class ServerCore(object):
     def test_test_results(self):
         self.server_proxy.delete_test_results()
 
-        started = self.server_proxy.start_test_set(0, "set_2")
+        started = self.server_proxy.start_test_set(0, "set_1")
         assert started
 
         while not len(self.server_proxy.get_test_results()) == 2:
@@ -112,7 +112,7 @@ class ServerCore(object):
     def test_blocked_execution(self):
         self.server_proxy.delete_test_results()
         start = datetime.datetime.now()
-        started = self.server_proxy.start_test_set(0, "set_2", 300)
+        started = self.server_proxy.start_test_set(0, "set_1", 300)
         assert started
         stop = datetime.datetime.now()
 
