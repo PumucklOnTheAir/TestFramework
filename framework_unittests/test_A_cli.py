@@ -27,7 +27,7 @@ class CLITestClass(TestCaseParser):
 
     def test_status(self):
         args = self.parser.parse_args(["status"])
-        assert args.all
+        assert not args.routers
         assert args.mode == "status"
 
         args = self.parser.parse_args(["status", "-r", "1"])
@@ -37,78 +37,71 @@ class CLITestClass(TestCaseParser):
 
     def test_sysupgrade(self):
         args = self.parser.parse_args(["sysupgrade"])
-        assert args.all
+        assert not args.routers
         assert not args.n
         assert args.mode == "sysupgrade"
 
         args = self.parser.parse_args(["sysupgrade", "-r", "1", "2", "3", "-n"])
-        assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.n
         assert args.mode == "sysupgrade"
 
     def test_sysupdate(self):
         args = self.parser.parse_args(["sysupdate", "-r", "1", "2", "3"])
-        assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.mode == "sysupdate"
 
         args = self.parser.parse_args(["sysupdate"])
-        assert args.all
+        assert not args.routers
         assert args.mode == "sysupdate"
 
     def test_reboot(self):
         args = self.parser.parse_args(["reboot", "-c"])
-        assert args.all
+        assert not args.routers
         assert args.config
         assert args.mode == "reboot"
 
         args = self.parser.parse_args(["reboot"])
-        assert args.all
+        assert not args.routers
         assert not args.config
         assert args.mode == "reboot"
 
         args = self.parser.parse_args(["reboot", "-c"])
         assert args.config
-        assert not args.all
         assert args.mode == "reboot"
 
         args = self.parser.parse_args(["reboot", "-r", "1", "2", "3", "-c"])
         assert args.config
-        assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.mode == "reboot"
 
     def test_webconfig(self):
         args = self.parser.parse_args(["webconfig", "-r", "1", "2", "3"])
-        assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.mode == "webconfig"
         assert not args.wizard
 
         args = self.parser.parse_args(["webconfig", "-w"])
-        assert args.all
+        assert not args.routers
         assert args.mode == "webconfig"
         assert args.wizard
 
     def test_update_info(self):
         args = self.parser.parse_args(["update_info", "-r", "1", "2", "3"])
-        assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.mode == "update_info"
 
         args = self.parser.parse_args(["update_info"])
-        assert args.all
+        assert not args.routers
         assert args.mode == "update_info"
 
     def test_online(self):
         args = self.parser.parse_args(["online", "-r", "1", "2", "3"])
-        assert not args.all
         assert args.routers == [1, 2, 3]
         assert args.mode == "online"
 
         args = self.parser.parse_args(["online"])
-        assert args.all
+        assert not args.routers
         assert args.mode == "online"
 
     def test_power(self):
@@ -192,7 +185,7 @@ class TestCLItoServerConnection(unittest.TestCase):
                     print('.', end="", flush=True)
         assert len(self.server_proxy.get_test_results())
 
-        response = os.system(self.path_cli + " start -s set_1 -a")
+        response = os.system(self.path_cli + " start -s set_1")
         assert response == 0
 
         routers = self.server_proxy.get_routers()
@@ -208,8 +201,8 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert len(self.server_proxy.get_test_results()) == 1
 
     def test_cli_test_results(self):
-        assert not os.system(self.path_cli + " results -rm -a")
-        os.system(self.path_cli + " start -s set_1 -a")
+        assert not os.system(self.path_cli + " results -rm")
+        os.system(self.path_cli + " start -s set_1")
 
         routers = self.server_proxy.get_routers()
         for router in routers:
@@ -219,12 +212,12 @@ class TestCLItoServerConnection(unittest.TestCase):
 
         response = os.system(self.path_cli + " results -r 0")
         assert response == 0
-        response = os.system(self.path_cli + " results -a")
+        response = os.system(self.path_cli + " results")
         assert response == 0
 
         response = os.system(self.path_cli + " results -rm")
         assert response == 0
-        response = os.system(self.path_cli + " results -rm -a")
+        response = os.system(self.path_cli + " results -rm")
         assert response == 0
         response = os.system(self.path_cli + " results -rm -r 0")
         assert response == 0
