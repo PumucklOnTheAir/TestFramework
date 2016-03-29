@@ -389,7 +389,7 @@ class Server(ServerProxy):
                 return True
             else:
                 logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
-                cls.set_waiting_task(remote_sys, job, done_event) #TODO Done evetn muss mit gespeichert werden!
+                cls.set_waiting_task(remote_sys, job, done_event)
 
                 return False
         except KeyboardInterrupt:
@@ -423,7 +423,36 @@ class Server(ServerProxy):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
         setproctitle(str(router.id) + " - " + str(test))
-        return []
+        logging.debug("%sExecute test " + str(test) + " on " + str(router), LoggerSetup.get_log_deep(2))
+
+        test_suite = defaultTestLoader.loadTestsFromTestCase(test)
+
+        # prepare all test cases
+        for test_case in test_suite:
+            logging.debug("%sTestCase " + str(test_case), LoggerSetup.get_log_deep(4))
+            test_case.prepare(router, routers)
+
+        result = TestResult()
+
+        cls.__setns(router)
+        try:
+
+            result = test_suite.run(result)
+        except Exception as e:
+            logging.error("%sTestCase execution raised an exception", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+
+            test_obj = test()
+            result.addError(test_obj, sys.exc_info())  # add the reason of the exception
+        finally:
+
+            # I'm sry for this dirty hack, but if you don't do this you get an
+            # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
+            result._original_stdout = None
+            result._original_stderr = None
+
+            logging.debug("%sResult from test " + str(result), LoggerSetup.get_log_deep(3))
+            return result
 
     @classmethod
     def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router, done_event: DoneEvent) -> None:
@@ -439,10 +468,6 @@ class Server(ServerProxy):
         try:
             async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
             result = async_result.get(300)  # wait 5 minutes or raise an TimeoutError
-            result = TestResult()
-            result._original_stdout = None
-            result._original_stderr = None
-
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
             logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
 
@@ -552,10 +577,10 @@ class Server(ServerProxy):
         return len(task_queue) + result
 
     @classmethod
-    def get_task_errors(cls): #-> List[Tuple[int, (str, str, str)]]:
+    def get_task_errors(cls) -> List[Tuple[int, Tuple[str, str, str]]]:
         """
         Return a list of task errors
-        :return:
+        :return: A list of tuples with error information
         """
 
         result = []
