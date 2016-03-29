@@ -164,7 +164,7 @@ webconfigs:
   router2:
     # WIZARD-MODE:
     # This node will automatically update its firmware when a new version is available
-    node_name: 64293-testframework2,
+    node_name: 64293-testframework2
     <<: *webdefaults
 
 # config for the Test-Files
