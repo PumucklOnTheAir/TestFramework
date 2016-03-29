@@ -31,7 +31,6 @@ def print_routers(routers):
     Collects data for routers and sets headers for a table
 
     :param routers: list of routers
-    :return:
     """
 
     # Headers for table
@@ -56,7 +55,6 @@ def print_router_info(router_list, rid):
 
     :param router_list: list of all routers
     :param rid: ID of router to be printed
-    :return:
     """
     router = [elem for elem in router_list if str(elem.id) == str(rid)]
 
