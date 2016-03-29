@@ -26,7 +26,7 @@ class CLITestClass(TestCaseParser):
         assert args.mode is None
 
     def test_status(self):
-        args = self.parser.parse_args(["status", "-a"])
+        args = self.parser.parse_args(["status"])
         assert args.all
         assert args.mode == "status"
 
@@ -36,7 +36,7 @@ class CLITestClass(TestCaseParser):
         assert args.router == [1]
 
     def test_sysupgrade(self):
-        args = self.parser.parse_args(["sysupgrade", "-a"])
+        args = self.parser.parse_args(["sysupgrade"])
         assert args.all
         assert not args.n
         assert args.mode == "sysupgrade"
@@ -53,17 +53,17 @@ class CLITestClass(TestCaseParser):
         assert args.routers == [1, 2, 3]
         assert args.mode == "sysupdate"
 
-        args = self.parser.parse_args(["sysupdate", "-a"])
+        args = self.parser.parse_args(["sysupdate"])
         assert args.all
         assert args.mode == "sysupdate"
 
     def test_reboot(self):
-        args = self.parser.parse_args(["reboot", "-a", "-c"])
+        args = self.parser.parse_args(["reboot", "-c"])
         assert args.all
         assert args.config
         assert args.mode == "reboot"
 
-        args = self.parser.parse_args(["reboot", "-a"])
+        args = self.parser.parse_args(["reboot"])
         assert args.all
         assert not args.config
         assert args.mode == "reboot"
@@ -86,7 +86,7 @@ class CLITestClass(TestCaseParser):
         assert args.mode == "webconfig"
         assert not args.wizard
 
-        args = self.parser.parse_args(["webconfig", "-a", "-w"])
+        args = self.parser.parse_args(["webconfig", "-w"])
         assert args.all
         assert args.mode == "webconfig"
         assert args.wizard
@@ -97,7 +97,7 @@ class CLITestClass(TestCaseParser):
         assert args.routers == [1, 2, 3]
         assert args.mode == "update_info"
 
-        args = self.parser.parse_args(["update_info", "-a"])
+        args = self.parser.parse_args(["update_info"])
         assert args.all
         assert args.mode == "update_info"
 
@@ -107,7 +107,7 @@ class CLITestClass(TestCaseParser):
         assert args.routers == [1, 2, 3]
         assert args.mode == "online"
 
-        args = self.parser.parse_args(["online", "-a"])
+        args = self.parser.parse_args(["online"])
         assert args.all
         assert args.mode == "online"
 
@@ -118,7 +118,7 @@ class CLITestClass(TestCaseParser):
         self.assertEquals(args.mode, "power", "Wrong Mode")
         self.assertTrue(args.off)
 
-        args = self.parser.parse_args(["power", "-a", "-on"])
+        args = self.parser.parse_args(["power", "-on"])
         self.assertTrue(args.all)
         self.assertTrue(args.on)
 
@@ -134,7 +134,7 @@ class CLITestClass(TestCaseParser):
         self.assertEquals(args.routers, [0, 1, 2], "Routers not correct")
         self.assertFalse(args.all)
 
-        args = self.parser.parse_args(["register_key", "-a"])
+        args = self.parser.parse_args(["register_key"])
         self.assertEquals(args.mode, "register_key", "Wrong Mode")
         self.assertTrue(args.all)
 
@@ -144,7 +144,7 @@ class CLITestClass(TestCaseParser):
         self.assertEquals(args.router, [0], "Wrong Router")
         self.assertEquals(args.mode, "show_jobs")
 
-        args = self.parser.parse_args(["show_jobs", "-a"])
+        args = self.parser.parse_args(["show_jobs"])
         self.assertTrue(args.all)
         self.assertEquals(args.mode, "show_jobs")
 
