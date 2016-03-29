@@ -170,7 +170,7 @@ class TestCLItoServerConnection(unittest.TestCase):
             while self.server_proxy.get_routers_task_queue_size(router.id):
                     time.sleep(2)
                     print('.', end="", flush=True)
-        assert len(self.server_proxy.get_test_results()) == len(routers) + 1
+        assert len(self.server_proxy.get_test_results()) == len(routers)
 
         os.system(self.path_cli + " results -rm")
         response = os.system(self.path_cli + " start -s set_0 -r 0 -b")
