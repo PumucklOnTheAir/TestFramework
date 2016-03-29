@@ -176,11 +176,11 @@ class Server(ServerProxy):
                     t.failures = dbt.failures
                     t.errors = dbt.errors
                     t.testsRun = dbt.testsRun
+                    t._original_stdout = None
+                    t._original_stderr = None
                     cls._test_results.append((dbt.router_id, dbt.test_name, t))
-                    print((dbt.router_id, dbt.test_name, t))
-                print(len(db))
         except Exception as e:
-            print(e)
+            logging.error("Error at read test results from DB: {0}".format(e))
 
         logging.info("Runtime Server started")
 
@@ -229,7 +229,7 @@ class Server(ServerProxy):
                     dbt.testsRun = t[2].testsRun
                     db[str(i)] = dbt
         except Exception as e:
-            print(e)
+            logging.error("Error at write test results into DB: {0}".format(e))
 
         if not cls._stopped:
             print("Shutdown server")
@@ -496,7 +496,6 @@ class Server(ServerProxy):
             cls._test_results.append((router.id, str(test), result))
             print((router.id, str(test), result))
 
-            # TODO: schreibe in DB
             try:
                 with shelve.open('test_results', 'c') as db:
                     length = len(cls._test_results)
@@ -509,7 +508,7 @@ class Server(ServerProxy):
                     dbt.testsRun = t[2].testsRun
                     db[str(length)] = dbt
             except Exception as e:
-                print(e)
+                logging.error("Error at write test results into DB: {0}".format(e))
 
         except Exception as e:
             logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
@@ -521,7 +520,6 @@ class Server(ServerProxy):
             cls._test_results.append((router.id, str(test), result))
             print((router.id, str(test), result))
 
-            # TODO: schreibe in DB
             try:
                 with shelve.open('test_results', 'c') as db:
                     length = len(cls._test_results)
@@ -534,7 +532,7 @@ class Server(ServerProxy):
                     dbt.testsRun = t[2].testsRun
                     db[str(length)] = dbt
             except Exception as e:
-                print(e)
+                logging.error("Error at write test results into DB: {0}".format(e))
 
         finally:
             cls.set_running_task(router, None)
@@ -650,17 +648,6 @@ class Server(ServerProxy):
         """
         print(str(router_id))
         if router_id == -1:
-            print(len(cls._test_results))
-            # print(str(cls._test_results[0][0]))
-            # print(str(cls._test_results[0][1]))
-            # print(str(cls._test_results[0][2]))
-            # assert(isinstance(int, cls._test_results[0][0]))
-            # assert (isinstance(str, cls._test_results[0][1]))
-            for t in cls._test_results:
-                print(type(t[2]) is TestResult)
-                print(type(t[1]) is str)
-                print(type(t[0]) is int)
-            print(Server.eqTests(cls._test_results[0][2], (cls._test_results[1][2])))
             return cls._test_results
         else:
             results = []
@@ -668,22 +655,6 @@ class Server(ServerProxy):
                 if result[0] == router_id:
                     results.append(result)
             return results
-
-    _NOTFOUND = object()
-
-    @staticmethod
-    def eqTests(ohter1, other2):
-            for attr in ['numerator', 'denominator']:
-                v1, v2 = [getattr(obj, attr, Server._NOTFOUND) for obj in [ohter1, other2]]
-                if v1 is Server._NOTFOUND or v2 is Server._NOTFOUND:
-                    print(str(v1))
-                    print(str(v2))
-                    return False
-                elif v1 != v2:
-                    print(str(v1))
-                    print(str(v2))
-                    return False
-            return True
 
     @classmethod
     def delete_test_results(cls) -> int:
@@ -695,9 +666,7 @@ class Server(ServerProxy):
         size_results = len(cls._test_results)
         cls._test_results = []
         with shelve.open('test_results', 'c') as db:
-            print(len(db))
             db.clear()
-            print(len(db))
 
         return size_results
 
