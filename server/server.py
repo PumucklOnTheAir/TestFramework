@@ -496,16 +496,9 @@ class Server(ServerProxy):
             cls._test_results.append((router.id, str(test), result))
 
             try:
-                with shelve.open('test_results', 'c') as db:
-                    length = len(cls._test_results)
-                    t = cls._test_results[(length - 1)]
-                    dbt = DBTestResult()
-                    dbt.router_id = t[0]
-                    dbt.test_name = t[1]
-                    dbt.failures = t[2].failures
-                    dbt.errors = t[2].errors
-                    dbt.testsRun = t[2].testsRun
-                    db[str(length)] = dbt
+                length = len(cls._test_results)
+                t = cls._test_results[(length - 1)]
+                cls.write_in_db(str(length), t)
             except Exception as e:
                 logging.error("Error at write test results into DB: {0}".format(e))
 
@@ -519,16 +512,9 @@ class Server(ServerProxy):
             cls._test_results.append((router.id, str(test), result))
 
             try:
-                with shelve.open('test_results', 'c') as db:
-                    length = len(cls._test_results)
-                    t = cls._test_results[(length - 1)]
-                    dbt = DBTestResult()
-                    dbt.router_id = t[0]
-                    dbt.test_name = t[1]
-                    dbt.failures = t[2].failures
-                    dbt.errors = t[2].errors
-                    dbt.testsRun = t[2].testsRun
-                    db[str(length)] = dbt
+                length = len(cls._test_results)
+                t = cls._test_results[(length - 1)]
+                cls.write_in_db(str(length), t)
             except Exception as e:
                 logging.error("Error at write test results into DB: {0}".format(e))
 
@@ -881,3 +867,19 @@ class Server(ServerProxy):
         """
         # register console from cli in the current process and logging instance
         return LoggerSetup.add_handler(tty_name)
+
+    @classmethod
+    def write_in_db(cls, key: str = "", test: (int, str, TestResult) = None):
+        """
+        Write new entry in database
+        :param key: Database entry key
+        :param test: Tuple with router id, test name and test
+        """
+        with shelve.open('test_results', 'c') as db:
+            dbt = DBTestResult()
+            dbt.router_id = test[0]
+            dbt.test_name = test[1]
+            dbt.failures = test[2].failures
+            dbt.errors = test[2].errors
+            dbt.testsRun = test[2].testsRun
+            db[key] = dbt
