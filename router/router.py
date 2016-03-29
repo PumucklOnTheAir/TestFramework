@@ -343,15 +343,4 @@ class Router(RemoteSystem):
 
         string += "\nMemory: " + str(self.ram) + "\n"
 
-        string += "\nUCI: {|"
-        for uci_key in self.uci.keys():
-            string += str(uci_key) + " = " + str(self.uci[uci_key] + " | ")
-        string += "}\n"
-
-        string += "\nBatOriginators (first 10): \n"
-        for i, originator in enumerate(self.bat_originators):
-            string += str(originator) + "\n"
-            if i >= 9:
-                break
-
         return string
