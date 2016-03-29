@@ -78,6 +78,13 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
+    def get_test_sets(self):
+        """
+        :return: Dictionary of Test_Sets
+        """
+        pass
+
+    @abstractclassmethod
     def get_firmwares(self) -> []:
         """
         :return: List of known firmwares

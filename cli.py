@@ -80,6 +80,7 @@ def print_router_info(router_list, rid):
                 ["Public Key", router.public_key]]
 
         # Info on Memory
+
         mem_list = [["Used", str(router.ram.used) + "/" + str(router.ram.total)],
                     ["Free", str(router.ram.free) + "/" + str(router.ram.total)],
                     ["Shared", router.ram.shared],
@@ -89,7 +90,7 @@ def print_router_info(router_list, rid):
         if_list_headers = ["ID", "Name", "MAC", "Status", "IP Addresses", "Wifi Info"]
         if_list = []
 
-        for i in sorted(router.interfaces.values(), key=lambda if_id: if_id.id):
+        for i in sorted(router.network_interfaces.values(), key=lambda if_id: if_id.id):
             wifi_info = ""
             if i.wifi_information:
                 wifi_info = str(i.wifi_information.wdev) + ": " + str(i.wifi_information.ssid)
@@ -224,7 +225,14 @@ def create_parsers():
     parser_power.add_argument("-on", "--on", action="store_true", default=False, help="turn on")
     parser_power.add_argument("-off", "--off", action="store_true", default=False, help="turn off")
 
-    # subparser for test set
+    # subparser for test sets
+    parser_status = subparsers.add_parser("test_sets", help="Show test_sets with tests")
+    parser_status.add_argument("-a", "--all", help="Show all test_sets with max. 4 tests",
+                               action="store_true")
+    parser_status.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
+                               help="Shows all tests of a/multiple test_set/s")
+
+    # subparser for start
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
     parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
                                  help="", nargs="+")
@@ -354,6 +362,23 @@ def main():
         elif args.off:
             on_or_off = False
         server_proxy.control_switch(args.routers, switch_all, on_or_off)
+
+    elif args.mode == "test_sets":
+        """
+        subparse: test_sets
+        """
+        if args.all:
+            # return status of all routers
+            routers = server_proxy.get_routers()
+            if not routers:
+                logging.warning("No routers in network")
+            else:
+                util.print_test_sets(server_proxy.get_test_sets())
+
+        elif args.set:
+            util.print_test_set(server_proxy.get_test_sets(), args.set)
+        else:
+            parser.print_help()
 
     elif args.mode == "start":
         """

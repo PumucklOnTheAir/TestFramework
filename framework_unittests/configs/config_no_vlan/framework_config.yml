@@ -169,5 +169,5 @@ webconfigs:
 
 # config for the Test-Files
 tests:
-  set_1: [demo_1]
-  set_2: [demo_2, demo_1]
+  set_0: [demo_1]
+  set_1: [demo_2, demo_1]
