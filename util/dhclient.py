@@ -1,4 +1,4 @@
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, TimeoutExpired
 from log.loggersetup import LoggerSetup
 import socket
 import struct
@@ -27,7 +27,7 @@ class Dhclient:
         try:
             logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ") ...", LoggerSetup.get_log_deep(2))
             process = Popen(['dhclient', interface], stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
+            stdout, stderr = process.communicate(timeout=timeout)
             while Dhclient.get_ip(interface) is None:
                 time.sleep(1)
                 if timeout <= 0:
@@ -43,10 +43,10 @@ class Dhclient:
             logging.warning("%s[!] KeyboardInterrupt", LoggerSetup.get_log_deep(3))
             Dhclient.kill()
             raise ki
-        except TimeoutError as te:
+        except TimeoutError and TimeoutExpired:
             logging.warning("%s[!] Timeout: Couldn't get any IP", LoggerSetup.get_log_deep(3))
             Dhclient.kill()
-            raise te
+            raise TimeoutError
         except FileExistsError as fee:
             logging.warning("%s[!] A Dhclient already exist", LoggerSetup.get_log_deep(3))
             Dhclient.kill()

@@ -12,6 +12,7 @@ class Mode(Enum):
     normal = 1
     configuration = 2
     unknown = 3
+    off = 4
 
 
 class Router(RemoteSystem):
@@ -45,17 +46,17 @@ class Router(RemoteSystem):
         self._vlan_iface_id = vlan_iface_id
         self._vlan_iface_name = vlan_iface_name
         self._namespace_name = "nsp" + str(self._vlan_iface_id)
+        self._usr_name = usr_name
+        self._usr_password = usr_password
         self._power_socket = power_socket
 
         # Optional values
         self._mode = Mode.unknown
         self._model = ""
-        self._usr_name = usr_name
-        self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
         self._node_name = ""
         self._public_key = ""
-        self.interfaces = dict()
+        self.network_interfaces = dict()
         self.cpu_processes = list()
         self.sockets = list()
         self._ram = None
@@ -75,7 +76,7 @@ class Router(RemoteSystem):
         self._mode = new_router.mode
         self._node_name = new_router.node_name
         self._public_key = new_router.public_key
-        self.interfaces = new_router.interfaces
+        self.network_interfaces = new_router.network_interfaces
         self.cpu_processes = new_router.cpu_processes
         self.sockets = new_router.sockets
         self._ram = new_router.ram
@@ -330,7 +331,7 @@ class Router(RemoteSystem):
         string += "ID: " + str(self.id) + "\n"
         string += "MAC: " + self.mac + "\n"
         string += "Model: " + self.model + "\n"
-        string += "Public Name: " + self.node_name + "\n"
+        string += "Node Name: " + self.node_name + "\n"
         string += "Public Key: " + self.public_key + "\n"
         string += "Namespace: " + self.namespace_name + "\n"
         string += "Vlan: " + self.vlan_iface_name + "(" + str(self.vlan_iface_id) + ")\n"
@@ -339,7 +340,7 @@ class Router(RemoteSystem):
         string += "User Name: " + self.usr_name + ", Password: " + self._usr_password + "\n"
 
         string += "\nInterfaces: \n"
-        for interface in self.interfaces.values():
+        for interface in self.network_interfaces.values():
             string += str(interface) + "\n"
 
         string += "\nSockets: \n"
@@ -351,16 +352,5 @@ class Router(RemoteSystem):
             string += str(cpu_process) + "\n"
 
         string += "\nMemory: " + str(self.ram) + "\n"
-
-        string += "\nUCI: {|"
-        for uci_key in self.uci.keys():
-            string += str(uci_key) + " = " + str(self.uci[uci_key] + " | ")
-        string += "}\n"
-
-        string += "\nBatOriginators (first 10): \n"
-        for i, originator in enumerate(self.bat_originators):
-            string += str(originator) + "\n"
-            if i >= 9:
-                break
 
         return string

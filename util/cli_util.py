@@ -164,26 +164,101 @@ class CLIUtil:
         self.print_list(bat_list, bat_list_headers, False, False, "")
 
     @staticmethod
+    def print_test_sets(test_set_dict):
+        """
+        Prints a Test_Sets dict
+
+        :param test_set_dict:
+        """
+        max_shown_tests = 4
+        headers = ["Set Name", "Test"]
+        content = []
+        print("------TestSets------")
+        for test_set_name in test_set_dict.keys():
+            test_set = test_set_dict[test_set_name]
+            tests = ""
+            for j, test in enumerate(test_set):
+                if j > max_shown_tests:
+                    tests += " ..."
+                    break
+                tests += test + " "
+            content.append([test_set_name, tests])
+
+        CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_test_set(test_set_dict, test_set_name: str):
+        """
+        Prints the tests of one Test_Set.
+
+        :param test_set_dict: Dictionary of Test-Sets
+        :param test_set_name: The name of the chosen Test-Set
+        """
+        test_set = test_set_dict[test_set_name]
+        print("------Tests of Test-Set(" + test_set_name + ") ------")
+        for test in test_set:
+            print(test)
+
+    @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
         """
-        Prints a the TestResult list
+        Prints a TestResult list
 
         :param result_list:
         :return:
         """
-        headers = ["Router ID", "Test", "(S|F|E)"]
+        headers = ["Index", "Router ID", "Test", "(S|F|E)"]
         content = []
         print("------Testresults------")
         if not result_list:
             print("No Tests to show")
         else:
-            for result in result_list:
-                content.append([str(result[0]), result[1], "(" + str(result[2].testsRun - len(result[2].failures) -
-                                                                     len(result[2].errors)) +
+            for i, result in enumerate(result_list):
+                content.append([str(i), str(result[0]), result[1],
+                                "(" + str(result[2].testsRun - len(result[2].failures) -
+                                          len(result[2].errors)) +
                                 "|" + str(len(result[2].failures)) +
                                 "|" + str(len(result[2].errors)) + ")"])
 
             CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_result_errors(err: TestResult):
+        """
+        Prints the error a Test produced
+
+        :param err: unittest TestResult
+        """
+        if not err.errors:
+            print("No Errors produced by this Test")
+        else:
+            print("\v" + "=" * 35)
+            print("The following Errors were produced:")
+            print("=" * 35)
+            for e in err.errors:
+                # print traceback of Errors
+                print(e[1])
+                print("-" * 35)
+
+    @staticmethod
+    def print_result_failures(fail: TestResult):
+        """
+        Prints the failures a Test produced
+
+        :param fail: unittest TestResult
+        """
+        if not fail.failures:
+            print("No Failures produced by this Test")
+        else:
+            print("\v" + "=" * 35)
+            print("The following Failures occurred:")
+            print("Total Failures: [" + str(len(fail.failures)) + "]")
+            print("=" * 35)
+            for f in fail.failures:
+                # print traceback of Failures
+                print(f[0])
+                print(f[1])
+                print("-" * 35)
 
 
 class OutputColors:

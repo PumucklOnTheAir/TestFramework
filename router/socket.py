@@ -188,7 +188,7 @@ class InternetSocket(Socket):
 
         :return: Socket_foreign_port
         """
-        return self._local_port
+        return self._foreign_port
 
     @foreign_port.setter
     def foreign_port(self, value: str):

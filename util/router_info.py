@@ -50,7 +50,7 @@ class RouterInfo(Thread):
             # MAC
             self.router.mac = self._get_router_mac()
             # NetworkInterfaces
-            self.router.interfaces = self._get_router_network_interfaces()
+            self.router.network_interfaces = self._get_router_network_interfaces()
             # CPUProcesses
             self.router.cpu_processes = self._get_router_cpu_process()
             # RAM
@@ -274,16 +274,16 @@ class RouterInfo(Thread):
         bat_originators = list()
         raw_bat_originator_lst = self.network_ctrl.send_command("batctl o")[2:]
         for raw_bat_originator in raw_bat_originator_lst:
-            raw_bat_originator = raw_bat_originator.split()
-            # raw_bat_originator: ['f6:f6:6d:85:d4:ae', '0.840s', '(', '52)', '32:b8:c3:e7:6f:f0', '[', 'mesh0]:',
-            # '02:2a:1a:cc:72:ae', '(', '3)', '32:b8:c3:e7:96:b0', '(', '26)', '32:b8:c3:e7:6f:f0', '(', '52)']
+            raw_bat_originator = raw_bat_originator.replace("( ", "(").replace("[ ", "").split()
+            # raw_bat_originator: ['f6:f6:6d:85:d4:ae', '0.840s', '(52)', '32:b8:c3:e7:6f:f0', 'mesh0]:',
+            # '02:2a:1a:cc:72:ae', '(3)', '32:b8:c3:e7:96:b0', '(26)', '32:b8:c3:e7:6f:f0', '(52)']
             mac = raw_bat_originator[0]
             tmp = raw_bat_originator[1].replace("s", "")
             last_seen = float(tmp)
-            next_hop = raw_bat_originator[4]
-            outgoing_iface = raw_bat_originator[6].replace("]:", "")
+            next_hop = raw_bat_originator[3]
+            outgoing_iface = raw_bat_originator[4].replace("]:", "")
             potential_next_hops = list()
-            for raw_potential_next_hop in raw_bat_originator[7:]:
+            for raw_potential_next_hop in raw_bat_originator[5:]:
                 if ":" in raw_potential_next_hop:
                     potential_next_hops.append(raw_potential_next_hop)
             bat_originator = BatOriginator(mac, last_seen, next_hop, outgoing_iface, potential_next_hops)

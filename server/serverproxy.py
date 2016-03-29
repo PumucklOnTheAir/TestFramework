@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractclassmethod
-from typing import List
+from typing import List, Tuple
 from router.router import Router
 from unittest import TestResult
 
@@ -43,11 +43,10 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_running_tests(self) -> []:
+    def get_task_errors(self) -> List[Tuple[int, Tuple[str, str, str]]]:
         """
-        List of running test on the test server.
-
-        :return: List as a copy of the original list.
+        Return a list of task errors
+        :return: A list of tuples with error information
         """
         pass
 
@@ -71,16 +70,9 @@ class ServerProxy(metaclass=ABCMeta):
         pass
 
     @abstractclassmethod
-    def get_tests(self) -> []:
+    def get_test_sets(self):
         """
-        :return: List of available tests on the server
-        """
-        pass
-
-    @abstractclassmethod
-    def get_firmwares(self) -> []:
-        """
-        :return: List of known firmwares
+        :return: Dictionary of Test_Sets
         """
         pass
 

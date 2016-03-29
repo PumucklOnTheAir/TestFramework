@@ -1,3 +1,5 @@
+import logging
+from subprocess import Popen
 from selenium.webdriver.support.ui import WebDriverWait
 from log.loggersetup import LoggerSetup
 from .webdriver_phantomjs_extended import WebdriverPhantomjsExtended
@@ -428,6 +430,9 @@ class WebConfigurationAssist:
         Close the browser
         """
         self.browser.close()
+        logging.debug("pkill phantomjs ...")
+        # Otherwise the phantomjs-processes are still open
+        Popen(["pkill", "phantomjs"])
         # self.display.stop()
 
     @staticmethod

@@ -65,6 +65,7 @@ class NetworkCtrl:
             raise TimeoutError
         except Exception as e:
             logging.error("%s[-] Couldn't send the command (" + command + ")", LoggerSetup.get_log_deep(2))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e
 
     def send_data(self, local_file: str, remote_file: str):
