@@ -32,13 +32,13 @@ class Router(RemoteSystem):
         self._vlan_iface_id = vlan_iface_id
         self._vlan_iface_name = vlan_iface_name
         self._namespace_name = "nsp" + str(self._vlan_iface_id)
+        self._usr_name = usr_name
+        self._usr_password = usr_password
         self._power_socket = power_socket
 
         # Optional values
         self._mode = Mode.unknown
         self._model = ""
-        self._usr_name = usr_name
-        self._usr_password = usr_password
         self._mac = '00:00:00:00:00:00'
         self._node_name = ""
         self._public_key = ""
@@ -342,16 +342,5 @@ class Router(RemoteSystem):
             string += str(cpu_process) + "\n"
 
         string += "\nMemory: " + str(self.ram) + "\n"
-
-        string += "\nUCI: {|"
-        for uci_key in self.uci.keys():
-            string += str(uci_key) + " = " + str(self.uci[uci_key] + " | ")
-        string += "}\n"
-
-        string += "\nBatOriginators (first 10): \n"
-        for i, originator in enumerate(self.bat_originators):
-            string += str(originator) + "\n"
-            if i >= 9:
-                break
 
         return string
