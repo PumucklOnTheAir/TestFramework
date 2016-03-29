@@ -4,6 +4,7 @@ from router.router import Router, Mode
 from util.router_reboot import RouterReboot
 from network.nv_assist import NVAssistent
 from multiprocessing import Process, Queue
+import logging
 
 
 class TestRouterReboot(TestCase):
@@ -17,9 +18,11 @@ class TestRouterReboot(TestCase):
     """""
 
     def test_reboot(self):
+        logging.basicConfig(level=10)
         print("Test the 'reboot'-function")
         router = self._create_router()
         q = Queue()
+        """ Falls auskommentiert => Server mode auf 'normal' stellen
         # Reboot Router, in an own thread, into configmode
         p = Process(target=self._reboot_into_config, args=(router, q,))
         p.start()
@@ -29,13 +32,14 @@ class TestRouterReboot(TestCase):
         p.join()
 
         print("Router Mode: " + str(router.mode))
-
+        """
         # Reboot Router, in an own thread, into normalmode
         p = Process(target=self._reboot_into_normal, args=(router, q,))
         p.start()
         # Get result from process
         router = q.get()
         p.join()
+        print("Router Mode: " + str(router.mode))
 
     def _reboot_into_config(self, router: Router, q: Queue):
         print("Reboot Router into configmode ...")
@@ -46,9 +50,13 @@ class TestRouterReboot(TestCase):
         netns.setns(router.namespace_name)
 
         # Reboot Router into configmode
-        router_reboot = RouterReboot(router, configmode=True)
-        router_reboot.start()
-        router_reboot.join()
+        try:
+            router_reboot = RouterReboot(router, configmode=True)
+            router_reboot.start()
+            router_reboot.join()
+        except Exception as e:
+            nv_assist.close()
+            raise e
         assert router.mode == Mode.configuration
         nv_assist.close()
         q.put(router)
@@ -59,10 +67,13 @@ class TestRouterReboot(TestCase):
         nv_assist.create_namespace_vlan(router)
         # Set netns for the current process
         netns.setns(router.namespace_name)
-
-        router_reboot = RouterReboot(router, configmode=False)
-        router_reboot.start()
-        router_reboot.join()
+        try:
+            router_reboot = RouterReboot(router, configmode=False)
+            router_reboot.start()
+            router_reboot.join()
+        except Exception as e:
+            nv_assist.close()
+            raise e
         assert router.mode == Mode.normal
         nv_assist.close()
         q.put(router)
@@ -73,6 +84,6 @@ class TestRouterReboot(TestCase):
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         # Has to be matched with the current mode (normal, configuration)
-        router.mode = Mode.normal
+        router.mode = Mode.configuration
         assert isinstance(router, Router)
         return router
