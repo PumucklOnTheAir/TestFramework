@@ -376,7 +376,7 @@ def main():
                 util.print_test_sets(server_proxy.get_test_sets())
 
         elif args.set:
-            util.print_test_set(server_proxy.get_test_sets(), args.set[0])
+            util.print_test_set(server_proxy.get_test_sets(), args.set)
         else:
             parser.print_help()
 
