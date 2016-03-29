@@ -85,7 +85,7 @@ class Server(ServerProxy):
     _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
     _waiting_tasks = []  # List[deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]]]
     _task_pool = None  # multiprocessing.pool.Pool for task execution
-    _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
+    _task_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
     _test_sets = {}  # Dict[List[str]]
     _task_errors = []  # List[(int, (type, value, traceback))] like in sys.exc_info()
@@ -146,7 +146,7 @@ class Server(ServerProxy):
         cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
         cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
                               initargs=(cls._server_stop_event,), maxtasksperchild=1)
-        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
+        cls._task_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
 
         # start thread for multiprocess stop wait
         t = threading.Thread(target=cls._close_wait)
@@ -244,7 +244,7 @@ class Server(ServerProxy):
             cls._task_pool.close()
             cls._task_pool.terminate()
             cls._task_pool.join()
-            cls._job_wait_executor.shutdown(wait=False)
+            cls._task_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
 
@@ -416,10 +416,10 @@ class Server(ServerProxy):
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # task is a test
-                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, done_event)
+                    cls._task_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, done_event)
                 else:
                     # task is a regular job
-                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, done_event)
+                    cls._task_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, done_event)
                 return True
             else:
                 logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
