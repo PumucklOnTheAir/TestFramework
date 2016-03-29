@@ -135,7 +135,7 @@ class CLITestClass(TestCaseParser):
         self.assertTrue(args.remove)
         self.assertFalse(args.routers)
 
-        args = self.parser.parse_args(["results", "-err",  "0"])
+        args = self.parser.parse_args(["results", "-err", "0"])
         self.assertFalse(args.routers)
         self.assertEquals(args.errors, [0], "Wrong List Index")
 
