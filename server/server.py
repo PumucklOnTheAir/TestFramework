@@ -494,7 +494,6 @@ class Server(ServerProxy):
             logging.debug("%sFrom " + str(router), LoggerSetup.get_log_deep(2))
 
             cls._test_results.append((router.id, str(test), result))
-            print((router.id, str(test), result))
 
             try:
                 with shelve.open('test_results', 'c') as db:
@@ -518,7 +517,6 @@ class Server(ServerProxy):
             result._original_stderr = None
 
             cls._test_results.append((router.id, str(test), result))
-            print((router.id, str(test), result))
 
             try:
                 with shelve.open('test_results', 'c') as db:
@@ -646,7 +644,6 @@ class Server(ServerProxy):
         :param router_id: the specific router or all router if id = -1
         :return: List of results
         """
-        print(str(router_id))
         if router_id == -1:
             return cls._test_results
         else:
