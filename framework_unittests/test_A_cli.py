@@ -144,13 +144,13 @@ class CLITestClass(TestCaseParser):
         self.assertEquals(args.failures, [1], "Wrong List Index")
 
     def test_register_key(self):
-        args = self.parser.parse_args(["register_key", "-r", "0", "1", "2"])
+        args = self.parser.parse_args(["register_key", "-r", "0"])
         self.assertEquals(args.mode, "register_key", "Wrong Mode")
-        self.assertEquals(args.routers, [0, 1, 2], "Routers not correct")
+        self.assertEquals(args.router, [0], "Routers not correct")
 
         args = self.parser.parse_args(["register_key"])
         self.assertEquals(args.mode, "register_key", "Wrong Mode")
-        self.assertFalse(args.routers)
+        self.assertFalse(args.router)
 
     def test_show_jobs(self):
         args = self.parser.parse_args(["show_jobs", "-r", "0"])

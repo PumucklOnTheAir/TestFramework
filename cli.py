@@ -210,7 +210,7 @@ def create_parsers():
     # subparser for test set
     parser_test_set = subparsers.add_parser("start", help="Start a test set")
     parser_test_set.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
-                                 help="", nargs="+")
+                                 help="List of Routers", nargs="+")
     parser_test_set.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
                                  help="Name of set")
     parser_test_set.add_argument("-b", "--blocking", help="Blocks until finished", default=False,
@@ -218,8 +218,8 @@ def create_parsers():
 
     # subparser for test results
     parser_test_result = subparsers.add_parser("results", help="Manage the test results")
-    parser_test_result.add_argument("-r", "--routers", metavar="Router ID", type=int, default=[], action="store",
-                                    help="", nargs="+")
+    parser_test_result.add_argument("-r", "--router", metavar="Router ID", type=int, default=[], action="store",
+                                    help="Router", nargs=1)
     parser_test_result.add_argument("-rm", "--remove", action="store_true", default=False,
                                     help="Remove all results. Ignoring parameter -r.")
     parser_test_result.add_argument("-fail", "--failures", action="store", nargs=1, type=int, metavar="List ID",
@@ -235,7 +235,7 @@ def create_parsers():
     # subparser for show jobs
     parser_jobs = subparsers.add_parser("show_jobs", help="Show all Jobs")
     parser_jobs.add_argument("-r", "--router", metavar="Router ID", type=int,
-                             default=0, action="store", help="Router ID", nargs=1)
+                             default=0, action="store", help="Router", nargs=1)
 
     return parser
 
@@ -375,8 +375,8 @@ def main():
             else:
                 util.print_result_errors(results[args.errors[0]][2])
         else:
-            if args.routers:
-                router_id = args.routers[0]
+            if args.router:
+                router_id = args.router[0]
             else:
                 router_id = -1
             util.print_test_results(server_proxy.get_test_results(router_id))
