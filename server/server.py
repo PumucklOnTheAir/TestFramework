@@ -1,7 +1,7 @@
 from .serverproxy import ServerProxy
 from .ipc import IPC
 from .test import FirmwareTest
-from typing import List, Union, Iterable, Optional
+from typing import List, Union, Optional, Tuple
 from router.router import Router
 from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
@@ -83,11 +83,12 @@ class Server(ServerProxy):
 
     # test/task handling
     _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
-    _waiting_tasks = []  # List[deque[Union[RemoteSystemJobClass, RemoteSystemJob]]]
+    _waiting_tasks = []  # List[deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]]]
     _task_pool = None  # multiprocessing.pool.Pool for task execution
     _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
     _test_sets = {}  # Dict[List[str]]
+    _task_errors = []  # List[(int, (type, value, traceback))] like in sys.exc_info()
 
     # NVAssistent
     _nv_assistent = None
@@ -284,27 +285,29 @@ class Server(ServerProxy):
         cls._running_task[remote_system.id] = task
 
     @classmethod
-    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> Iterable[Union[RemoteSystemJobClass,
-                                                                                   RemoteSystemJob]]:
+    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> deque:
         """
         Returns the waiting task queue
 
         :param remote_system: the associated RemoteSystem of the queue
-        :return: Returns the queue as a collections.deque, filled with RemoteSystemJobClass and RemoteSystemJob
+        :return: Returns the queue as a collections.deque, filled with RemoteSystemJobClass and RemoteSystemJob and
+        there wait objects. Type: deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]].
         """
         result = cls._waiting_tasks[remote_system.id]
         return result
 
     @classmethod
-    def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
+    def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass],
+                         done_event: DoneEvent = DoneEvent()) -> None:
         """
         Add a task to the waiting Queue of a specific RemoteSystem
 
         :param remote_system: the associated RemoteSystem of the queue
         :param task: task which has to wait
+        :param done_event: done event
         """
         queue = cls.get_waiting_task_queue(remote_system)
-        queue.appendleft(task)
+        queue.appendleft((task, done_event))
         logging.debug("%sAdded " + str(task) + " to queue of Router(" + str(remote_system.id) + "). Queue length: " + str(len(queue)),
                       LoggerSetup.get_log_deep(3))
 
@@ -324,20 +327,24 @@ class Server(ServerProxy):
         :return: True if job was successful added in the queue
         """
         assert isinstance(remote_job, RemoteSystemJob)
+        done_events = []
+        result = True
+
         if remote_sys is None:
-            result = True
-            for router in cls.get_routers():
-                done_event = DoneEvent()
-                result = result and cls.__start_task(router, remote_job, done_event)
-                if wait != -1:
-                    done_event.wait(wait)
-            return result
+            routers = cls.get_routers()
         else:
+            routers = [remote_sys]
+
+        for router in routers:
             done_event = DoneEvent()
-            result = cls.__start_task(remote_sys, remote_job, done_event)
-            if wait != -1:
+            done_events.append(done_event)
+            result = result and cls.__start_task(router, remote_job, done_event)
+
+        if wait != -1:
+            for done_event in done_events:
                 done_event.wait(wait)
-            return result
+
+        return result
 
     @classmethod
     def start_test_set(cls, router_id: int, test_set_name: str, wait: int= -1) -> bool:
@@ -350,23 +357,28 @@ class Server(ServerProxy):
         :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if test was successful added in the queue
         """
+        done_events = []
+
+        if router_id == -1:
+            routers = cls._routers  # all routers
+        else:
+            routers = [cls.get_router_by_id(router_id)]
+
         for file_name in cls._test_sets[test_set_name]:
             module = importlib.import_module("firmware_tests." + file_name)
             import inspect
 
             for name, obj in inspect.getmembers(module):
                 if inspect.isclass(obj) and issubclass(obj, FirmwareTest) and name != "FirmwareTest":
-                    if router_id == -1:  # all routers
-                        for router in cls._routers:
-                            done_event = DoneEvent()
-                            cls.__start_task(router, obj, done_event)
-                            if wait != -1:
-                                done_event.wait(wait)
-                    else:
+                    for router in routers:
                         done_event = DoneEvent()
-                        cls.__start_task(cls.get_router_by_id(router_id), obj, done_event)
-                        if wait != -1:
-                            done_event.wait(wait)
+                        done_events.append(done_event)
+                        cls.__start_task(router, obj, done_event)
+
+        if wait != -1:
+            for done_event in done_events:
+                done_event.wait(wait)
+
         return True
 
     @classmethod
@@ -396,7 +408,7 @@ class Server(ServerProxy):
                         return False
                     else:
                         logging.debug("%sGet next task from the queue", LoggerSetup.get_log_deep(3))
-                        job = cls.get_waiting_task_queue(remote_sys).pop()
+                        job, done_event = cls.get_waiting_task_queue(remote_sys).popleft()
 
             if cls.get_running_task(remote_sys) is None:
                 logging.debug("%sStarting task " + str(job), LoggerSetup.get_log_deep(1))
@@ -410,7 +422,7 @@ class Server(ServerProxy):
                 return True
             else:
                 logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
-                cls.set_waiting_task(remote_sys, job)
+                cls.set_waiting_task(remote_sys, job, done_event)
 
                 return False
         except KeyboardInterrupt:
@@ -430,6 +442,7 @@ class Server(ServerProxy):
         job.prepare(remote_sys, routers)
 
         cls.__setns(remote_sys)
+        result = None
         try:
             result = job.run()
         except Exception as e:
@@ -509,6 +522,7 @@ class Server(ServerProxy):
             result._original_stderr = None
 
             cls._test_results.append((router.id, str(test), result))
+            cls._task_errors.append((router.id, sys.exc_info()))
 
             try:
                 length = len(cls._test_results)
@@ -543,6 +557,7 @@ class Server(ServerProxy):
 
         except Exception as e:
                 logging.error("%sTask raised an exception: " + str(e), LoggerSetup.get_log_deep(1))
+                cls._task_errors.append((remote_sys.id, sys.exc_info()))
         finally:
             cls.set_running_task(remote_sys, None)
             # start next test in the queue
@@ -611,15 +626,16 @@ class Server(ServerProxy):
         return len(task_queue) + result
 
     @classmethod
-    def get_running_tests(cls) -> List[FirmwareTestClass]:
+    def get_task_errors(cls) -> List[Tuple[int, Tuple[str, str, str]]]:
         """
-        List of running test on the test server.
+        Return a list of task errors
+        :return: A list of tuples with error information
+        """
 
-        :return: List as a copy of the original list.
-        """
-        # FIXME
-        raise NotImplementedError
-        return cls._running_tasks.copy()
+        result = []
+        for err in cls._task_errors:
+            result.append((err[0], (str(err[1][0]), str(err[1][1]), str(err[1][2]))))
+        return result
 
     @classmethod
     def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
@@ -653,27 +669,11 @@ class Server(ServerProxy):
         return size_results
 
     @classmethod
-    def get_tests(cls) -> List[FirmwareTestClass]:
-        """
-        :return: List of available tests on the server
-        """
-        # TODO get available test from config
-        raise NotImplementedError
-
-    @classmethod
     def get_test_sets(cls):
         """
         :return: Dictionary of Test_Sets
         """
         return cls._test_sets
-
-    @classmethod
-    def get_firmwares(cls) -> []:
-        """
-        :return: List of known firmwares
-        """
-        # TODO vllt vom config?
-        raise NotImplementedError
 
     @classmethod
     def get_router_by_id(cls, router_id: int) -> Router:
