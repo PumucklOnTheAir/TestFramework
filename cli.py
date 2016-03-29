@@ -397,7 +397,9 @@ def main():
                 router_id = -1
             else:
                 router_id = args.routers[0]
-            util.print_test_results(server_proxy.get_test_results(router_id))
+            tests = server_proxy.get_test_results(router_id)
+            print(len(tests))
+            util.print_test_results(tests)
 
     elif args.mode == "register_key":
         """

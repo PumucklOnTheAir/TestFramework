@@ -171,6 +171,7 @@ class CLIUtil:
         :param result_list:
         :return:
         """
+        print(len(result_list))
         headers = ["Index", "Router ID", "Test", "(S|F|E)"]
         content = []
         print("------Testresults------")

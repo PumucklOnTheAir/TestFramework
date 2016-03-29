@@ -171,11 +171,14 @@ class Server(ServerProxy):
                 # read test values
                 key_list = db.keys()
                 for k in key_list:
-                    t = DBTestResult()
+                    t = TestResult()
                     dbt = db[str(k)]
                     t.failures = dbt.failures
                     t.errors = dbt.errors
+                    t.testsRun = dbt.testsRun
                     cls._test_results.append((dbt.router_id, dbt.test_name, t))
+                    print((dbt.router_id, dbt.test_name, t))
+                print(len(db))
         except Exception as e:
             print(e)
 
@@ -223,6 +226,7 @@ class Server(ServerProxy):
                     dbt.test_name = t[1]
                     dbt.failures = t[2].failures
                     dbt.errors = t[2].errors
+                    dbt.testsRun = t[2].testsRun
                     db[str(i)] = dbt
         except Exception as e:
             print(e)
@@ -502,6 +506,7 @@ class Server(ServerProxy):
                     dbt.test_name = t[1]
                     dbt.failures = t[2].failures
                     dbt.errors = t[2].errors
+                    dbt.testsRun = t[2].testsRun
                     db[str(length)] = dbt
             except Exception as e:
                 print(e)
@@ -526,6 +531,7 @@ class Server(ServerProxy):
                     dbt.test_name = t[1]
                     dbt.failures = t[2].failures
                     dbt.errors = t[2].errors
+                    dbt.testsRun = t[2].testsRun
                     db[str(length)] = dbt
             except Exception as e:
                 print(e)
@@ -642,8 +648,19 @@ class Server(ServerProxy):
         :param router_id: the specific router or all router if id = -1
         :return: List of results
         """
-
+        print(str(router_id))
         if router_id == -1:
+            print(len(cls._test_results))
+            # print(str(cls._test_results[0][0]))
+            # print(str(cls._test_results[0][1]))
+            # print(str(cls._test_results[0][2]))
+            # assert(isinstance(int, cls._test_results[0][0]))
+            # assert (isinstance(str, cls._test_results[0][1]))
+            for t in cls._test_results:
+                print(type(t[2]) is TestResult)
+                print(type(t[1]) is str)
+                print(type(t[0]) is int)
+            print(Server.eqTests(cls._test_results[0][2], (cls._test_results[1][2])))
             return cls._test_results
         else:
             results = []
@@ -651,6 +668,22 @@ class Server(ServerProxy):
                 if result[0] == router_id:
                     results.append(result)
             return results
+
+    _NOTFOUND = object()
+
+    @staticmethod
+    def eqTests(ohter1, other2):
+            for attr in ['numerator', 'denominator']:
+                v1, v2 = [getattr(obj, attr, Server._NOTFOUND) for obj in [ohter1, other2]]
+                if v1 is Server._NOTFOUND or v2 is Server._NOTFOUND:
+                    print(str(v1))
+                    print(str(v2))
+                    return False
+                elif v1 != v2:
+                    print(str(v1))
+                    print(str(v2))
+                    return False
+            return True
 
     @classmethod
     def delete_test_results(cls) -> int:
@@ -662,7 +695,9 @@ class Server(ServerProxy):
         size_results = len(cls._test_results)
         cls._test_results = []
         with shelve.open('test_results', 'c') as db:
+            print(len(db))
             db.clear()
+            print(len(db))
 
         return size_results
 
