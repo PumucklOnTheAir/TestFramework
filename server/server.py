@@ -24,6 +24,8 @@ import sys
 import signal
 import platform
 from setproctitle import setproctitle
+import shelve
+from .dbtestresult import DBTestResult
 
 if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
     from util.router_info import RouterInfoJob
@@ -163,6 +165,23 @@ class Server(ServerProxy):
             cls.router_online(None, update_all=True, blocked=True)
             cls.update_router_info(None, update_all=True)
 
+        # open database and read old test results
+        try:
+            with shelve.open('test_results', 'c') as db:
+                # read test values
+                key_list = db.keys()
+                for k in key_list:
+                    t = TestResult()
+                    dbt = db[str(k)]
+                    t.failures = dbt.failures
+                    t.errors = dbt.errors
+                    t.testsRun = dbt.testsRun
+                    t._original_stdout = None
+                    t._original_stderr = None
+                    cls._test_results.append((dbt.router_id, dbt.test_name, t))
+        except Exception as e:
+            logging.error("Error at read test results from DB: {0}".format(e))
+
         logging.info("Runtime Server started")
 
         try:
@@ -196,6 +215,21 @@ class Server(ServerProxy):
         assert(cls._pid == os.getpid())
 
         cls._server_stop_event.wait()
+
+        try:
+            with shelve.open('test_results', 'c') as db:
+                # Record test values
+                db.clear()
+                for i, t in enumerate(cls._test_results):
+                    dbt = DBTestResult()
+                    dbt.router_id = t[0]
+                    dbt.test_name = t[1]
+                    dbt.failures = t[2].failures
+                    dbt.errors = t[2].errors
+                    dbt.testsRun = t[2].testsRun
+                    db[str(i)] = dbt
+        except Exception as e:
+            logging.error("Error at write test results into DB: {0}".format(e))
 
         if not cls._stopped:
             print("Shutdown server")
@@ -459,6 +493,14 @@ class Server(ServerProxy):
             logging.debug("%sFrom Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
 
             cls._test_results.append((router.id, str(test), result))
+
+            try:
+                length = len(cls._test_results)
+                t = cls._test_results[(length - 1)]
+                cls.write_in_db(str(length), t)
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
+
         except Exception as e:
             logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
 
@@ -467,6 +509,13 @@ class Server(ServerProxy):
             result._original_stderr = None
 
             cls._test_results.append((router.id, str(test), result))
+
+            try:
+                length = len(cls._test_results)
+                t = cls._test_results[(length - 1)]
+                cls.write_in_db(str(length), t)
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
 
         finally:
             cls.set_running_task(router, None)
@@ -580,7 +629,6 @@ class Server(ServerProxy):
         :param router_id: the specific router or all router if id = -1
         :return: List of results
         """
-
         if router_id == -1:
             return cls._test_results
         else:
@@ -599,6 +647,9 @@ class Server(ServerProxy):
         """
         size_results = len(cls._test_results)
         cls._test_results = []
+        with shelve.open('test_results', 'c') as db:
+            db.clear()
+
         return size_results
 
     @classmethod
@@ -823,3 +874,19 @@ class Server(ServerProxy):
         """
         # register console from cli in the current process and logging instance
         return LoggerSetup.add_handler(tty_name)
+
+    @classmethod
+    def write_in_db(cls, key: str = "", test: (int, str, TestResult) = None):
+        """
+        Write new entry in database
+        :param key: Database entry key
+        :param test: Tuple with router id, test name and test
+        """
+        with shelve.open('test_results', 'c') as db:
+            dbt = DBTestResult()
+            dbt.router_id = test[0]
+            dbt.test_name = test[1]
+            dbt.failures = test[2].failures
+            dbt.errors = test[2].errors
+            dbt.testsRun = test[2].testsRun
+            db[key] = dbt
