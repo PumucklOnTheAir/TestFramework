@@ -1,6 +1,6 @@
-###########################
+##########################
 Virtual Local Area Network
-###########################
+##########################
 
 The TestFramework depends heavily on the possibilities of VLANs.
 Each router has its own VLAN with its VLAN ID to separate it from others routers.
@@ -14,17 +14,17 @@ Important python packages:
 
 
 Class VLAN
-===========
+==========
 '.. automodule:: network.vlan
   :members:
 
 Class NetworkCtrl
-==================
+=================
 .. automodule:: network.network_ctrl
   :members:
 
 Class Namespace
-================
+===============
 '.. automodule:: network.namespace
   :members:
 

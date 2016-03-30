@@ -1,6 +1,6 @@
-#####################################################
+####################################################
 Welcome to the Freifunk TestFramework documentation!
-#####################################################
+####################################################
 This is the developer documentation of the Freifunk Firmware TestFramework.
 The repository is on https://github.com/PumucklOnTheAir/TestFramework available.
 
