@@ -14,7 +14,7 @@ from unittest.result import TestResult
 import importlib
 from multiprocessing import Event
 from threading import Event as DoneEvent
-from threading import Semaphore
+from threading import Semaphore, Lock
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
@@ -77,7 +77,7 @@ class Server(ServerProxy):
     _routers = []  # all registered routers on the system
     _power_strips = []  # all registered power strips on the system
     _test_results = []  # all test reports in form (router.id, str(test), TestResult)
-    _stopped = False  # marks if the server is still running
+    _stopped = None  # marks if the server is still running
 
     _max_subprocesses = 0  # will be set at start. describes how many Processes are needed in the Pool
 
@@ -108,6 +108,8 @@ class Server(ServerProxy):
         # server has to be run with root rights - except on travis CI
         if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
+
+        cls._stopped = Lock()
 
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
@@ -232,7 +234,7 @@ class Server(ServerProxy):
         except Exception as e:
             logging.error("Error at write test results into DB: {0}".format(e))
 
-        if not cls._stopped:
+        if cls._stopped.acquire(blocking=False, timeout=-1):
             print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
