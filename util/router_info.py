@@ -61,9 +61,9 @@ class RouterInfo(Thread):
             self.router.uci = self._get_router_uci()
             # Bat Originators
             self.router.bat_originators = self._get_bat_originator()
-            logging.debug("%s[+] Infos updated", LoggerSetup.get_log_deep(2))
+            logging.info("%s[+] Infos updated", LoggerSetup.get_log_deep(2))
         except Exception as e:
-            logging.warning("%s[-] Couldn't update all Infos", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] Couldn't update all Infos", LoggerSetup.get_log_deep(2))
             logging.error(str(e))
             for tb in traceback.format_tb(sys.exc_info()[2]):
                 logging.error("%s" + tb, LoggerSetup.get_log_deep(3))

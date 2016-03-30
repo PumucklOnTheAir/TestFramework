@@ -730,7 +730,7 @@ class Server(ServerProxy):
                     router = cls.get_router_by_id(router_id)
                     cls.start_job(router, RouterInfoJob())
         else:
-            logging.info("set VLAN to true to activate 'update_router_info' it")
+            logging.info("Set VLAN to true to activate 'update_router_info' it")
 
     @classmethod
     def sysupdate_firmware(cls, router_ids: Union[List[int], None], update_all: bool) -> None:

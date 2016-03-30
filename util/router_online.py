@@ -24,7 +24,7 @@ class RouterOnline(Thread):
         """
         Uses the Dhlcient to get an IP from a given Router and tries to connect to.
         """
-        logging.debug("%sCheck if Router is online ...", LoggerSetup.get_log_deep(1))
+        logging.info("%sCheck if Router is online ...", LoggerSetup.get_log_deep(1))
         try:
             Dhclient.update_ip(self.router.vlan_iface_name)
             self._test_connection()
