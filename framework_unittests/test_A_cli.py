@@ -87,13 +87,13 @@ class CLITestClass(TestCaseParser):
         self.assertTrue(args.wizard)
 
     def test_update_info(self):
-        args = self.parser.parse_args(["info", "-r", "1", "2", "3"])
+        args = self.parser.parse_args(["update", "-r", "1", "2", "3"])
         self.assertEquals(args.routers, [1, 2, 3], "Wrong Routers")
-        self.assertEquals(args.mode, "info", "Wrong Mode")
+        self.assertEquals(args.mode, "update", "Wrong Mode")
 
-        args = self.parser.parse_args(["info"])
+        args = self.parser.parse_args(["update"])
         self.assertFalse(args.routers)
-        self.assertEquals(args.mode, "info", "Wrong Mode")
+        self.assertEquals(args.mode, "update", "Wrong Mode")
 
     def test_online(self):
         args = self.parser.parse_args(["online", "-r", "1", "2", "3"])
