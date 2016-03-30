@@ -14,7 +14,7 @@ from unittest.result import TestResult
 import importlib
 from multiprocessing import Event
 from threading import Event as DoneEvent
-from threading import Semaphore
+from threading import Semaphore, Lock
 from network.remote_system import RemoteSystem, RemoteSystemJob
 from unittest import defaultTestLoader
 from pyroute2 import netns
@@ -77,7 +77,7 @@ class Server(ServerProxy):
     _routers = []  # all registered routers on the system
     _power_strips = []  # all registered power strips on the system
     _test_results = []  # all test reports in form (router.id, str(test), TestResult)
-    _stopped = False  # marks if the server is still running
+    _stopped = None  # marks if the server is still running
 
     _max_subprocesses = 0  # will be set at start. describes how many Processes are needed in the Pool
 
@@ -85,7 +85,7 @@ class Server(ServerProxy):
     _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
     _waiting_tasks = []  # List[deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]]]
     _task_pool = None  # multiprocessing.pool.Pool for task execution
-    _job_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
+    _task_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
     _test_sets = {}  # Dict[List[str]]
     _task_errors = []  # List[(int, (type, value, traceback))] like in sys.exc_info()
@@ -108,6 +108,9 @@ class Server(ServerProxy):
         # server has to be run with root rights - except on travis CI
         if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
+
+        cls._stopped = Lock()
+        signal.signal(signal.SIGTERM, cls._signal_term_handler)
 
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
@@ -144,7 +147,7 @@ class Server(ServerProxy):
         cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
         cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
                               initargs=(cls._server_stop_event,), maxtasksperchild=1)
-        cls._job_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
+        cls._task_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
 
         # start thread for multiprocess stop wait
         t = threading.Thread(target=cls._close_wait)
@@ -212,33 +215,38 @@ class Server(ServerProxy):
         cls._server_stop_event.set()
 
     @classmethod
+    def _signal_term_handler(cls, signal, frame):
+        cls.stop()
+
+    @classmethod
     def _close_wait(cls) -> None:
         assert(cls._pid == os.getpid())
 
         cls._server_stop_event.wait()
 
-        try:
-            with shelve.open('test_results', 'c') as db:
-                # Record test values
-                db.clear()
-                for i, t in enumerate(cls._test_results):
-                    dbt = DBTestResult()
-                    dbt.router_id = t[0]
-                    dbt.test_name = t[1]
-                    dbt.failures = t[2].failures
-                    dbt.errors = t[2].errors
-                    dbt.testsRun = t[2].testsRun
-                    db[str(i)] = dbt
-        except Exception as e:
-            logging.error("Error at write test results into DB: {0}".format(e))
-
-        if not cls._stopped:
+        if cls._stopped.acquire(blocking=False, timeout=-1):
             print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
+
+            try:
+                with shelve.open('test_results', 'c') as db:
+                    # Record test values
+                    db.clear()
+                    for i, t in enumerate(cls._test_results):
+                        dbt = DBTestResult()
+                        dbt.router_id = t[0]
+                        dbt.test_name = t[1]
+                        dbt.failures = t[2].failures
+                        dbt.errors = t[2].errors
+                        dbt.testsRun = t[2].testsRun
+                        db[str(i)] = dbt
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
+
             cls._task_pool.terminate()
             cls._task_pool.join()
-            cls._job_wait_executor.shutdown(wait=False)
+            cls._task_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
 
@@ -257,11 +265,6 @@ class Server(ServerProxy):
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
 
         logging.info("Stopped all jobs")
-
-    @classmethod
-    def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
-        # TODO test verwaltung #36
-        raise NotImplementedError
 
     @classmethod
     def get_running_task(cls, remote_system: RemoteSystem) -> Optional[Union[RemoteSystemJob, RemoteSystemJobClass]]:
@@ -415,10 +418,10 @@ class Server(ServerProxy):
                 cls.set_running_task(remote_sys, job)
                 if isinstance(job, FirmwareTestClass):
                     # task is a test
-                    cls._job_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, done_event)
+                    cls._task_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, done_event)
                 else:
                     # task is a regular job
-                    cls._job_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, done_event)
+                    cls._task_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, done_event)
                 return True
             else:
                 logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
@@ -638,6 +641,32 @@ class Server(ServerProxy):
         return result
 
     @classmethod
+    def get_task_queue_description(cls, router_id: int = -1) -> [(int, str, bool)]:
+        """
+        List of waiting and running tasks.
+
+        :param router_id: the specific router or all router if id = -1
+        :return: List of (router_id, str(Job), job_running)
+        """
+        if router_id == -1:
+            result = []
+            for router_queue_id in range(len(cls._waiting_tasks)):
+                for task in cls._waiting_tasks[router_queue_id]:
+                    result.append((router_queue_id, str(task), False))
+                running_task = cls._running_task[router_queue_id]
+                if running_task is not None:
+                    result.append((router_queue_id, str(running_task), True))
+            return result
+        else:
+            result = []
+            for task in cls._waiting_tasks[router_id]:
+                result.append((router_id, str(task), False))
+            running_task = cls._running_task[router_id]
+            if running_task is not None:
+                    result.append((router_id, str(running_task), True))
+            return result
+
+    @classmethod
     def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
         """
         Returns the firmware test results for the router
@@ -652,6 +681,10 @@ class Server(ServerProxy):
             for result in cls._test_results:
                 if result[0] == router_id:
                     results.append(result)
+                else:
+                    # Dummy Result for not in List
+                    r = (-1, "None", None)
+                    results.append(r)
             return results
 
     @classmethod

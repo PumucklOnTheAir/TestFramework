@@ -11,7 +11,7 @@ class CLIUtil:
     @staticmethod
     def print_dynamic_table(content, headers):
         """
-        prints a dynamically formatted table
+        Prints a dynamically formatted table
 
         :param content: list of lists of data
         :param headers: list of headers
@@ -49,7 +49,7 @@ class CLIUtil:
 
     def print_status(self, routers, headers):
         """
-        prints the status of all routers
+        Prints the status of all routers
 
         :param routers: list of routers
         :param headers: list of headers
@@ -64,7 +64,7 @@ class CLIUtil:
     @staticmethod
     def print_header():
         """
-        prints header for the command line
+        Prints header for the command line
 
         :return:
         """
@@ -73,7 +73,7 @@ class CLIUtil:
     @staticmethod
     def return_progressbar(router, tid, percentage):
         """
-        returns the visual progress of a test on a router
+        Returns the visual progress of a test on a router
 
         :param router: router name
         :param tid: ID of test
@@ -88,7 +88,7 @@ class CLIUtil:
     @staticmethod
     def print_list(content, headers, sort: bool, ind_line: bool, in_table_param: str):
         """
-        prints a simple list(table) sorted by the first row and formatted
+        Prints a simple list(table) sorted by the first row and formatted
 
         :param content: list of list (table)
         :param headers: list of headers for table, leave empty if not wanted
@@ -129,7 +129,7 @@ class CLIUtil:
     def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list,
                      socket_list_headers, socket_list, mem_list, bat_list_headers, bat_list):
         """
-        prints a detailed list of info on a router
+        Prints a detailed list of info on a router
 
         :param router_list: list of info on router
         :param if_list_headers: headers for the interfaces
@@ -214,11 +214,30 @@ class CLIUtil:
             print("No Tests to show")
         else:
             for i, result in enumerate(result_list):
-                content.append([str(i), str(result[0]), result[1],
-                                "(" + str(result[2].testsRun - len(result[2].failures) -
-                                          len(result[2].errors)) +
-                                "|" + str(len(result[2].failures)) +
-                                "|" + str(len(result[2].errors)) + ")"])
+                if not result[0] == -1:
+                    content.append([str(i), str(result[0]), result[1],
+                                    "(" + str(result[2].testsRun - len(result[2].failures) -
+                                              len(result[2].errors)) +
+                                    "|" + str(len(result[2].failures)) +
+                                    "|" + str(len(result[2].errors)) + ")"])
+
+            CLIUtil.print_dynamic_table(content, headers)
+
+    @staticmethod
+    def print_jobs(jobs: [(int, str, bool)]):
+        """
+        Prints all running and queued Jobs in a table
+
+        :param jobs: list of jobs with Router ID, Name of Job, and whether the Job is running or not
+        """
+        if not jobs:
+            print("No Jobs to show")
+        else:
+            headers = ["Router ID", "Job Name", "Running"]
+            content = []
+            for j in jobs:
+                li = [str(j[0]), j[1], str(j[2])]
+                content.append(li)
 
             CLIUtil.print_dynamic_table(content, headers)
 
