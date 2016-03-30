@@ -378,7 +378,7 @@ def main():
         subparse: results
         """
 
-        if args.remove:
+        if args.delete:
             removed = server_proxy.delete_test_results()
             print("Removed all " + str(removed) + " results.")
         elif args.failures:
