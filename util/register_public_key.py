@@ -30,20 +30,33 @@ class RegisterPublicKey(Thread):
         if self.router.node_name == "" or self.router.public_key == "":
             logging.warning("%s[!] The PublicKey doesn't exist", LoggerSetup.get_log_deep(2))
             return
+
         # message that is send: node-name and public-key
         msg = MIMEText("#" + self.router.node_name + "\n" + self.router.public_key)
-        mailserver = smtplib.SMTP(self.config["smtp_server"], self.config["smtp_port"])
-        # identify ourselves to smtp gmail client
-        mailserver.ehlo()
-        # secure our email with tls encryption
-        mailserver.starttls()
-        # re-identify ourselves as an encrypted connection
-        mailserver.ehlo()
-        logging.info("%sLogin " + self.config["email"], LoggerSetup.get_log_deep(2))
-        mailserver.login(self.config["email"], self.config["email_password"])
-        logging.info("%s[+] Login successful", LoggerSetup.get_log_deep(3))
-        logging.info("%sSend Public-Key ...", LoggerSetup.get_log_deep(2))
-        mailserver.sendmail(self.config["email"], self.config["key_email"], msg.as_string())
-        logging.info("%s[+] Send Public-Key successfully", LoggerSetup.get_log_deep(3))
+
+        try:
+            mailserver = smtplib.SMTP(self.config["smtp_server"], self.config["smtp_port"])
+            logging.error("%s[+] Connect to the SMTP-Server", LoggerSetup.get_log_deep(2))
+        except Exception as e:
+            logging.error("%s[-] Couldn't connect to the SMTP-Server", LoggerSetup.get_log_deep(2))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+            return
+
+        try:
+            # identify ourselves to smtp gmail client
+            mailserver.ehlo()
+            # secure our email with tls encryption
+            mailserver.starttls()
+            # re-identify ourselves as an encrypted connection
+            mailserver.ehlo()
+            logging.info("%sLogin " + self.config["email"], LoggerSetup.get_log_deep(2))
+            mailserver.login(self.config["email"], self.config["email_password"])
+            logging.info("%s[+] Login successful", LoggerSetup.get_log_deep(3))
+            logging.info("%sSend Public-Key ...", LoggerSetup.get_log_deep(2))
+            mailserver.sendmail(self.config["email"], self.config["key_email"], msg.as_string())
+            logging.info("%s[+] Send Public-Key successfully", LoggerSetup.get_log_deep(3))
+        except Exception as e:
+            logging.error("%s[-] Couldn't send the Registration-Mail", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
         mailserver.quit()
