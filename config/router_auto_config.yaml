@@ -1,9 +1,0 @@
---- # default for config the Router's automatical
-- router_Count: 1
-- default_Name: vlan
-- default_Start_Id: 21
-- default_IP: 192.168.1.1
-- default_Mask: 24
-- default_Username: root
-- default_Password: root
-- powerSocket_Start_Id: 1

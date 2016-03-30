@@ -1,0 +1,173 @@
+# config for the test famework
+# Properties: Server_Name, Log_Level, Vlan_On
+server:
+  serverdefaults: &serverdefaults
+    Server_Name: TestServer
+    # set the level for what you want to log: NOTSET: 0, DEBUG: 10, INFO: 20, WARNING: 30, ERROR: 40, CRITICAL: 50
+    Log_Level: 10
+    # set True or False
+    Vlan_On: False
+    Key: Value
+    smtp_server: 'smtp.web.de'
+    smtp_port: 587
+    email: 'symenschmitt_trash@web.de'
+    email_password: 'passworder'
+    key_email: 'keys@darmstadt.freifunk.net'
+
+# default for config the Firmware
+# Properties: URL, Release_Model, Firmware_Version, Download_All
+firmware:
+  firmwaredefaults: &firmwaredefaults
+    URL: "https://firmware.darmstadt.freifunk.net"
+    Release_Model: stable
+    Firmware_Version: 0.7.3
+    Download_All: False
+
+# Configuration for config the Router's
+# Properties: Name, Id, IP, IP_Mask, CONFIG_IP, CONFIG_IP_MASK, Username, Password, PowerSocket
+routers:
+  routersdefaults: &routersdefaults
+    Name: vlan
+    Id: 0
+    PowerSocket: 0
+    IP: 10.223.254.254
+    IP_Mask: 16
+    CONFIG_IP: 192.168.1.1
+    CONFIG_IP_MASK: 24
+    Username: root
+    Password: root
+  router1:
+    Name: vlan21
+    Id: 21
+    PowerSocket: 1
+    <<: *routersdefaults
+  router2:
+    Name: vlan22
+    Id: 22
+    PowerSocket: 2
+    <<: *routersdefaults
+
+# config for the power strip
+# Properties: Power_Strip_Count, default_Name, default_Start_Id, default_Mask, default_IP, default_Username, default_Password, default_Ports
+powerstrip:
+  powerstripdefault: &powerstripdefault
+    Power_Strip_Count: 1
+    default_Name: vlan20
+    default_vlan_Id: 20
+    default_Mask: 24
+    default_IP: 192.168.1.20
+    default_Username: ubnt
+    default_Password: ubnt
+    default_Ports: 6
+
+# default config for the Web_Config_Assistent
+webconfigs:
+  webdefaults: &webdefaults
+    node_name: 64293-testframework
+    # Your internet connection can be used to establish an encrypted connection with other nodes.
+    # Enable this option if there are no other nodes reachable over WLAN in your vicinity or you want to make a part of your
+    # connection's bandwidth available for the network. You can limit how much bandwidth the node will use at most.
+    mesh_vpn: True
+    limit_bandwidth: False
+    # If you want the location of your node to be displayed on the map, you can enter its coordinates here.
+    # Specifying the altitude is optional and should only be done if a proper value is known.
+    show_location: True
+    latitude: 49.872160
+    longitude: 8.635345
+    altitude: 140.5
+    # You can provide your contact information here to allow others to contact you.
+    # Please note that this information will be visible publicly on the internet together with your node's coordinates.
+    contact: ops@darmstadt.freifunk.net
+
+    # EXPERT-MODE:
+
+    # PRIVATE-WLAN:
+    # Your node can additionally extend your private network by bridging the WAN interface with a seperate WLAN.
+    # This feature is completely independent of the mesh functionality. Please note that the private WLAN and meshing on
+    # the WAN interface should not be enabled at the same time.
+    private_wlan: False
+    ssid: ''
+    ssid_key: ''
+
+    # REMOTE-ACCESS:
+    # You can provide your SSH keys here (one per line)
+    ssh_keys: ''
+    password: root
+
+    # NETWORK:
+    # options: automatic, static, disabled
+    ipv4: automatic
+    # if option is static
+    ipv4_address: ''
+    ipv4_netmask: '255.255.255.0'
+    gateway_v4: ''
+    # options: automatic, static, disabled
+    ipv6: automatic
+    # if option is static
+    ipv6_address: ''
+    gateway_v6: ''
+
+    # At the moment only one dns-server can be added. Later it should be typed like '8.8.8.8, 9.9.9.9'
+    static_dns_server: ''
+    mesh_wan: False
+    mesh_lan: False
+
+    # MESH-VPN:
+    # In security mode, the mesh VPN uses an encrypted tunnel to connect to the VPN servers.The encryption ensures
+    # that it is impossible for your internet access provider to see what data is exchanged over your node.
+    security_mode: True
+    # In performance mode, no encryption is used. This usually allows for higher throughput, but the data exchanged over
+    # your node is not protected against eavesdropping.
+    performance_mode: False
+
+    # WLAN:
+    # You can enable or disable your node's client and mesh network SSIDs here.
+    # Please don't disable the mesh network without a good reason, so other nodes can mesh with yours.
+    client_network: True
+    mesh_network: True
+    # It is also possible to configure the WLAN adapters transmission power here.
+    # Please note that the transmission power values include the antenna gain where available,
+    # but there are many devices for which the gain is unavailable or inaccurate.
+    #
+    # options: 'default' or 0-15
+    # 0 = 0 dBm (1 mW)
+    # 1 = 4 dBm (2 mW)
+    # 2 = 5 dBm (3 mW)
+    # 3 = 7 dBm (5 mW)
+    # 4 = 8 dBm (6 mW)
+    # 5 = 9 dBm (7 mW)
+    # 6 = 10 dBm (10 mW)
+    # 7 = 11 dBm (12 mW)
+    # 8 = 12 dBm (15 mW)
+    # 9 = 13 dBm (19 mW)
+    # 10 = 14 dBm (25 mW)
+    # 11 = 15 dBm (31 mW)
+    # 12 = 16 dBm (39 mW)
+    # 13 = 17 dBm (50 mW)
+    # 14 = 18 dBm (63 mW)
+    # 15 = 19 dBm (79 mW)
+    transmission_power: default
+
+    # AUTO-UPDATE:
+    auto_update: False
+    # options: stable, beta, experimental
+    branch: stable
+
+    # UPGRADE:
+    # Noch nicht impementiert
+  router1:
+    # WIZARD-MODE:
+    # This node will automatically update its firmware when a new version is available
+    node_name: 64293-testframework1
+    <<: *webdefaults
+
+  router2:
+    # WIZARD-MODE:
+    # This node will automatically update its firmware when a new version is available
+    node_name: 64293-testframework2
+    <<: *webdefaults
+
+# config for the Test-Files
+tests:
+  set_0: [demo_1]
+  set_1: [demo_2, demo_1]

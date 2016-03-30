@@ -1,6 +1,6 @@
-from enum import Enum
 import hashlib
-from log.logger import Logger
+import logging
+from log.loggersetup import LoggerSetup
 
 
 class Firmware:
@@ -16,7 +16,6 @@ class Firmware:
         :param version: version of the firmware (not version of router !!!)
         :param freifunk_verein: like 'ffda'
         :param release_model: used in the url
-        :param update_type:
         :param file: used in the url
         :return:
         """
@@ -42,14 +41,14 @@ class Firmware:
         :param excep_hash:
         :return:
         """
-        Logger().debug("Check Hash of the Firmware(" + self.name + ") ...", 3)
+        logging.debug("%sCheck Hash of the Firmware(" + self.name + ") ...", LoggerSetup.get_log_deep(3))
         self.calc_hash()
         if self.hash == excep_hash:
-            Logger().debug("[+] The Hash is correct", 4)
+            logging.debug("%s[+] The Hash is correct", LoggerSetup.get_log_deep(4))
             return True
-        Logger().debug("[-] The Hash is incorrect", 4)
-        Logger().debug("Hash of the Firmware: " + self.hash, 4)
-        Logger().debug("Excepted Hash: " + excep_hash, 4)
+        logging.debug("%s[-] The Hash is incorrect", LoggerSetup.get_log_deep(4))
+        logging.debug("%sHash of the Firmware: " + self.hash, LoggerSetup.get_log_deep(4))
+        logging.debug("%sExcepted Hash: " + excep_hash, LoggerSetup.get_log_deep(4))
         return False
 
     def calc_hash(self):
@@ -62,7 +61,7 @@ class Firmware:
         with open(self.file, 'rb') as afile:
             buf = afile.read()
             hasher.update(buf)
-        self.hash = hasher.hexdigest()
+        self._hash = hasher.hexdigest()
 
     @property
     def name(self) -> str:
@@ -121,8 +120,3 @@ class Firmware:
     @property
     def hash(self) -> str:
         return self._hash
-
-    @hash.setter
-    def hash(self, value: str):
-        assert isinstance(value, str)
-        self._hash = value

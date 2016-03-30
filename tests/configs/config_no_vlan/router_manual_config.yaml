@@ -1,6 +1,0 @@
---- # Configuration for config the Router's manual
-# Insert for each Router one newline with the follow informations
-# Name: , Id: , IP: , Mask: , Username: , Password: , PowerSocket:
-- {Name: vlan21, Id: 21, IP: 192.168.1.1, Mask: 24, Username: root, Password: root, PowerSocket: 1}
-- {Name: vlan22, Id: 22, IP: 192.168.1.1, Mask: 24, Username: root, Password: root, PowerSocket: 2}
-- {Name: vlan23, Id: 23, IP: 192.168.1.1, Mask: 24, Username: root, Password: root, PowerSocket: 3}

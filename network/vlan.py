@@ -1,106 +1,123 @@
-from subprocess import Popen, PIPE
 from pyroute2.ipdb import IPDB
-import time
 import re
-import socket, struct, fcntl
-from log.logger import Logger
-import os
+from log.loggersetup import LoggerSetup
+import logging
+from network.remote_system import RemoteSystem
+from util.dhclient import Dhclient
 
 
 class Vlan:
+    """
+    Represents a VLAN opbject.
+    """""
 
-    def __init__(self, link_iface_name: str, vlan_iface_name: str, vlan_iface_id: int, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
+    def __init__(self, ipdb: IPDB, remote_system: RemoteSystem, link_iface_name):
         """
         Creats a virtual interface on a existing interface (like eth0).
-        It uses IPDB: IPDB is a transactional database, containing records, representing network stack objects.
+
+        :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
-
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
-        :param vlan_iface_id: the id of the vlan
-        :param vlan_iface_ip: ip of the virtual interface
-        :param vlan_iface_ip_mask: network-mask of the virtual interface
         """
+        self.ipdb = ipdb if ipdb else IPDB()
+        self.remote_system = remote_system
         self.link_iface_name = link_iface_name
-        self.vlan_iface_name = vlan_iface_name
-        self.vlan_iface_id = vlan_iface_id
-        self.ipdb = IPDB()
-        #self.create_interface(link_iface_name, vlan_iface_name, vlan_iface_id, vlan_iface_ip, vlan_iface_ip_mask)
+        self.vlan_iface_name = str(remote_system.vlan_iface_name)
+        self.vlan_iface_id = int(remote_system.vlan_iface_id)
 
-    def create_interface(self, vlan_iface_ip: str=None, vlan_iface_ip_mask: int=None):
+    def create_interface(self):
         """
-         Creats a virtual interface on a existing interface (like eth0)
-
-        :param vlan_iface_ip: ip of the virtual interface
-        :param vlan_iface_ip_mask: network-mask of the virtual interface
+         Creates a virtual interface on a existing interface (like eth0)
         """
-        Logger().debug("Create VLAN Interface ...", 2)
+        logging.debug("%sCreate VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
+            # Get the real link interface
             link_iface = self.ipdb.interfaces[self.link_iface_name]
-            with self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface, vlan_id=self.vlan_iface_id).commit()\
-                    as i:
-                if vlan_iface_ip:
-                    i.add_ip(vlan_iface_ip, vlan_iface_ip_mask)
-                i.mtu = 1400
-            if not vlan_iface_ip:
-                self._wait_for_ip_assignment()
-                vlan_iface_ip = self._get_ipv4_from_dictionary(self.ipdb.interfaces[self.vlan_iface_name])
-            Logger().debug("[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name + ", VLAN_ID=" + str(self.vlan_iface_id)+ ", IP=" + vlan_iface_ip, 3)
-        except Exception as e:
-            Logger().debug("[-] " + self.vlan_iface_name + " couldn't be created", 3)
-            Logger().error(str(e), 3)
 
-    def delete_interface(self):
+            # Create a Vlan
+            iface = self.ipdb.create(kind="vlan", ifname=self.vlan_iface_name, link=link_iface,
+                                     vlan_id=self.vlan_iface_id).commit()
+            # Try to assign an IP via dhclient
+            # IP 169.254.235.157/16 is returned when static is expected
+            if (not self._wait_for_ip_assignment()) or (self.ipdb_get_ip("169.254.235.157") == ""):
+                # Otherwise add a static IP
+                iface.add_ip(self._get_matching_ip(str(self.remote_system.ip)), self.remote_system.ip_mask).commit()
+            iface.mtu = 1400
+
+            logging.debug("%s[+] " + self.vlan_iface_name + " created with: Link=" + self.link_iface_name +
+                          ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip("169.254.235.157"),
+                          LoggerSetup.get_log_deep(3))
+        except Exception as e:
+            logging.debug("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+
+    def delete_interface(self, close_ipdb: bool=False):
         """
         Removes the virtual interface
+
+        :param close_ipdb: If also the IPDB should be closed.
         """
-        Logger().debug("Delete VLAN Interface ...", 2)
+        logging.debug("%sDelete VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
             self.ipdb.interfaces[self.vlan_iface_name].remove().commit()
-            self.ipdb.release()
-            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") successfully deleted", 3)
-        except KeyError as ke:
-            Logger().debug("[+] Interface(" + self.vlan_iface_name + ") is already deleted", 3)
+            if close_ipdb:
+                self.ipdb.release()
+            logging.debug("%s[+] Interface(" + self.vlan_iface_name + ") successfully deleted",
+                          LoggerSetup.get_log_deep(3))
+        except KeyError:
+            logging.debug("%s[+] Interface(" + self.vlan_iface_name + ") is already deleted",
+                          LoggerSetup.get_log_deep(3))
             return
         except Exception as e:
-            Logger().debug("[-] Interface(" + self.vlan_iface_name + ") couldn't be deleted. Try 'ip link delete <vlan_name>'", 3)
-            Logger().error(str(e), 3)
+            logging.debug("%s[-] Interface(" + self.vlan_iface_name +
+                          ") couldn't be deleted. Try 'ip link delete <vlan_name>'", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
-    def _wait_for_ip_assignment(self):
+    def _wait_for_ip_assignment(self) -> bool:
         """
         Waits until the dhcp-client got an ip
-        """
-        Logger().debug("Wait for ip assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...", 3)
-        if not self.get_ip():
-            os.system('dhclient ' + self.vlan_iface_name)
-            while self.get_ip() is None:
-                time.sleep(0.5)
 
-    def get_ip(self) -> str:
+        :return: True if we got a IP via dhclient
         """
-        Gets the ip of a specific interface
-        :return: the ip of an interface without network-mask
-        """
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sockfd = sock.fileno()
-        ifreq = struct.pack('16sH14s', self.vlan_iface_name.encode('utf-8'), socket.AF_INET, b'\x00' * 14)
+        logging.debug("%sWait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...",
+                      LoggerSetup.get_log_deep(3))
+
         try:
-            res = fcntl.ioctl(sockfd, 0x8915, ifreq)
+            Dhclient.update_ip(self.vlan_iface_name)
+            return True
         except:
-            return None
-        ip = struct.unpack('16sH2x4s8x', res)[2]
-        return socket.inet_ntoa(ip)
+            return False
 
-    def _get_ipv4_from_dictionary(self, iface) -> str:
+    def ipdb_get_ip(self, not_this_ip: str = None):
         """
-        Gets the ip and network-mask from the ipdb
+        Reads the first IP from IPDB.
 
-        :param iface: the interface from ipdb
-        :return: ip with network-mask
+        :param not_this_ip: If we know the first IP and are searching for another
+        :return: the IP with the format ip/mask
         """
+        iface = self.ipdb.interfaces[self.vlan_iface_name]
         ipaddr_dictionary = iface.ipaddr
         for i in range(len(ipaddr_dictionary)):
             ip = ipaddr_dictionary[i]['address']
             mask = ipaddr_dictionary[i]['prefixlen']
             if re.match("((((\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5])\.){3})(\d|[1-9]\d|1\d{2}|2[0-4]\d|25[0-5]))", ip):
-                return ip + "/" + str(mask)
-        return None
+                if ip != not_this_ip:
+                    return ip + "/" + str(mask)
+        return ""
+
+    def _get_matching_ip(self, ip: str) -> str:
+        """
+        Calculates the right IP for a given one.
+
+        :param ip: IP address
+        :return: New IP address
+        """
+        logging.debug("%sSet static IP for VLAN(" + str(self.vlan_iface_id) + ")", LoggerSetup.get_log_deep(2))
+        last_numer = int(ip.split(".")[-1])
+        new_numer = last_numer
+        if last_numer < 254:
+            new_numer += 1
+        else:
+            new_numer -= 1
+
+        return ip.replace(str(last_numer), str(new_numer))

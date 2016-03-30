@@ -1,9 +1,55 @@
 from .serverproxy import ServerProxy
 from .ipc import IPC
-from .router import Router
+from .test import FirmwareTest
+from typing import List, Union, Optional, Tuple
+from router.router import Router
+from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
-from typing import List
+from multiprocessing.pool import Pool
+from log.loggersetup import LoggerSetup
+import logging
+import threading
+from concurrent.futures import ThreadPoolExecutor
+from unittest.result import TestResult
+import importlib
+from multiprocessing import Event
+from threading import Event as DoneEvent
+from threading import Semaphore, Lock
+from network.remote_system import RemoteSystem, RemoteSystemJob
+from unittest import defaultTestLoader
+from pyroute2 import netns
+from collections import deque
 import os
+import sys
+import signal
+import platform
+from setproctitle import setproctitle
+import shelve
+from .dbtestresult import DBTestResult
+
+if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "Linux":
+    from util.router_info import RouterInfoJob
+    from util.router_online import RouterOnlineJob
+    from network.nv_assist import NVAssistent
+    from util.router_reboot import RouterRebootJob
+    from util.router_setup_web_configuration import RouterWebConfigurationJob
+    from util.router_flash_firmware import SysupgradeJob
+    from util.router_flash_firmware import Sysupdate
+    from util.register_public_key import RegisterPublicKey
+
+# type alias
+FirmwareTestClass = type(FirmwareTest)
+RemoteSystemJobClass = type(RemoteSystemJob)
+
+
+# initialization method for processes of the task pool
+def init_process(event):
+    setproctitle("PoolProcess")
+
+    # register the stop signal for CTRL+C
+    def signal_handler(signal, frame):
+        event.set()
+    signal.signal(signal.SIGINT, signal_handler)
 
 
 class Server(ServerProxy):
@@ -19,27 +65,53 @@ class Server(ServerProxy):
 
         *OSError: [Errno 99] Cannot assign requested address" try to restart the computer TODO #51*
     """""
-    VERSION = "0.1"
+    VERSION = "0.2"
     DEBUG = False
     VLAN = True
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
+
     _ipc_server = IPC()
 
     # runtime vars
-    _runningTests = []
-    _routers = []
-    _reports = []
+    _routers = []  # all registered routers on the system
+    _power_strips = []  # all registered power strips on the system
+    _test_results = []  # all test reports in form (router.id, str(test), TestResult)
+    _stopped = None  # marks if the server is still running
+
+    _max_subprocesses = 0  # will be set at start. describes how many Processes are needed in the Pool
+
+    # test/task handling
+    _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
+    _waiting_tasks = []  # List[deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]]]
+    _task_pool = None  # multiprocessing.pool.Pool for task execution
+    _task_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
+    _semaphore_task_management = Semaphore(1)
+    _test_sets = {}  # Dict[List[str]]
+    _task_errors = []  # List[(int, (type, value, traceback))] like in sys.exc_info()
+
+    # NVAssistent
+    _nv_assistent = None
+
+    _pid = None  # PID of the server
+
+    _server_stop_event = None
 
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
         Starts the runtime server with all components
 
-        :param debug_mode: Sets the log and print level
         :param config_path: Path to an alternative config directory
-        :param vlan_activate: Activates/Deactivates VLANs
         """
+
+        # server has to be run with root rights - except on travis CI
+        if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
+            sys.exit('Script must be run as root')
+
+        cls._stopped = Lock()
+        signal.signal(signal.SIGTERM, cls._signal_term_handler)
+
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
         ConfigManager.set_config_path(config_path)
@@ -49,111 +121,562 @@ class Server(ServerProxy):
         cls.VLAN = vlan_activate
 
         # read from config if debug mode is on
-        log_level = ConfigManager.get_server_property("Log_Level")
+        log_level = int(ConfigManager.get_server_property("Log_Level"))
         debug_mode = False
         if log_level is 10:
             debug_mode = True
         cls.DEBUG = debug_mode
 
+        setproctitle("fftserver")
+
+        cls._server_stop_event = Event()
+
+        cls._pid = os.getpid()
+
+        # create instance and give params to the logger object
+        LoggerSetup.setup(log_level)
+
         # load Router configs
         cls.__load_configuration()
 
+        for router in cls.get_routers():
+            cls._running_task.append(None)
+            cls._waiting_tasks.append(deque())
+
+        # start process/thread pool for job and test handling
+        cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
+        cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
+                              initargs=(cls._server_stop_event,), maxtasksperchild=1)
+        cls._task_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
+
+        # start thread for multiprocess stop wait
+        t = threading.Thread(target=cls._close_wait)
+        t.start()
+
+        # add Namespace and Vlan for each Router
         if cls.VLAN:
-            from util.router_info import RouterInfo
-            # TODO: Die Funktion 'cls.update_router_info' sollte verwendet werden
-            RouterInfo.update(cls.get_routers()[0])
+            cls._nv_assistent = NVAssistent("eth0")
 
-        print("Runtime Server started")
+            for router in cls.get_routers():
+                logging.debug("Add Namespace and Vlan for Router(" + str(router.id) + ")")
+                cls._nv_assistent.create_namespace_vlan(router)
 
-        cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
+            # add Namespace and Vlan for 1 Powerstrip (expand to more if necessary)
+            logging.debug("Add Namespace and Vlan for Powerstrip")
+            cls._nv_assistent.create_namespace_vlan(cls.get_power_strip())
 
-        # at this point all code will be ignored
+            # update Router
+            cls.router_online(None, update_all=True, blocked=True)
+            cls.update_router_info(None, update_all=True)
+
+        # open database and read old test results
+        try:
+            with shelve.open('test_results', 'c') as db:
+                # read test values
+                key_list = db.keys()
+                for k in key_list:
+                    t = TestResult()
+                    dbt = db[str(k)]
+                    t.failures = dbt.failures
+                    t.errors = dbt.errors
+                    t.testsRun = dbt.testsRun
+                    t._original_stdout = None
+                    t._original_stderr = None
+                    cls._test_results.append((dbt.router_id, dbt.test_name, t))
+        except Exception as e:
+            logging.error("Error at read test results from DB: {0}".format(e))
+
+        logging.info("Runtime Server started")
+
+        try:
+            cls._ipc_server.start_ipc_server(cls, True)  # serves forever - works like a while(true)
+        except (KeyboardInterrupt, SystemExit):
+            logging.info("Received an interrupt signal")
+            cls.stop()
+
+        # at this point following code will be ignored
 
     @classmethod
-    def __load_configuration(cls) -> None:
-        # (re)load the configuration only then no tests are running
-        assert len(cls._runningTests) == 0
-        cls._routers = ConfigManager.get_router_auto_list()
-        assert len(cls._routers) != 0
-        assert len(cls._reports) == 0
+    def __load_configuration(cls):
+        logging.debug("Load configuration")
+        cls._routers = ConfigManager.get_routers_list()
+        for i, r in enumerate(cls._routers):
+            if len(ConfigManager.get_web_interface_list()) >= i:
+                if 'node_name' in ConfigManager.get_web_interface_list()[i]:
+                    r.node_name = ConfigManager.get_web_interface_list()[i]['node_name']
+        cls._power_strips = ConfigManager.get_power_strip_list()
+        cls._test_sets = ConfigManager.get_test_sets()
 
     @classmethod
     def stop(cls) -> None:
         """
         Stops the server, all running tests and closes all connections.
         """
-        cls._ipc_server.shutdown()
-        pass
+        cls._server_stop_event.set()
 
     @classmethod
-    def start_test(cls, router_name, test_name) -> bool:
-        """Start an specific test on an router
+    def _signal_term_handler(cls, signal, frame):
+        cls.stop()
 
-        :param router_name: The name of the router on which the test will run
-        :param test_name: The name of the test to execute
-        :return: True if start was successful
+    @classmethod
+    def _close_wait(cls) -> None:
+        assert(cls._pid == os.getpid())
+
+        cls._server_stop_event.wait()
+
+        if cls._stopped.acquire(blocking=False, timeout=-1):
+            print("Shutdown server")
+            cls._stopped = True
+            cls._task_pool.close()
+
+            try:
+                with shelve.open('test_results', 'c') as db:
+                    # Record test values
+                    db.clear()
+                    for i, t in enumerate(cls._test_results):
+                        dbt = DBTestResult()
+                        dbt.router_id = t[0]
+                        dbt.test_name = t[1]
+                        dbt.failures = t[2].failures
+                        dbt.errors = t[2].errors
+                        dbt.testsRun = t[2].testsRun
+                        db[str(i)] = dbt
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
+
+            cls._task_pool.terminate()
+            cls._task_pool.join()
+            cls._task_wait_executor.shutdown(wait=False)
+            if cls.VLAN:
+                cls._nv_assistent.close()
+
+            cls._ipc_server.shutdown()
+
+            # close open streams and the logger instance
+            LoggerSetup.shutdown()
+            sys.exit(0)
+
+    @classmethod
+    def stop_all_tasks(cls) -> None:
         """
-        # runningTests.add(Thread.start(test, router))
-        pass
+        Stops all running jobs on the RemoteSystems
+        """
+        cls._task_pool.terminate()
+        cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
+
+        logging.info("Stopped all jobs")
+
+    @classmethod
+    def get_running_task(cls, remote_system: RemoteSystem) -> Optional[Union[RemoteSystemJob, RemoteSystemJobClass]]:
+        """
+        Returns which task is running on the given RemoteSystem
+
+        :param remote_system: the RemoteSystem
+        :return: if no job is running, it returns None
+        """
+        return cls._running_task[remote_system.id]
+
+    @classmethod
+    def set_running_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass]) -> None:
+        """
+        Sets internally which RemoteSystem executes which Task.
+        It doesn't run or starts the job on the RemoteSystem!
+
+        :param remote_system: the RemoteSystem
+        :param task: the Task
+        """
+        cls._running_task[remote_system.id] = task
+
+    @classmethod
+    def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> deque:
+        """
+        Returns the waiting task queue
+
+        :param remote_system: the associated RemoteSystem of the queue
+        :return: Returns the queue as a collections.deque, filled with RemoteSystemJobClass and RemoteSystemJob and
+        there wait objects. Type: deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]].
+        """
+        result = cls._waiting_tasks[remote_system.id]
+        return result
+
+    @classmethod
+    def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass],
+                         done_event: DoneEvent = DoneEvent()) -> None:
+        """
+        Add a task to the waiting Queue of a specific RemoteSystem
+
+        :param remote_system: the associated RemoteSystem of the queue
+        :param task: task which has to wait
+        :param done_event: done event
+        """
+        queue = cls.get_waiting_task_queue(remote_system)
+        queue.appendleft((task, done_event))
+        logging.debug("%sAdded " + str(task) + " to queue of Router(" + str(remote_system.id) + "). Queue length: " + str(len(queue)),
+                      LoggerSetup.get_log_deep(3))
+
+    @classmethod
+    def start_job(cls, remote_sys: RemoteSystem, remote_job: RemoteSystemJob, wait: int= -1) -> bool:
+        """
+        Starts an specific job on a RemoteSystem.
+        The job will be executed asynchronous this means the method is not blocking.
+        It add only the job to the task queue from RemoteSystem.
+        If you want, that this method wait until the job is executed, you have to set the wait param.
+        Think about that your job has maybe to wait in the queue.
+
+        :param remote_sys: The RemoteSystem on which the job will run. If none then the job will be executed on all
+        routers
+        :param remote_job: The name of the test to execute
+        :param wait: -1 for async execution and positive integer for wait in seconds
+        :return: True if job was successful added in the queue
+        """
+        assert isinstance(remote_job, RemoteSystemJob)
+        done_events = []
+        result = True
+
+        if remote_sys is None:
+            routers = cls.get_routers()
+        else:
+            routers = [remote_sys]
+
+        for router in routers:
+            done_event = DoneEvent()
+            done_events.append(done_event)
+            result = result and cls.__start_task(router, remote_job, done_event)
+
+        if wait != -1:
+            for done_event in done_events:
+                done_event.wait(wait)
+
+        return result
+
+    @classmethod
+    def start_test_set(cls, router_id: int, test_set_name: str, wait: int= -1) -> bool:
+        """
+        Start an specific test on a router
+
+        :param router_id: The id of the router on which the test will run.
+        If id is -1 the test will be executed on all routers.
+        :param test_set_name: The name of the test set to execute
+        :param wait: -1 for async execution and positive integer for wait in seconds
+        :return: True if test was successful added in the queue
+        """
+        done_events = []
+
+        if router_id == -1:
+            routers = cls._routers  # all routers
+        else:
+            routers = [cls.get_router_by_id(router_id)]
+
+        for file_name in cls._test_sets[test_set_name]:
+            module = importlib.import_module("firmware_tests." + file_name)
+            import inspect
+
+            for name, obj in inspect.getmembers(module):
+                if inspect.isclass(obj) and issubclass(obj, FirmwareTest) and name != "FirmwareTest":
+                    for router in routers:
+                        done_event = DoneEvent()
+                        done_events.append(done_event)
+                        cls.__start_task(router, obj, done_event)
+
+        if wait != -1:
+            for done_event in done_events:
+                done_event.wait(wait)
+
+        return True
+
+    @classmethod
+    def __start_task(cls, remote_sys: RemoteSystem, job: Union[RemoteSystemJobClass, RemoteSystemJob],
+                     done_event: DoneEvent = DoneEvent()) -> bool:
+        """
+        Apply a job or a test to the ProcessPool, execute it in the right network namespace with
+        the matching VLAN from RemoteSystem and insert a method for result/post process handling.
+        This method is thread-safe but not multi process safe.
+
+        :param remote_sys: the RemoteSystem
+        :param job: the Job
+        :return: true if job directly started, false if not
+        """
+        assert(cls._pid == os.getpid())
+        # Check if it is the the same PID as the PID Process which started the ProcessPool
+        try:
+            cls._semaphore_task_management.acquire(blocking=True)  # No concurrent task handling
+            if job is None:  # no job given? look up for the next job in the queue
+                logging.debug("%sLookup for next task in the queue %i", LoggerSetup.get_log_deep(1), remote_sys.id)
+                if not len(cls.get_waiting_task_queue(remote_sys)):
+                    logging.debug("%sNo tasks in the queue %i to run.", LoggerSetup.get_log_deep(2), remote_sys.id)
+                    return False
+                else:
+                    if cls.get_running_task(remote_sys) is not None:
+                        logging.debug("%sRouter working. Next task has to wait..", LoggerSetup.get_log_deep(3))
+                        return False
+                    else:
+                        logging.debug("%sGet next task from the queue", LoggerSetup.get_log_deep(3))
+                        job, done_event = cls.get_waiting_task_queue(remote_sys).popleft()
+
+            if cls.get_running_task(remote_sys) is None:
+                logging.debug("%sStarting task " + str(job), LoggerSetup.get_log_deep(1))
+                cls.set_running_task(remote_sys, job)
+                if isinstance(job, FirmwareTestClass):
+                    # task is a test
+                    cls._task_wait_executor.submit(cls._wait_for_test_done, job, remote_sys, done_event)
+                else:
+                    # task is a regular job
+                    cls._task_wait_executor.submit(cls._wait_for_job_done, job, remote_sys, done_event)
+                return True
+            else:
+                logging.debug("%sPut task in the wait queue. " + str(job), LoggerSetup.get_log_deep(1))
+                cls.set_waiting_task(remote_sys, job, done_event)
+
+                return False
+        except KeyboardInterrupt:
+            cls.stop()
+        except Exception as e:
+            logging.error("%s start_task: " + str(e), LoggerSetup.get_log_deep(2))
+        finally:
+            cls._semaphore_task_management.release()
+            # logging.debug(str(cls._waiting_tasks), 3)
+            # logging.debug(str(cls._running_task), 3)
+
+    @classmethod
+    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, routers: List[Router]) -> {}:
+        logging.debug("%sExecute job " + str(job) + " on Router(" + str(remote_sys.id) + ")",
+                      LoggerSetup.get_log_deep(2))
+        setproctitle(str(remote_sys.id) + " - " + str(job))
+        job.prepare(remote_sys, routers)
+
+        cls.__setns(remote_sys)
+        result = None
+        try:
+            result = job.run()
+        except Exception as e:
+            logging.error("%sError while execute job " + str(job), LoggerSetup.get_log_deep(1))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+
+        return result
+
+    @classmethod
+    def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router]) -> TestResult:
+        if not isinstance(router, Router):
+            raise ValueError("Chosen Router is not a real Router...")
+        # proofed: this method runs in other process as the server
+        setproctitle(str(router.id) + " - " + str(test))
+        logging.debug("%sExecute test " + str(test) + " on Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
+
+        test_suite = defaultTestLoader.loadTestsFromTestCase(test)
+
+        # prepare all test cases
+        for test_case in test_suite:
+            logging.debug("%sTestCase " + str(test_case), LoggerSetup.get_log_deep(4))
+            test_case.prepare(router, routers)
+
+        result = TestResult()
+
+        cls.__setns(router)
+        try:
+
+            result = test_suite.run(result)
+        except Exception as e:
+            logging.error("%sTestCase execution raised an exception", LoggerSetup.get_log_deep(3))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
+
+            test_obj = test()
+            result.addError(test_obj, sys.exc_info())  # add the reason of the exception
+        finally:
+
+            # I'm sry for this dirty hack, but if you don't do this you get an
+            # "TypeError: cannot serialize '_io.TextIOWrapper' object" because sys.stdout is not serializeable...
+            result._original_stdout = None
+            result._original_stderr = None
+
+            logging.debug("%sResult from test " + str(result), LoggerSetup.get_log_deep(3))
+            return result
+
+    @classmethod
+    def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router, done_event: DoneEvent) -> None:
+        """
+        Wait 2 minutes until the test is done.
+        Handles the result from the tests.
+        Triggers the next job/test.
+
+        :param test: test to execute
+        :param router: the Router
+        """
+        logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
+        try:
+            async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
+            result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
+            logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
+            logging.debug("%sFrom Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
+
+            cls._test_results.append((router.id, str(test), result))
+
+            try:
+                length = len(cls._test_results)
+                t = cls._test_results[(length - 1)]
+                cls.write_in_db(str(length), t)
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
+
+        except Exception as e:
+            logging.error("%sTest raised an Exception: " + str(e), LoggerSetup.get_log_deep(1))
+
+            result = TestResult()
+            result._original_stdout = None
+            result._original_stderr = None
+
+            cls._test_results.append((router.id, str(test), result))
+            cls._task_errors.append((router.id, sys.exc_info()))
+
+            try:
+                length = len(cls._test_results)
+                t = cls._test_results[(length - 1)]
+                cls.write_in_db(str(length), t)
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
+
+        finally:
+            cls.set_running_task(router, None)
+            # logging.debug(str(cls._test_results))
+            # start next test in the queue
+            done_event.set()
+            cls.__start_task(router, None)
+
+    @classmethod
+    def _wait_for_job_done(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, done_event: DoneEvent) -> None:
+        """
+        Wait 2 minutes until the job is done.
+        Handles the result from the job with the job.prepare(data) method.
+        Triggers the next job/test.
+
+        :param job: job to execute
+        :param remote_sys: the RemoteSystem
+        """
+        async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
+        try:
+            result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
+            logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
+            logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
+            job.post_process(result, cls)
+
+        except Exception as e:
+                logging.error("%sTask raised an exception: " + str(e), LoggerSetup.get_log_deep(1))
+                cls._task_errors.append((remote_sys.id, sys.exc_info()))
+        finally:
+            cls.set_running_task(remote_sys, None)
+            # start next test in the queue
+            done_event.set()
+            cls.__start_task(remote_sys, None)
+
+    @classmethod
+    def __setns(cls, remote_sys: RemoteSystem) -> None:
+        """
+        Set Namespace and VLAN for the current process.
+
+        :param remote_sys: The RemoteSystem which you want to connect over VLAN
+        """
+        if cls.VLAN:
+            logging.debug("%sSet Namespace and VLAN for the current process(" + str(os.getpid()) + ")",
+                          LoggerSetup.get_log_deep(2))
+            netns.setns(remote_sys.namespace_name)
+
+    @classmethod
+    def __unsetns(cls, remote_sys: RemoteSystem) -> None:
+        """
+        Deactivates VLAN after you activate it with cls.__setns
+
+        :param remote_sys: The RemoteSystem
+        """
+        if cls.VLAN:
+            logging.debug("%sRemove Namespace and VLAN for the current process(" + str(os.getpid()) + ")",
+                          LoggerSetup.get_log_deep(2))
+            cls._nv_assistent.delete_namespace(remote_sys.namespace_name)
 
     @classmethod
     def get_routers(cls) -> List[Router]:
         """
-        :return: List of known routers. List is a copy of the original list.
-        """
+        List of known routers
 
-        # check if list is still valid
-        for router in cls._routers:
-            assert isinstance(router, Router)
+        :return: List is a copy of the original list.
+        """
 
         return cls._routers.copy()
 
     @classmethod
-    def get_running_tests(cls) -> []:
+    def get_power_strip(cls) -> PowerStrip:
         """
-        :return: List of running test on the test server. List is a copy of the original list.
+        Power strip as object, for now only 1
+
+        :return: Copy of the original object
         """
-        return cls._runningTests.copy()
+        for ps in cls._power_strips:
+            assert isinstance(ps, PowerStrip)
+        return cls._power_strips[0]
 
     @classmethod
-    def get_reports(cls) -> []:
+    def get_routers_task_queue_size(cls, router_id: int) -> int:
         """
-        :return: List of reports
+        Returns the size of the task queue including the actual running task
+
+        :param router_id: ID of the router
+        :return: queue length
         """
-        return cls._reports
+        remote_sys = cls.get_router_by_id(router_id)
+        result = 0
+        if cls.get_running_task(remote_sys) is not None:
+            result = 1
+
+        task_queue = cls.get_waiting_task_queue(remote_sys)
+        return len(task_queue) + result
 
     @classmethod
-    def get_tests(cls) -> []:
+    def get_task_errors(cls) -> List[Tuple[int, Tuple[str, str, str]]]:
         """
-        :return: List of available tests on the server
+        Return a list of task errors
+        :return: A list of tuples with error information
         """
-        # TODO get available test from config
-        pass
+
+        result = []
+        for err in cls._task_errors:
+            result.append((err[0], (str(err[1][0]), str(err[1][1]), str(err[1][2]))))
+        return result
 
     @classmethod
-    def get_firmwares(cls) -> []:
+    def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
         """
-        :return: List of known firmwares
-        """
-        # TODO vllt vom config?
-        pass
+        Returns the firmware test results for the router
 
-    @classmethod
-    def update_router_info(cls, router_ids: List[int], update_all: bool) -> None:
+        :param router_id: the specific router or all router if id = -1
+        :return: List of results
         """
-        Updates all the information about the :py:class:`Router`
-
-        :param router_ids: List of unique numbers to identify a :py:class:`Router`
-        :param update_all: Is True if all Routers should be updated
-        """
-        from util.router_info import RouterInfo
-        if update_all:
-            for router in cls.get_routers():
-                RouterInfo.update(router)
+        if router_id == -1:
+            return cls._test_results
         else:
-            for router_id in router_ids:
-                router = cls.get_router_by_id(router_id)
-                RouterInfo.update(router)
+            results = []
+            for result in cls._test_results:
+                if result[0] == router_id:
+                    results.append(result)
+            return results
+
+    @classmethod
+    def delete_test_results(cls) -> int:
+        """
+        Remove all test results
+
+        :return: Number of deleted results
+        """
+        size_results = len(cls._test_results)
+        cls._test_results = []
+        with shelve.open('test_results', 'c') as db:
+            db.clear()
+
+        return size_results
+
+    @classmethod
+    def get_test_sets(cls):
+        """
+        :return: Dictionary of Test_Sets
+        """
+        return cls._test_sets
 
     @classmethod
     def get_router_by_id(cls, router_id: int) -> Router:
@@ -164,47 +687,180 @@ class Server(ServerProxy):
         :return: Router
         """
         routers = cls.get_routers()
-        if routers[router_id].id == router_id:
-            return router_id
         for router in routers:
             if router.id == router_id:
+                logging.debug("%sget_router_by_id: " + str(router.id), LoggerSetup.get_log_deep(4))
                 return router
         return None
 
     @classmethod
-    def sysupdate_firmware(cls, router_ids: List[int], update_all: bool) -> None:
+    def router_online(cls, router_ids: Union[List[int], None], update_all: bool, blocked: bool = False) -> None:
         """
-        Downloads and copies the firmware to the :py:class:`Router` given in the List(by a unique id) resp. to all Routers
+        Tries to connect to the `Router` and updates the Mode of the Router.
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
+        :param update_all: Is True if all Routers should be updated
+        :param blocked: blocks until it finished
+        """
+
+        if blocked:
+            wait = 300
+        else:
+            wait = -1
+
+        if update_all:
+            for router in cls.get_routers():
+                cls.start_job(router, RouterOnlineJob(), wait)
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                cls.start_job(router, RouterOnlineJob(), wait)
+
+    @classmethod
+    def update_router_info(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
+        """
+        Updates all the information about the :py:class:`Router`
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
         """
-        from util.router_flash_firmware import RouterFlashFirmware
+        if cls.VLAN:
+            if update_all:
+                for router in cls.get_routers():
+                    cls.start_job(router, RouterInfoJob())
+            else:
+                for router_id in router_ids:
+                    router = cls.get_router_by_id(router_id)
+                    cls.start_job(router, RouterInfoJob())
+        else:
+            logging.info("set VLAN to true to activate 'update_router_info' it")
+
+    @classmethod
+    def sysupdate_firmware(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
+        """
+        Downloads and copies the firmware to the :py:class:`Router` given in
+        the List(by a unique id) resp. to all Routers
+
+        :param router_ids: List of unique numbers to identify a :py:class:`Router`
+        :param update_all: Is True if all Routers should be updated
+        """
+
         if update_all:
             for router in cls.get_routers():
-                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
+                sysupdate = Sysupdate(router)
+                sysupdate.start()
+                sysupdate.join()
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                RouterFlashFirmware.sysupdate(router, ConfigManager.get_firmware_list())
+                sysupdate = Sysupdate(router)
+                sysupdate.start()
+                sysupdate.join()
 
     @classmethod
-    def sysupgrade_firmware(cls, router_ids: List[int], upgrade_all: bool, n: bool) -> None:
+    def sysupgrade_firmware(cls, router_ids: Union[List[int], None], upgrade_all: bool, n: bool) -> None:
         """
         Upgrades the firmware on the given :py:class:`Router` s
 
-        :param router_ids:
+        :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
         :param n: If n is True the upgrade discard the last firmware
         """
-        from util.router_flash_firmware import RouterFlashFirmware
+
         if upgrade_all:
             for router in cls.get_routers():
-                RouterFlashFirmware.sysupgrade(router, n)
+                # The IP where the Router can download the firmware image (should be the frameworks IP)
+                web_server_ip = cls._nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
+                cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
         else:
             for router_id in router_ids:
                 router = cls.get_router_by_id(router_id)
-                RouterFlashFirmware.sysupgrade(router, n)
+                # The IP where the Router can download the firmware image (should be the frameworks IP)
+                web_server_ip = cls._nv_assistent.get_ip_address(router.namespace_name, router.vlan_iface_name)[0]
+                cls.start_job(router, SysupgradeJob(n, web_server_ip, debug=False))
+
+    @classmethod
+    def setup_web_configuration(cls, router_ids: Union[List[int], None], setup_all: bool, wizard: bool):
+        """
+        After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
+        Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
+        Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param setup_all: If True all Routers will be setuped via the webinterface
+        :param wizard
+        """
+
+        if setup_all:
+            for router in cls.get_routers():
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[router.id], wizard))
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                cls.start_job(router, RouterWebConfigurationJob(ConfigManager.get_web_interface_list()[router_id], wizard))
+
+    @classmethod
+    def reboot_router(cls, router_ids: Union[List[int], None], reboot_all: bool, configmode: bool):
+        """
+        Reboots the given Routers.
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param reboot_all: Reboots all Routers
+        :param configmode: Reboots Router into configmode
+        """
+
+        if reboot_all:
+            for router in cls.get_routers():
+                cls.start_job(router, RouterRebootJob(configmode))
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                cls.start_job(router, RouterRebootJob(configmode))
+
+    @classmethod
+    def register_key(cls, router_ids: List[int], register_all: bool):
+        """
+        Sends the public-key of the given Routers to an email that is specified in the config-file.
+
+        :param router_ids: List of unique numbers to identify a Router
+        :param register_all: Register the public-keys of all Routers
+        """
+
+        if register_all:
+            for router in cls.get_routers():
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict()[1]["serverdefaults"])
+                reg_pub_key.start()
+                reg_pub_key.join()
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                reg_pub_key = RegisterPublicKey(router, ConfigManager.get_server_dict()[1]["serverdefaults"])
+                reg_pub_key.start()
+                reg_pub_key.join()
+
+    @classmethod
+    def control_switch(cls, router_ids: List[int], switch_all: bool, on_or_off: bool):
+        """
+        Switches the power for different routers on or off
+
+        :param router_ids: List of router IDs
+        :param switch_all: apply to all routers
+        :param on_or_off: true for on, false for off
+        """
+        from power_strip.power_strip_control import PowerStripControlJob
+
+        # for now only 1 power strip, change in router if more are added
+        power_strip = cls.get_power_strip()
+
+        if switch_all:
+            for router in cls.get_routers():
+                port_id = router.power_socket
+                cls.start_job(power_strip, PowerStripControlJob(router, on_or_off, port_id))
+        else:
+            for router_id in router_ids:
+                router = cls.get_router_by_id(router_id)
+                port_id = router.power_socket
+                cls.start_job(power_strip, PowerStripControlJob(router, on_or_off, port_id))
 
     @classmethod
     def get_server_version(cls) -> str:
@@ -212,3 +868,28 @@ class Server(ServerProxy):
         Returns the server version as a string
         """
         return cls.VERSION
+
+    def register_tty(self, tty_name: str = '') -> bool:
+        """
+        Register tty from cli in logging
+        :param tty_name: Name of the console
+        :return bool: Success of the register
+        """
+        # register console from cli in the current process and logging instance
+        return LoggerSetup.add_handler(tty_name)
+
+    @classmethod
+    def write_in_db(cls, key: str = "", test: (int, str, TestResult) = None):
+        """
+        Write new entry in database
+        :param key: Database entry key
+        :param test: Tuple with router id, test name and test
+        """
+        with shelve.open('test_results', 'c') as db:
+            dbt = DBTestResult()
+            dbt.router_id = test[0]
+            dbt.test_name = test[1]
+            dbt.failures = test[2].failures
+            dbt.errors = test[2].errors
+            dbt.testsRun = test[2].testsRun
+            db[key] = dbt

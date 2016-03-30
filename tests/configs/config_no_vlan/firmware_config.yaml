@@ -1,7 +1,0 @@
---- # default for config the Firmware
-- {
-URL: "https://firmware.darmstadt.freifunk.net",
-Release_Model: stable,
-Firmware_Version: 0.7.3,
-Download_All: False
-}

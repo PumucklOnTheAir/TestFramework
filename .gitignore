@@ -9,10 +9,17 @@ __pycache__/
 
 docs/_build/
 
+*.log
+
+firmware/firmwares/
 .coverage
 
 .coverage.*
 
 log/logger.log
 
+/framework_unittests/ghostdriver.log
+/framework_unittests/test_wget.txt
 firmware/firmwares/*
+
+coverage.xml

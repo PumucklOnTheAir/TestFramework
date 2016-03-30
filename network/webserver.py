@@ -1,8 +1,10 @@
-from log.logger import Logger
+from log.loggersetup import LoggerSetup
+import logging
 from http.server import SimpleHTTPRequestHandler
 import socketserver
 from threading import Thread
-import time, os
+import time
+import os
 
 
 class WebServer(Thread):
@@ -18,19 +20,19 @@ class WebServer(Thread):
         self.httpd = socketserver.TCPServer(("", WebServer.PORT_WEBSERVER), self.Handler)
 
     def run(self):
-        Logger().info("Start WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...", 1)
+        logging.info("%sStart WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...", LoggerSetup.get_log_deep(1))
         try:
             self.httpd.serve_forever()
         except Exception as e:
-            Logger().debug("[-] WebServer couldn't get started", 2)
-            Logger().error(str(e), 1)
+            logging.debug("%s[-] WebServer couldn't get started", LoggerSetup.get_log_deep(2))
+            raise e
 
     def join(self):
-        Logger().info("Stop WebServer ...", 1)
-        time.sleep(5)
+        logging.info("%sStop WebServer ...", LoggerSetup.get_log_deep(1))
+        time.sleep(2)
         try:
             self.httpd.shutdown()
-            Logger().debug("[+] WebServer successfully stoped", 2)
+            logging.debug("%s[+] WebServer successfully stoped", LoggerSetup.get_log_deep(2))
         except Exception as e:
-            Logger().debug("[-] WebServer couldn't stoped", 2)
-            Logger().error(str(e), 1)
+            logging.debug("%s[-] WebServer couldn't stoped", LoggerSetup.get_log_deep(2))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(1))
