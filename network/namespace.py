@@ -34,7 +34,7 @@ class Namespace:
             logging.debug("%s[+] Namespace(" + nsp_name + ") successfully created", LoggerSetup.get_log_deep(3))
             # self.encapsulate_interface()
         except Exception as e:
-            logging.debug("%s[-] Couldn't create Namespace(" + nsp_name + ")", LoggerSetup.get_log_deep(3))
+            logging.error("%s[-] Couldn't create Namespace(" + nsp_name + ")", LoggerSetup.get_log_deep(3))
             for tb in traceback.format_tb(sys.exc_info()[2]):
                 logging.error("%s" + tb, LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
@@ -53,7 +53,7 @@ class Namespace:
             if re.match("\[Errno 2\]*", str(e)):
                 logging.debug("%s[+] Namespace(" + self.nsp_name + ") is already deleted", LoggerSetup.get_log_deep(3))
                 return
-            logging.debug("%s[-] Namespace(" + self.nsp_name +
+            logging.error("%s[-] Namespace(" + self.nsp_name +
                           ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
@@ -73,7 +73,7 @@ class Namespace:
                 iface.up()
             logging.debug("%s[+] Encapsulate Interface(" + iface_name + ")", LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.debug("%s[-] Couldn't encapsulate the Interface(" + iface_name + ")", LoggerSetup.get_log_deep(3))
+            logging.error("%s[-] Couldn't encapsulate the Interface(" + iface_name + ")", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def ipdb_get_ip(self, ipdb: bool, iface_name: str, not_this_ip: str = None):

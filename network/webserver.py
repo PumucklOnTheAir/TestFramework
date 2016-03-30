@@ -29,22 +29,23 @@ class WebServer(Thread):
 
         :exception Exception: If the WebServer couldn't get started
         """
-        logging.info("%sStart WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...", LoggerSetup.get_log_deep(1))
+        logging.debug("%sStart WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...",
+                      LoggerSetup.get_log_deep(2))
         try:
             self.httpd.serve_forever()
         except Exception as e:
-            logging.debug("%s[-] WebServer couldn't get started", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] WebServer couldn't get started", LoggerSetup.get_log_deep(3))
             raise e
 
     def join(self):
         """
         Stops the WebServer.
         """
-        logging.info("%sStop WebServer ...", LoggerSetup.get_log_deep(1))
+        logging.info("%sStop WebServer ...", LoggerSetup.get_log_deep(2))
         time.sleep(2)
         try:
             self.httpd.shutdown()
-            logging.debug("%s[+] WebServer successfully stoped", LoggerSetup.get_log_deep(2))
+            logging.debug("%s[+] WebServer successfully stopped", LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.debug("%s[-] WebServer couldn't stoped", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] WebServer couldn't stopped", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(1))

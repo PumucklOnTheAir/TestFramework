@@ -50,7 +50,7 @@ class Vlan:
                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip("169.254.235.157"),
                           LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.debug("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
+            logging.error("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def delete_interface(self, close_ipdb: bool=False):
@@ -71,7 +71,7 @@ class Vlan:
                           LoggerSetup.get_log_deep(3))
             return
         except Exception as e:
-            logging.debug("%s[-] Interface(" + self.vlan_iface_name +
+            logging.error("%s[-] Interface(" + self.vlan_iface_name +
                           ") couldn't be deleted. Try 'ip link delete <vlan_name>'", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
@@ -81,9 +81,8 @@ class Vlan:
 
         :return: 'True' if we got a IP via dhclient
         """
-        logging.debug("%sWait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...",
+        logging.debug("%sWait for IP assignment via dhcp for VLAN-Interface(" + self.vlan_iface_name + ") ...",
                       LoggerSetup.get_log_deep(3))
-
         try:
             Dhclient.update_ip(self.vlan_iface_name)
             return True
@@ -115,7 +114,7 @@ class Vlan:
         :param ip: IP address
         :return: New IP address
         """
-        logging.debug("%sSet static IP for VLAN(" + str(self.vlan_iface_id) + ")", LoggerSetup.get_log_deep(2))
+        logging.debug("%sSet static IP for VLAN(" + str(self.vlan_iface_id) + ")", LoggerSetup.get_log_deep(3))
         last_numer = int(ip.split(".")[-1])
         new_numer = last_numer
         if last_numer < 254:

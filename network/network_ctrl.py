@@ -34,15 +34,16 @@ class NetworkCtrl:
 
         :exception Exception: If connecting fails
         """
-        logging.info("%sConnect with RemoteSystem (" + str(self.remote_system.ip) + ") ...", LoggerSetup.get_log_deep(1))
+        logging.debug("%sConnect with RemoteSystem (" + str(self.remote_system.ip) + ") ...",
+                      LoggerSetup.get_log_deep(2))
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(str(self.remote_system.ip), port=22,
                              username=str(self.remote_system.usr_name),
                              password=str(self.remote_system.usr_password))
-            logging.debug("%s[+] Successfully connected", LoggerSetup.get_log_deep(2))
+            logging.debug("%s[+] Successfully connected", LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.error("%s[-] Couldn't connect", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] Couldn't connect", LoggerSetup.get_log_deep(3))
             raise e
 
     def send_command(self, command: str, timeout: int=90) -> List:
@@ -58,13 +59,13 @@ class NetworkCtrl:
         try:
             stdin, stdout, stderr = self.ssh.exec_command(command, timeout=timeout)
             output = stdout.readlines()
-            logging.debug("%s[+] Sent the command (" + command + ") to the RemoteSystem", LoggerSetup.get_log_deep(2))
+            logging.debug("%s[+] Sent the command (" + command + ") to the RemoteSystem", LoggerSetup.get_log_deep(3))
             return output
         except (PipeTimeout, socket.timeout):
-            logging.warning("%s[!] Timeout: No response from RemoteSystem", LoggerSetup.get_log_deep(2))
+            logging.warning("%s[!] Timeout: No response from RemoteSystem", LoggerSetup.get_log_deep(3))
             raise TimeoutError
         except Exception as e:
-            logging.error("%s[-] Couldn't send the command (" + command + ")", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] Couldn't send the command (" + command + ")", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             raise e
 
@@ -93,12 +94,12 @@ class NetworkCtrl:
             '''
             logging.debug("%s[+] Sent data '" + local_file + "' to RemoteSystem '" +
                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) +
-                          ":" + remote_file + "'", LoggerSetup.get_log_deep(2))
+                          ":" + remote_file + "'", LoggerSetup.get_log_deep(3))
         except Exception as e:
             logging.error("%s[-] Couldn't send '" + local_file + "' to RemoteSystem '" +
                           str(self.remote_system.usr_name) + "@" + str(self.remote_system.ip) + ":" + remote_file + "'",
-                          LoggerSetup.get_log_deep(2))
-            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
+                          LoggerSetup.get_log_deep(4))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(4))
 
     def remote_system_wget(self, file: str, remote_path: str, web_server_ip: str):
         """
@@ -111,6 +112,7 @@ class NetworkCtrl:
         """
         webserver = WebServer()
         try:
+            logging.debug("%sForce the Router to download Data from the own WebServer ...", LoggerSetup.get_log_deep(2))
             webserver.start()
             # Proves first if file already exists
             self.send_command('test -f /' + remote_path + '/' + file.split('/')[-1] +
