@@ -6,6 +6,7 @@ from router.router import Router
 from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
+from multiprocessing import Process, SimpleQueue
 from log.loggersetup import LoggerSetup
 import logging
 import threading
@@ -84,7 +85,6 @@ class Server(ServerProxy):
     # test/task handling
     _running_task = []  # List[Union[RemoteSystemJobClass, RemoteSystemJob]]
     _waiting_tasks = []  # List[deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]]]
-    _task_pool = None  # multiprocessing.pool.Pool for task execution
     _task_wait_executor = None  # ThreadPoolExecutor for I/O handling on tasks
     _semaphore_task_management = Semaphore(1)
     _test_sets = {}  # Dict[List[str]]
@@ -145,8 +145,6 @@ class Server(ServerProxy):
 
         # start process/thread pool for job and test handling
         cls._max_subprocesses = (len(cls._routers) + 1)  # plus one for the power strip
-        cls._task_pool = Pool(processes=cls._max_subprocesses, initializer=init_process,
-                              initargs=(cls._server_stop_event,), maxtasksperchild=1)
         cls._task_wait_executor = ThreadPoolExecutor(max_workers=(cls._max_subprocesses * 2))
 
         # start thread for multiprocess stop wait
@@ -227,7 +225,6 @@ class Server(ServerProxy):
         if cls._stopped.acquire(blocking=False, timeout=-1):
             print("Shutdown server")
             cls._stopped = True
-            cls._task_pool.close()
 
             try:
                 with shelve.open('test_results', 'c') as db:
@@ -244,8 +241,6 @@ class Server(ServerProxy):
             except Exception as e:
                 logging.error("Error at write test results into DB: {0}".format(e))
 
-            cls._task_pool.terminate()
-            cls._task_pool.join()
             cls._task_wait_executor.shutdown(wait=False)
             if cls.VLAN:
                 cls._nv_assistent.close()
@@ -438,7 +433,8 @@ class Server(ServerProxy):
             # logging.debug(str(cls._running_task), 3)
 
     @classmethod
-    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, routers: List[Router]) -> {}:
+    def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, routers: List[Router],
+                     result_queue: SimpleQueue) -> {}:
         logging.debug("%sExecute job " + str(job) + " on Router(" + str(remote_sys.id) + ")",
                       LoggerSetup.get_log_deep(2))
         setproctitle(str(remote_sys.id) + " - " + str(job))
@@ -452,10 +448,11 @@ class Server(ServerProxy):
             logging.error("%sError while execute job " + str(job), LoggerSetup.get_log_deep(1))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
 
+        result_queue.put(result)
         return result
 
     @classmethod
-    def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router]) -> TestResult:
+    def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router], result_queue: SimpleQueue) -> TestResult:
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
@@ -489,6 +486,7 @@ class Server(ServerProxy):
             result._original_stderr = None
 
             logging.debug("%sResult from test " + str(result), LoggerSetup.get_log_deep(3))
+            result_queue.put(result)
             return result
 
     @classmethod
@@ -503,8 +501,12 @@ class Server(ServerProxy):
         """
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
-            async_result = cls._task_pool.apply_async(func=cls._execute_test, args=(test, router, cls._routers))
-            result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
+            result_queue = SimpleQueue()
+            p = Process(target=cls._execute_test, args=(test, router, cls._routers, result_queue))
+            p.start()
+            p.join(timeout=120)   # wait 2 minutes or raise an TimeoutError
+            result = result_queue.get()
+
             logging.debug("%sTest done " + str(test), LoggerSetup.get_log_deep(1))
             logging.debug("%sFrom Router(" + str(router.id) + ")", LoggerSetup.get_log_deep(2))
 
