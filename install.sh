@@ -20,6 +20,7 @@ Description=Freifunk Testserver
 After=syslog.target" >> "$file"
 
 echo "[Service]
+KillSignal=SIGINT
 Type=simple
 ExecStart=$DIR/start_server.py" >> "$file"
 
@@ -33,4 +34,3 @@ chmod 755 /bin/fftserver_alive
 
 # activate service
 systemctl enable fftserver
-systemctl restart fftserver

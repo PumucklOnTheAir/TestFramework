@@ -31,7 +31,6 @@ before_script:
 #run tests
 script:
   - python -m pytest --cov-append --cov=./ framework_unittests/test_A_Server_2.py
-  - python -m pytest --cov-append --cov=./ framework_unittests/test_A_Server.py
   - python -m pytest --cov-append --cov=./ test_server_alive.py
   - python -m pytest --cov-append --cov=./ framework_unittests/test_A_cli.py
   - python -m pytest --ff -n auto --cov-append --cov=./  framework_unittests/test_AP_*.py

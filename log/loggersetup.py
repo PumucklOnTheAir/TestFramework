@@ -250,7 +250,7 @@ class LoggerSetup:
             file_handler = LoggerSetup.create_file_handler(log_file_path)
 
             # create ConsoleHandler
-            dev_console_handler = LoggerSetup.create_stream_handler('/dev/console')
+            dev_console_handler = LoggerSetup.create_stream_handler('/dev/tty1')
 
             # create a SysLogHandler
             syslog_handler = LoggerSetup.create_syslog_handler()
@@ -289,7 +289,7 @@ class LoggerSetup:
             LoggerSetup._max_log_deep = max_log_deep
             LoggerSetup._is_setup_loaded = True
             LoggerSetup._log_format = log_format
-            LoggerSetup._stream_paths.append('/dev/console')
+            LoggerSetup._stream_paths.append('/dev/tty1')
 
             # set log level from paramiko and selenium to warning
             selenium_logger = logging.getLogger('selenium')
