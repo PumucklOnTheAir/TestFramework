@@ -27,7 +27,7 @@ class Sysupdate(Thread):
         """
         Instantiate a NetworkCtrl and copy the firmware via SSH to the Router(/tmp/<firmware_name>.bin).
         """
-        logging.info("Sysupdate Firmware for Router(" + str(self.router.id) + ") ...")
+        logging.info("%sSysupdate Firmware for Router(" + str(self.router.id) + ") ...", LoggerSetup.get_log_deep(1))
         firmware_handler = FirmwareHandler(str(ConfigManager.get_firmware_property('URL')))
         firmware = firmware_handler.get_firmware(self.router.model,
                                                  str(ConfigManager.get_firmware_property('Release_Model')),
@@ -39,6 +39,7 @@ class SysupdateJob(RemoteSystemJob):
     """
     Encapsulate Sysupdate as a job for the Server.
     """""
+
     def __init__(self, firmware_config: dict):
         super().__init__()
         self.firmware_config = firmware_config

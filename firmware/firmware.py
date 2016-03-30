@@ -47,9 +47,9 @@ class Firmware:
         if self.hash == excep_hash:
             logging.debug("%s[+] The Hash is correct", LoggerSetup.get_log_deep(4))
             return True
-        logging.debug("%s[-] The Hash is incorrect", LoggerSetup.get_log_deep(4))
-        logging.debug("%sHash of the Firmware: " + self.hash, LoggerSetup.get_log_deep(4))
-        logging.debug("%sExcepted Hash: " + excep_hash, LoggerSetup.get_log_deep(4))
+        logging.warning("%s[-] The Hash is incorrect", LoggerSetup.get_log_deep(4))
+        logging.warning("%sHash of the Firmware: " + self.hash, LoggerSetup.get_log_deep(4))
+        logging.warning("%sExcepted Hash: " + excep_hash, LoggerSetup.get_log_deep(4))
         return False
 
     def calc_hash(self):
