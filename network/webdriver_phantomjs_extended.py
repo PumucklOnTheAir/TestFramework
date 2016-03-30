@@ -7,7 +7,7 @@ from .service_phantomjs_extended import ServicePhantomjsExtended
 class WebdriverPhantomjsExtended(WebDriver):
     """
     Extend the WebDriver class with a option to call PhantomJS inside a network namespace.
-    """
+    """""
 
     def __init__(self, executable_path="phantomjs",
                  port=0, desired_capabilities=DesiredCapabilities.PHANTOMJS, pre_command=None,
@@ -17,16 +17,15 @@ class WebdriverPhantomjsExtended(WebDriver):
 
         Starts the service and then creates new instance of the driver.
 
-        :Args:
-         - executable_path - path to the executable. If the default is used it assumes the executable is in the $PATH
-         - port - port you would like the service to run, if left as 0, a free port will be found.
-         - desired_capabilities: Dictionary object with non-browser specific
-           capabilities only, such as "proxy" or "loggingPref".
-         - pre_command : Is in case the 'executable_path' has to bee called in another command.
-                         e.g.: if network namespaces are used,
-                         we need to execute phantom after 'ip netns exec <namespace_name>'
-         - service_args : A List of command line arguments to pass to PhantomJS
-         - service_log_path: Path for phantomjs service to log to.
+        :param executable_path: path to the executable. If the default is used it assumes the executable is in the $PATH
+        :param port: port you would like the service to run, if left as 0, a free port will be found.
+        :param desired_capabilities: Dictionary object with non-browser specific
+                                    capabilities only, such as "proxy" or "loggingPref".
+        :param pre_command: Is in case the 'executable_path' has to bee called in another command.
+                            e.g.: if network namespaces are used,
+                            we need to execute phantom after 'ip netns exec <namespace_name>'
+        :param service_args: A List of command line arguments to pass to PhantomJS
+        :param service_log_path: Path for phantomjs service to log to.
         """
 
         self.service = ServicePhantomjsExtended(executable_path, port=port, pre_command=pre_command,

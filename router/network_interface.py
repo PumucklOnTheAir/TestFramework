@@ -31,8 +31,6 @@ class WifiInformation:
 
     def __init__(self):
         """
-        Some informations that only the wlan interfaces do have.
-
         wdev: Another identifier for the wireless interface
         type: Wlan Mode
         channel: Wifi Channel from 1 to 14
@@ -49,8 +47,9 @@ class WifiInformation:
     @property
     def wdev(self) -> str:
         """
-        Another identifier for the wireless interface
-        :return: str
+        Another identifier for the wireless interface.
+
+        :return: Another identifier for the wireless interface as a str
         """
         return self._wdev
 
@@ -65,8 +64,9 @@ class WifiInformation:
     @property
     def ssid(self) -> str:
         """
-        SSID: Service Set Identifier
-        :return: str
+        SSID: Service Set Identifier.
+
+        :return: Service Set Identifier as a str
         """
         return self._ssid
 
@@ -82,6 +82,7 @@ class WifiInformation:
     def type(self) -> WlanType:
         """
         Wlan Mode
+
         :return: WlanType
         """
         return self._type
@@ -112,8 +113,9 @@ class WifiInformation:
     @property
     def channel(self) -> int:
         """
-        Wifi Channel from 1 to 14
-        :return: int
+        Wifi Channel from 1 to 14.
+
+        :return: Wifi Channel as an int
         """
         return self._channel
 
@@ -128,8 +130,9 @@ class WifiInformation:
     @property
     def channel_width(self) -> int:
         """
-        20 MHZ or 40 MHZ
-        :return: int
+        Channel_width: 20 MHZ or 40 MHZ
+
+        :return: Channel_width as an int
         """
         return self._channel_width
 
@@ -144,8 +147,9 @@ class WifiInformation:
     @property
     def channel_center1(self) -> int:
         """
-        Center of the channel in MHZ
-        :return: int
+        Center of the channel in MHZ.
+
+        :return: Center of the channel as an int
         """
         return self._channel_center1
 
@@ -169,8 +173,7 @@ class NetworkInterface:
 
     def __init__(self, id: int, name: str):
         """
-        This class represents a Network Interface.
-        :param name: The name of the interface
+        :param name: The name of the network-interface
         """
         self._id = id
         self._name = name
@@ -182,16 +185,18 @@ class NetworkInterface:
     @property
     def id(self) -> str:
         """
-        The id of the network interface
-        :return: int
+        The id of the network-interface.
+
+        :return: The id of the network-interface as an int
         """
         return self._id
 
     @property
     def name(self) -> str:
         """
-        The name of the network interface
-        :return: str
+        The name of the network-interface.
+
+        :return: The name of the network-interface as a str
         """
         return self._name
 
@@ -206,7 +211,8 @@ class NetworkInterface:
     @property
     def status(self) -> Status:
         """
-        The status of the network interface
+        The status of the network-interface.
+
         :return: Status
         """
         return self._status
@@ -222,8 +228,9 @@ class NetworkInterface:
     @property
     def mac(self) -> str:
         """
-        The mac addresses of the network interface
-        :return: str
+        The mac addresses of the network-interface.
+
+        :return: The mac addresses of the network-interface as a str
         """
         return self._mac
 
@@ -237,7 +244,7 @@ class NetworkInterface:
 
     def add_ip_address(self, ip: str, ip_mask: int):
         """
-        Add a new ip address to the interface.
+        Add a new IP to the network-interface.
 
         :param ip: ip address
         :param ip_mask: ip mask or length prefix-length if IPv6
@@ -247,7 +254,7 @@ class NetworkInterface:
     @property
     def wifi_information(self) -> WifiInformation:
         """
-        Some informations that only the wlan interfaces do have.
+        Some informations that only the wlan-interfaces do have.
 
         :return: WifiInformation
         """

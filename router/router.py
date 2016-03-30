@@ -22,6 +22,19 @@ class Router(RemoteSystem):
 
     def __init__(self, id: int, vlan_iface_name: str, vlan_iface_id: int, ip: str, ip_mask: int,
                  config_ip: str, config_ip_mask: int, usr_name: str, usr_password: str, power_socket: int):
+        """
+        :param id: The id of the Router
+        :param vlan_iface_name: The name of the VLAN, which the Router is connected to
+        :param vlan_iface_id: The id of the VLAN, which the RemoteSystem is connected to
+        :param ip: The IP on which the RemoteSystem is listening in normal-mode
+        :param ip_mask: Mask of the IP on which the RemoteSystem is listening in normal-mode
+        :param config_ip: The IP on which the RemoteSystem is listening in configuration-mode
+        :param config_ip_mask: Mask of the IP on which the RemoteSystem is listening in configuration-mode
+        :param usr_name: The user-name that is used via SSH
+        :param usr_password: The password that is used via SSH
+        :param power_socket: The port on the power_socker where the Router is connected to.
+        :return:
+        """
 
         RemoteSystem.__init__(self)
 
@@ -91,7 +104,9 @@ class Router(RemoteSystem):
     @property
     def ip(self) -> str:
         """
-        :return: IP number of the Router. In dependency of the Mode
+        IP number of the Router. In dependency of the Mode.
+
+        :return: IP of the Router
         """
         if self._mode == Mode.configuration:
             return self._config_ip
@@ -101,9 +116,9 @@ class Router(RemoteSystem):
     @property
     def ip_mask(self) -> int:
         """
-        IP mask. In dependency of the Mode
+        Mask of the IP. In dependency of the Mode.
 
-        :return:
+        :return: Mask of the IP
         """
         if self._mode == Mode.configuration:
             return self._config_ip_mask
@@ -113,16 +128,18 @@ class Router(RemoteSystem):
     @property
     def vlan_iface_id(self) -> int:
         """
-        :return The VLAN ID from router:
+        The VLAN_interface_id from Router.
+
+        :return VLAN_interface_id
         """
         return self._vlan_iface_id
 
     @property
     def vlan_iface_name(self) -> str:
         """
-        Used VLAN name from server for this router
+        The name of the VLAN, which the Router is connected to.
 
-        :return:
+        :return: VLAN_iface_name
         """
         return self._vlan_iface_name
 
@@ -131,10 +148,9 @@ class Router(RemoteSystem):
     @property
     def usr_name(self) -> str:
         """
-        Username of the admin account on the router
+        Username of the admin account on the router.
 
-        :rtype: str
-        :return:
+        :return: Router_user_name
         """
         return self._usr_name
 
@@ -143,8 +159,7 @@ class Router(RemoteSystem):
         """
         Password of the admin account on the router
 
-        :rtype: str
-        :return:
+        :return: Router_user_password
         """
         return self._usr_password
 
@@ -153,8 +168,7 @@ class Router(RemoteSystem):
         """
         Name of the Router, that is seen from the community.
 
-        :rtype: str
-        :return:
+        :return: Router_node_name
         """
         return self._node_name
 
@@ -171,8 +185,7 @@ class Router(RemoteSystem):
         """
         Public-key of the Router, that is used to communicate with other Freifunk-Routers.
 
-        :rtype: str
-        :return:
+        :return: Router_public_key
         """
         return self._public_key
 
@@ -187,10 +200,9 @@ class Router(RemoteSystem):
     @property
     def mac(self) -> str:
         """
-        The mac address of the routers
+        The mac of the Router.
 
-        :rtype: str
-        :return:
+        :return: Router_mac
         """
         return self._mac
 
@@ -205,7 +217,9 @@ class Router(RemoteSystem):
     @property
     def model(self) -> str:
         """
-        :return The model and version of the router. Value could be outdated.:
+        The model and version of the router.
+
+        :return Router_model
         """
         return self._model
 
@@ -220,10 +234,9 @@ class Router(RemoteSystem):
     @property
     def power_socket(self) -> int:
         """
-        The power socket of the routers
+        The port on the power_socker where the Router is connected to.
 
-        :rtype: int
-        :return:
+        :return: The port on the power_socker
         """
         return self._power_socket
 
@@ -238,10 +251,9 @@ class Router(RemoteSystem):
     @property
     def firmware(self) -> Firmware:
         """
-        The :py:class:`Firmware` of the router
+        The Firmware that flashed on the Router.
 
-        :rtype: Firmware
-        :return:
+        :return: Router_firmware
         """
         return self._firmware
 
@@ -256,20 +268,18 @@ class Router(RemoteSystem):
     @property
     def namespace_name(self) -> str:
         """
-        The namespace name of the router
+        The name of the Namespace, where the VLAN, that is used to communicate to the Router, is encapsulated.
 
-        :rtype: str
-        :return:
+        :return: Router_namespace_name
         """
         return self._namespace_name
 
     @property
     def mode(self) -> Mode:
         """
-        The Mode of the routers
+        The Mode of the Router.
 
-        :rtype: Mode
-        :return:
+        :return: Router_mode
         """
         return self._mode
 
@@ -284,10 +294,9 @@ class Router(RemoteSystem):
     @property
     def ram(self) -> RAM:
         """
-        The RAM of the routers
+        The RAM of the Router.
 
-        :rtype: RAM
-        :return:
+        :return: Router_ram
         """
         return self._ram
 
@@ -302,9 +311,9 @@ class Router(RemoteSystem):
     @property
     def flashdriver(self) -> Flashdriver:
         """
-        The Flashdriver of the routers
+        The Flashdriver of the Router.
 
-        :rtype: Flashdriver
+        :rtype: Router_flashdriver
         :return:
         """
         return self._flashdriver

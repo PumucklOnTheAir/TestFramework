@@ -1,14 +1,14 @@
-import logging
 from logging import handlers
 from os import path
 from threading import Thread
 from multiprocessing import Queue
+import logging
 
 
 class ColoredFormatter(logging.Formatter):
     """
     Formatter instances are used to convert a LogRecord to text with color highlighting.
-    """
+    """""
 
     _use_color = False
 
@@ -52,6 +52,7 @@ class ColoredFormatter(logging.Formatter):
         time (as determined by a call to usesTime(), formatTime() is
         called to format the event time. If there is exception information,
         it is formatted using formatException() and appended to the message.
+
         :param record
         :return: object
         """
@@ -90,9 +91,10 @@ class MultiProcessingHandler(logging.Handler):
 
     def __init__(self, name: str="", sub_handler: logging.Handler=None):
         """
-        Create new multiprocess handler instance
-        :param name: name of the handler
-        :param sub_handler: logging handler e.g. FileHandler
+        Create new multiprocess handler instance.
+
+        :param name: Name of the handler
+        :param sub_handler: Logging handler e.g. FileHandler
         :return: MultiProcessingHandler
         """
         super(MultiProcessingHandler, self).__init__()
@@ -109,19 +111,18 @@ class MultiProcessingHandler(logging.Handler):
         t.daemon = True
         t.start()
 
-    def setFormatter(self, fmt: logging.Formatter=None) -> None:
+    def setFormatter(self, fmt: logging.Formatter=None):
         """
-        Set formatter
-        :param fmt: formatter
-        :return: None
+        Set the formatter.
+
+        :param fmt: Formatter
         """
         logging.Handler.setFormatter(self, fmt)
         self.sub_handler.setFormatter(fmt)
 
-    def receive(self) -> None:
+    def receive(self):
         """
-        Receive a message from the queue
-        :return: None
+        Receive a message from the queue.
         """
         while True:
             try:
@@ -132,17 +133,18 @@ class MultiProcessingHandler(logging.Handler):
             except EOFError:
                 break
 
-    def send(self, s: logging.LogRecord=None) -> None:
+    def send(self, s: logging.LogRecord=None):
         """
-        Set a message at the queue
+        Set a message at the queue.
+
         :param s: LogRecord with the message info
-        :return: None
         """
         self.queue.put_nowait(s)
 
     def _format_record(self, record: logging.LogRecord=None) -> logging.LogRecord:
         """
-        Formatted the LogRecord
+        Formatted the LogRecord.
+
         :param record: LogRecord with the message info
         :return: LogRecord with formatted message
         """
@@ -159,14 +161,14 @@ class MultiProcessingHandler(logging.Handler):
 
         return record
 
-    def emit(self, record: logging.LogRecord=None) -> None:
+    def emit(self, record: logging.LogRecord=None):
         """
         Do whatever it takes to actually log the specified logging record.
 
         This version is intended to be implemented by subclasses and so
         raises a NotImplementedError.
+
         :param record: LogRecord with the message info
-        :return: None
         """
         try:
             s = self._format_record(record)
@@ -174,10 +176,9 @@ class MultiProcessingHandler(logging.Handler):
         except (KeyboardInterrupt, SystemExit):
             raise
 
-    def close(self) -> None:
+    def close(self):
         """
-        Close the handler
-        :return: None
+        Close the handler.
         """
         self.sub_handler.close()
         logging.Handler.close(self)
@@ -207,7 +208,7 @@ class LoggerSetup:
     NOTSET < DEBUG < INFO < WARNING < ERROR < CRITICAL
 
     LoggerSetup.close()
-    """
+    """""
 
     BASE_DIR = path.dirname(path.dirname(__file__))  # This is your Project Root
     LOG_PATH = path.join(BASE_DIR, 'log')  # Join Project Root with log
@@ -220,22 +221,23 @@ class LoggerSetup:
     @staticmethod
     def is_setup_loaded() -> bool:
         """
-        Check if the logger has run the setup routine
-        :return: bool
+        Check if the logger has run the setup routine.
+
+        :return: 'True' if logger is loaded
         """
         return LoggerSetup._is_setup_loaded
 
     @staticmethod
     def setup(log_level: int = logging.DEBUG, log_file_path: str = "logger.log", log_format: str = "",
-              max_log_deep: int = 5, log_filter: logging.Filter = None) -> None:
+              max_log_deep: int = 5, log_filter: logging.Filter = None):
         """
-        Create and initialize a new logging.Logger and create a new file and stream handler with the params
+        Create and initialize a new logging.Logger and create a new file and stream handler with the params.
+
         :param log_level: Logging level
         :param log_file_path: Path for the log file
         :param log_format: Formatter for the output
         :param max_log_deep: Define the max level, how deep goes a detail of a log
         :param log_filter: filter for filter the log output
-        :return: None
         """
         try:
             # set config at highest Logger in the hierarchical
@@ -303,9 +305,10 @@ class LoggerSetup:
     @staticmethod
     def add_handler(stream_path: str = "") -> bool:
         """
-        Add new console output to logger handlers
+        Add new console output to logger handlers.
+
         :param stream_path Path of the stream
-        :return: None
+        :return: 'True' if handler is successfully added
         """
         # if path exists do nothing
         if stream_path in LoggerSetup._stream_paths:
@@ -326,7 +329,8 @@ class LoggerSetup:
     @staticmethod
     def create_syslog_handler() -> logging.Handler:
         """
-        Create a SyslogHandler
+        Create a SyslogHandler.
+
         :return: SyslogHandler
         """
         try:
@@ -338,8 +342,9 @@ class LoggerSetup:
     @staticmethod
     def create_stream_handler(stream_path: str = "") -> logging.Handler:
         """
-        Create a StreamHandler
-        :param stream_path Path of the stream
+        Create a StreamHandler.
+
+        :param stream_path: Path of the stream
         :return: StreamHandler
         """
         try:
@@ -356,8 +361,9 @@ class LoggerSetup:
     @staticmethod
     def create_file_handler(log_file_path: str="") -> logging.Handler:
         """
-        Create a FileHandler
-        :param log_file_path Path from the file
+        Create a FileHandler.
+
+        :param log_file_path: Path from the file
         :return: FileHandler
         """
         try:
@@ -370,10 +376,9 @@ class LoggerSetup:
             return None
 
     @staticmethod
-    def shutdown() -> None:
+    def shutdown():
         """
-        Close open streams and handlers
-        :return: None
+        Close open streams and handlers.
         """
         LoggerSetup.un_register_multiprocess_handlers()
         logging.shutdown()
@@ -383,7 +388,8 @@ class LoggerSetup:
     def get_log_deep(deep: int = 0, deep_char: chr = '\t') -> str:
         """
         Return an string with tabulators. Count of tabulators are depend on log_level.
-        log_level = 0 returns empty string
+        log_level = 0 returns empty string.
+
         :param deep: deep of the level mode
         :param deep_char: the character to show the deep
         :return: String with tabulators
@@ -396,11 +402,11 @@ class LoggerSetup:
         return temp_str
 
     @staticmethod
-    def register_multiprocess_handlers(logger: logging=None)-> None:
+    def register_multiprocess_handlers(logger: logging=None):
         """
         Wraps the handlers in the given Logger with an MultiProcessingHandler.
+
         :param logger: whose handlers to wrap. By default, the root logger.
-        :return: None
         """
         if logger is None:
             logger = logging.getLogger()
@@ -411,11 +417,11 @@ class LoggerSetup:
             logger.addHandler(handler)
 
     @staticmethod
-    def un_register_multiprocess_handlers(logger: logging=None) -> None:
+    def un_register_multiprocess_handlers(logger: logging=None):
         """
-        Un register the multiprocess handler
+        Un register the multiprocess handler.
+
         :param logger: logging.logger
-        :return: None
         """
         if logger is None:
             logger = logging.getLogger()

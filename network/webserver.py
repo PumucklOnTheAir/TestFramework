@@ -1,15 +1,19 @@
-from log.loggersetup import LoggerSetup
-import logging
 from http.server import SimpleHTTPRequestHandler
-import socketserver
+from log.loggersetup import LoggerSetup
 from threading import Thread
+import logging
+import socketserver
 import time
 import os
 
 
 class WebServer(Thread):
+    """
+    This class make it possible to start and stop a WebServer in a new thread.
+    """""
 
-    BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
+    # This is your Project Root
+    BASE_DIR = os.path.dirname(os.path.dirname(__file__))
     PORT_WEBSERVER = 8000
 
     def __init__(self):
@@ -20,19 +24,28 @@ class WebServer(Thread):
         self.httpd = socketserver.TCPServer(("", WebServer.PORT_WEBSERVER), self.Handler)
 
     def run(self):
-        logging.info("%sStart WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...", LoggerSetup.get_log_deep(1))
+        """
+        Starts the WebServer.
+
+        :exception Exception: If the WebServer couldn't get started
+        """
+        logging.debug("%sStart WebServer on port " + str(WebServer.PORT_WEBSERVER) + " ...",
+                      LoggerSetup.get_log_deep(2))
         try:
             self.httpd.serve_forever()
         except Exception as e:
-            logging.debug("%s[-] WebServer couldn't get started", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] WebServer couldn't get started", LoggerSetup.get_log_deep(3))
             raise e
 
     def join(self):
-        logging.info("%sStop WebServer ...", LoggerSetup.get_log_deep(1))
+        """
+        Stops the WebServer.
+        """
+        logging.info("%sStop WebServer ...", LoggerSetup.get_log_deep(2))
         time.sleep(2)
         try:
             self.httpd.shutdown()
-            logging.debug("%s[+] WebServer successfully stoped", LoggerSetup.get_log_deep(2))
+            logging.debug("%s[+] WebServer successfully stopped", LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.debug("%s[-] WebServer couldn't stoped", LoggerSetup.get_log_deep(2))
+            logging.error("%s[-] WebServer couldn't stopped", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(1))

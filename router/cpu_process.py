@@ -8,8 +8,6 @@ class CPUProcess:
 
     def __init__(self, pid: int, user: str, mem: float, cpu: float, command: str):
         """
-        This class represents a CPU Process.
-
         :param pid: process id
         :param user: user name
         :param cpu: cpu utilization
@@ -25,9 +23,9 @@ class CPUProcess:
     @property
     def pid(self) -> int:
         """
-        The pid of the process
+        The pid of the process.
 
-        :return: int
+        :return: The pid of the process as an int
         """
         return self._pid
 
@@ -42,9 +40,9 @@ class CPUProcess:
     @property
     def user(self) -> str:
         """
-        The user of the process
+        The user of the process.
 
-        :return: str
+        :return: The user of the process as string
         """
         return self._user
 
@@ -59,9 +57,9 @@ class CPUProcess:
     @property
     def cpu(self) -> float:
         """
-        The cpu utilization of the process
+        The cpu utilization of the process.
 
-        :return: float
+        :return: The cpu utilization of the process as float
         """
         return self._cpu
 
@@ -76,9 +74,9 @@ class CPUProcess:
     @property
     def mem(self) -> float:
         """
-        The memory of the process
+        The memory of the process.
 
-        :return: float
+        :return: The memory of the process as a float
         """
         return self._mem
 
@@ -93,9 +91,9 @@ class CPUProcess:
     @property
     def command(self) -> str:
         """
-        The command of the process
+        The command of the process.
 
-        :return: str
+        :return: The command of the process as a str
         """
         return self._command
 

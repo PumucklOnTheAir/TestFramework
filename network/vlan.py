@@ -1,20 +1,22 @@
-from pyroute2.ipdb import IPDB
-import re
-from log.loggersetup import LoggerSetup
-import logging
 from network.remote_system import RemoteSystem
 from util.dhclient import Dhclient
+from pyroute2.ipdb import IPDB
+from log.loggersetup import LoggerSetup
+import logging
+import re
 
 
 class Vlan:
     """
     Represents a VLAN opbject.
+    Features:
+        1. Creats a virtual Netwok-Interface on a existing Network-Interface (like eth0).
+        2. Assign the VLAN an IP via Dhclient or static (RemoteSystem_ip+1).
+        3. Delete the VLAN
     """""
 
     def __init__(self, ipdb: IPDB, remote_system: RemoteSystem, link_iface_name):
         """
-        Creats a virtual interface on a existing interface (like eth0).
-
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
                     Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
         :param link_iface_name: name of the existing interface (eth0, wlan0, ...)
@@ -27,7 +29,7 @@ class Vlan:
 
     def create_interface(self):
         """
-         Creates a virtual interface on a existing interface (like eth0)
+         Creates a virtual interface on an existing interface (like eth0).
         """
         logging.debug("%sCreate VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
@@ -48,14 +50,14 @@ class Vlan:
                           ", VLAN_ID=" + str(self.vlan_iface_id) + ", IP=" + self.ipdb_get_ip("169.254.235.157"),
                           LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.debug("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
+            logging.error("%s[-] " + self.vlan_iface_name + " couldn't be created", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def delete_interface(self, close_ipdb: bool=False):
         """
-        Removes the virtual interface
+        Removes the virtual interface.
 
-        :param close_ipdb: If also the IPDB should be closed.
+        :param close_ipdb: If also the IPDB should be closed
         """
         logging.debug("%sDelete VLAN Interface ...", LoggerSetup.get_log_deep(2))
         try:
@@ -69,19 +71,18 @@ class Vlan:
                           LoggerSetup.get_log_deep(3))
             return
         except Exception as e:
-            logging.debug("%s[-] Interface(" + self.vlan_iface_name +
+            logging.error("%s[-] Interface(" + self.vlan_iface_name +
                           ") couldn't be deleted. Try 'ip link delete <vlan_name>'", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def _wait_for_ip_assignment(self) -> bool:
         """
-        Waits until the dhcp-client got an ip
+        Waits until the dhcp-client got an ip.
 
-        :return: True if we got a IP via dhclient
+        :return: 'True' if we got a IP via dhclient
         """
-        logging.debug("%sWait for IP assignment via dhcp for VLAN Interface(" + self.vlan_iface_name + ") ...",
+        logging.debug("%sWait for IP assignment via dhcp for VLAN-Interface(" + self.vlan_iface_name + ") ...",
                       LoggerSetup.get_log_deep(3))
-
         try:
             Dhclient.update_ip(self.vlan_iface_name)
             return True
@@ -108,11 +109,12 @@ class Vlan:
     def _get_matching_ip(self, ip: str) -> str:
         """
         Calculates the right IP for a given one.
+        Usually 1 is added to the given IP or -1 if the given IP was near the broadcast.
 
         :param ip: IP address
         :return: New IP address
         """
-        logging.debug("%sSet static IP for VLAN(" + str(self.vlan_iface_id) + ")", LoggerSetup.get_log_deep(2))
+        logging.debug("%sSet static IP for VLAN(" + str(self.vlan_iface_id) + ")", LoggerSetup.get_log_deep(3))
         last_numer = int(ip.split(".")[-1])
         new_numer = last_numer
         if last_numer < 254:

@@ -1,25 +1,23 @@
 from threading import Thread
 from router.router import Router, Mode
 from log.loggersetup import LoggerSetup
-import logging
 from network.web_config_assist import WebConfigurationAssist
 from network.remote_system import RemoteSystemJob
 from util.dhclient import Dhclient
+import logging
 import time
 
 
 class RouterWebConfiguration(Thread):
     """
-    The RouterWebConfiguration setup the webinterface of the Router by a given configuration-file.
+    The RouterWebConfiguration setup the WebInterface of the Router by a given configuration-file.
     """""
 
     def __init__(self, router: Router, webinterface_config: dict, wizard: bool):
         """
-        Instantiate a NetworkCtrl and setup the webinterface of the Router
-
-        :param router:
+        :param router: Router-Obj
         :param webinterface_config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, ...}
-        :param wizard: if the wizard page should be configured
+        :param wizard: 'True' if the wizard page should be configured
         """
         Thread.__init__(self)
         self.router = router
@@ -29,9 +27,10 @@ class RouterWebConfiguration(Thread):
 
     def run(self):
         """
-        Instantiate a NetworkCtrl and setup the webinterface of the Router
+        Instantiate a NetworkCtrl and setup the webinterface of the Router.
         """
-        logging.info("Configure the webinterface of the Router(" + str(self.router.id) + ") ...")
+        logging.info("%sConfigure the Web-Interface of the Router(" + str(self.router.id) + ") ...",
+                     LoggerSetup.get_log_deep(1))
         if self.wizard:
             self._wca_setup_wizard(self.webinterface_config)
         else:
@@ -40,7 +39,8 @@ class RouterWebConfiguration(Thread):
     def _wca_setup_wizard(self, config):
         """
         Starts the WebConfigurationAssist and
-        sets the values provided by the wizard-mode (in the WebConfiguration)
+        sets the values provided by the wizard-mode (in the WebConfiguration).
+
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
         """
         try:
@@ -81,7 +81,8 @@ class RouterWebConfiguration(Thread):
     def _wca_setup_expert(self, config):
         """
         Starts the WebConfigurationAssist and
-        sets the values provided by the expert-mode(in the WebConfiguration)
+        sets the values provided by the expert-mode(in the WebConfiguration).
+
         :param config: {node_name, mesh_vpn, limit_bandwidth, show_location, latitude, longitude, altitude, contact,...}
         """
         try:
@@ -101,7 +102,7 @@ class RouterWebConfiguration(Thread):
 
 class RouterWebConfigurationJob(RemoteSystemJob):
     """
-    Encapsulate  RouterWebConfiguration as a job for the Server
+    Encapsulate  RouterWebConfiguration as a job for the Server.
     """""
     def __init__(self, webinterface_config: dict, wizard: bool):
         super().__init__()
@@ -109,6 +110,11 @@ class RouterWebConfigurationJob(RemoteSystemJob):
         self.wizard = wizard
 
     def run(self):
+        """
+        Starts RouterWebConfiguration in new thread.
+
+        :return: Router-Obj in a dictionary
+        """
         router = self.remote_system
         router_info = RouterWebConfiguration(router, self.webinterface_config, self.wizard)
         router_info.start()
@@ -120,11 +126,11 @@ class RouterWebConfigurationJob(RemoteSystemJob):
 
     def post_process(self, data: {}, server) -> None:
         """
-        Updates the router in the Server with the new information
+        Updates the router in the Server with the new information.
 
-        :param data: result from run()
-        :param server: the Server
-        :return:
+        :param data: Result from run()
+        :param server: The Server
         """
         ref_router = server.get_router_by_id(data['router'].id)
-        ref_router.update(data['router'])  # Don't forget to update this method
+        # Don't forget to update this method
+        ref_router.update(data['router'])

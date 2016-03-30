@@ -58,12 +58,6 @@ class Server(ServerProxy):
     It is used to control the other routers, flash the firmwares and execute such as evaluate the tests.
     The web server and cli instances are connecting with this class
     and using its inherit public methods of :py:class:`ServerProxy`.
-
-    Troubleshooting at server start:
-
-        *OSError: [Errno 48] Address already in use" server is already started*
-
-        *OSError: [Errno 99] Cannot assign requested address" try to restart the computer TODO #51*
     """""
     VERSION = "0.2"
     DEBUG = False
@@ -100,7 +94,7 @@ class Server(ServerProxy):
     @classmethod
     def start(cls, config_path: str = CONFIG_PATH) -> None:
         """
-        Starts the runtime server with all components
+        Starts the runtime server with all components.
 
         :param config_path: Path to an alternative config directory
         """
@@ -259,7 +253,7 @@ class Server(ServerProxy):
     @classmethod
     def stop_all_tasks(cls) -> None:
         """
-        Stops all running jobs on the RemoteSystems
+        Stops all running jobs on the RemoteSystems.
         """
         cls._task_pool.terminate()
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
@@ -269,7 +263,7 @@ class Server(ServerProxy):
     @classmethod
     def get_running_task(cls, remote_system: RemoteSystem) -> Optional[Union[RemoteSystemJob, RemoteSystemJobClass]]:
         """
-        Returns which task is running on the given RemoteSystem
+        Returns which task is running on the given RemoteSystem.
 
         :param remote_system: the RemoteSystem
         :return: if no job is running, it returns None
@@ -290,11 +284,11 @@ class Server(ServerProxy):
     @classmethod
     def get_waiting_task_queue(cls, remote_system: RemoteSystem) -> deque:
         """
-        Returns the waiting task queue
+        Returns the waiting task queue.
 
         :param remote_system: the associated RemoteSystem of the queue
         :return: Returns the queue as a collections.deque, filled with RemoteSystemJobClass and RemoteSystemJob and
-        there wait objects. Type: deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]].
+        there wait objects. Type: deque[Tuple[Union[RemoteSystemJobClass, RemoteSystemJob], DoneEvent]]
         """
         result = cls._waiting_tasks[remote_system.id]
         return result
@@ -303,7 +297,7 @@ class Server(ServerProxy):
     def set_waiting_task(cls, remote_system: RemoteSystem, task: Union[RemoteSystemJob, RemoteSystemJobClass],
                          done_event: DoneEvent = DoneEvent()) -> None:
         """
-        Add a task to the waiting Queue of a specific RemoteSystem
+        Add a task to the waiting Queue of a specific RemoteSystem.
 
         :param remote_system: the associated RemoteSystem of the queue
         :param task: task which has to wait
@@ -352,10 +346,10 @@ class Server(ServerProxy):
     @classmethod
     def start_test_set(cls, router_id: int, test_set_name: str, wait: int= -1) -> bool:
         """
-        Start an specific test on a router
+        Start an specific test on a router.
 
         :param router_id: The id of the router on which the test will run.
-        If id is -1 the test will be executed on all routers.
+        If id is -1 the test will be executed on all routers
         :param test_set_name: The name of the test set to execute
         :param wait: -1 for async execution and positive integer for wait in seconds
         :return: True if test was successful added in the queue
@@ -594,9 +588,9 @@ class Server(ServerProxy):
     @classmethod
     def get_routers(cls) -> List[Router]:
         """
-        List of known routers
+        List of known router.
 
-        :return: List is a copy of the original list.
+        :return: List is a copy of the original list
         """
 
         return cls._routers.copy()
@@ -604,7 +598,7 @@ class Server(ServerProxy):
     @classmethod
     def get_power_strip(cls) -> PowerStrip:
         """
-        Power strip as object, for now only 1
+        Power strip as object, for now only 1.
 
         :return: Copy of the original object
         """
@@ -615,7 +609,7 @@ class Server(ServerProxy):
     @classmethod
     def get_routers_task_queue_size(cls, router_id: int) -> int:
         """
-        Returns the size of the task queue including the actual running task
+        Returns the size of the task queue including the actual running task.
 
         :param router_id: ID of the router
         :return: queue length
@@ -631,7 +625,8 @@ class Server(ServerProxy):
     @classmethod
     def get_task_errors(cls) -> List[Tuple[int, Tuple[str, str, str]]]:
         """
-        Return a list of task errors
+        Return a list of task errors.
+
         :return: A list of tuples with error information
         """
 
@@ -643,7 +638,7 @@ class Server(ServerProxy):
     @classmethod
     def get_test_results(cls, router_id: int = -1) -> [(int, str, TestResult)]:
         """
-        Returns the firmware test results for the router
+        Returns the firmware test results for the router.
 
         :param router_id: the specific router or all router if id = -1
         :return: List of results
@@ -660,7 +655,7 @@ class Server(ServerProxy):
     @classmethod
     def delete_test_results(cls) -> int:
         """
-        Remove all test results
+        Remove all test results.
 
         :return: Number of deleted results
         """
@@ -719,7 +714,7 @@ class Server(ServerProxy):
     @classmethod
     def update_router_info(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
         """
-        Updates all the information about the :py:class:`Router`
+        Updates all the information about the :py:class:`Router`.
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
@@ -733,13 +728,13 @@ class Server(ServerProxy):
                     router = cls.get_router_by_id(router_id)
                     cls.start_job(router, RouterInfoJob())
         else:
-            logging.info("set VLAN to true to activate 'update_router_info' it")
+            logging.info("Set VLAN to true to activate 'update_router_info' it")
 
     @classmethod
     def sysupdate_firmware(cls, router_ids: Union[List[int], None], update_all: bool) -> None:
         """
         Downloads and copies the firmware to the :py:class:`Router` given in
-        the List(by a unique id) resp. to all Routers
+        the List(by a unique id) resp. to all Routers.
 
         :param router_ids: List of unique numbers to identify a :py:class:`Router`
         :param update_all: Is True if all Routers should be updated
@@ -760,7 +755,7 @@ class Server(ServerProxy):
     @classmethod
     def sysupgrade_firmware(cls, router_ids: Union[List[int], None], upgrade_all: bool, n: bool) -> None:
         """
-        Upgrades the firmware on the given :py:class:`Router` s
+        Upgrades the firmware on the given :py:class:`Router` s.
 
         :param router_ids: List of unique numbers to identify a Router
         :param upgrade_all: If all is True all Routers were upgraded
@@ -784,7 +779,7 @@ class Server(ServerProxy):
         """
         After a systemupgrade, the Router starts in config-mode without the possibility to connect again via SSH.
         Therefore this class uses selenium to parse the given webpage. All options given by the web interface of the
-        Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet
+        Router can be set via the 'web_interface_config.yaml', except for the sysupgrade which isn't implemented yet.
 
         :param router_ids: List of unique numbers to identify a Router
         :param setup_all: If True all Routers will be setuped via the webinterface
@@ -841,7 +836,7 @@ class Server(ServerProxy):
     @classmethod
     def control_switch(cls, router_ids: List[int], switch_all: bool, on_or_off: bool):
         """
-        Switches the power for different routers on or off
+        Switches the power for different routers on or off.
 
         :param router_ids: List of router IDs
         :param switch_all: apply to all routers
@@ -865,13 +860,14 @@ class Server(ServerProxy):
     @classmethod
     def get_server_version(cls) -> str:
         """
-        Returns the server version as a string
+        Returns the server version as a string.
         """
         return cls.VERSION
 
     def register_tty(self, tty_name: str = '') -> bool:
         """
-        Register tty from cli in logging
+        Register tty from cli in logging.
+
         :param tty_name: Name of the console
         :return bool: Success of the register
         """
@@ -881,7 +877,8 @@ class Server(ServerProxy):
     @classmethod
     def write_in_db(cls, key: str = "", test: (int, str, TestResult) = None):
         """
-        Write new entry in database
+        Write new entry in database.
+        
         :param key: Database entry key
         :param test: Tuple with router id, test name and test
         """
