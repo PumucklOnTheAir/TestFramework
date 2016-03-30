@@ -5,6 +5,7 @@ from multiprocessing import Process, Queue
 from power_strip.power_strip_control import PowerStripControl
 from power_strip.ubnt import Ubnt
 from network.network_ctrl import NetworkCtrl
+from router.router import Router, Mode
 
 
 class TestUbnt(TestCase):
@@ -14,6 +15,7 @@ class TestUbnt(TestCase):
 
     def test_power(self):
         ps = self.create_powerstrip()
+        self.router = self._create_router()
         global network_ctrl
         network_ctrl = NetworkCtrl(ps)
         # Port
@@ -34,7 +36,7 @@ class TestUbnt(TestCase):
         nv_assist.create_namespace_vlan(ps)
         netns.setns(ps.namespace_name)
 
-        power_on = PowerStripControl(ps, True, port)
+        power_on = PowerStripControl(self.router, ps, True, port)
         power_on.start()
         power_on.join()
 
@@ -46,7 +48,7 @@ class TestUbnt(TestCase):
         nv_assist.create_namespace_vlan(ps)
         netns.setns(ps.namespace_name)
 
-        power_on = PowerStripControl(ps, False, port)
+        power_on = PowerStripControl(self.router, ps, False, port)
         power_on.start()
         power_on.join()
 
@@ -66,3 +68,13 @@ class TestUbnt(TestCase):
         assert ps.usr_password == "ubnt"
         assert ps.n_ports == 6
         return ps
+
+    def _create_router(self):
+        # Create router
+        router = Router(0, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
+        router.model = "TP-LINK TL-WR841N/ND v9"
+        router.mac = "e8:de:27:b7:7c:e2"
+        # Has to be matched with the current mode (normal, configuration)
+        router.mode = Mode.normal
+        assert isinstance(router, Router)
+        return router

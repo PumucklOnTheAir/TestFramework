@@ -63,30 +63,6 @@ class CLIUtil:
         self.print_dynamic_table(routers, headers)
 
     @staticmethod
-    def print_header():
-        """
-        Prints header for the command line.
-        (not used)
-        """
-        print("\v\t" + OutputColors.bold + "Freifunk Testframework\v" + OutputColors.clear)
-
-    @staticmethod
-    def return_progressbar(router, tid, percentage):
-        """
-        Returns the visual progress of a test on a router.
-        (not used)
-
-        :param router: Router name
-        :param tid: ID of test
-        :param percentage: Progress of test in percent
-        :return: String with progress bar
-        """
-        progress = int(percentage / 2)
-        return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" +
-                "".join("{}".format("#") for _ in range(progress)) +
-                "".join("{}".format(" ") for _ in range(50 - progress)) + "]\t" + str(percentage) + "%")
-
-    @staticmethod
     def print_list(content, headers, sort: bool, ind_line: bool, in_table_param: str):
         """
         Prints a simple list(table) sorted by the first row and formatted.
