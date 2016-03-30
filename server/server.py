@@ -356,9 +356,9 @@ class Server(ServerProxy):
 
         :param router_id: The id of the router on which the test will run.
         If id is -1 the test will be executed on all routers.
-        :param test_set_name: The name of the test set to execute
-        :param wait: -1 for async execution and positive integer for wait in seconds
-        :return: True if test was successful added in the queue
+        :param test_set_name: The name of the test set to execute.
+        :param wait: -1 for async execution and positive integer for wait in seconds.
+        :return: True if test was successful added in the queue.
         """
         done_events = []
 
