@@ -4,17 +4,18 @@ from unittest import TestResult
 
 class CLIUtil:
     """
-    Command Line Interface Utilities
-    Contains utilities and formatting for the command line interface
-    """
+    Command Line Interface Utilities.
+    Contains utilities and formatting for the command line interface.
+    """""
 
     @staticmethod
     def print_dynamic_table(content, headers):
         """
-        Prints a dynamically formatted table
+        Prints a dynamically formatted table.
+        Can be adjusted to reduce ugly display on small screens.
 
-        :param content: list of lists of data
-        :param headers: list of headers
+        :param content: List of lists of data
+        :param headers: List of headers
         """
 
         # check for correct list lengths
@@ -49,10 +50,10 @@ class CLIUtil:
 
     def print_status(self, routers, headers):
         """
-        Prints the status of all routers
+        Prints the status of all routers.
 
-        :param routers: list of routers
-        :param headers: list of headers
+        :param routers: List of routers
+        :param headers: List of headers
         """
 
         # sort list of routers by first row
@@ -64,21 +65,21 @@ class CLIUtil:
     @staticmethod
     def print_header():
         """
-        Prints header for the command line
-
-        :return:
+        Prints header for the command line.
+        (not used)
         """
         print("\v\t" + OutputColors.bold + "Freifunk Testframework\v" + OutputColors.clear)
 
     @staticmethod
     def return_progressbar(router, tid, percentage):
         """
-        Returns the visual progress of a test on a router
+        Returns the visual progress of a test on a router.
+        (not used)
 
-        :param router: router name
+        :param router: Router name
         :param tid: ID of test
-        :param percentage: progress of test in percent
-        :return: string with progress bar
+        :param percentage: Progress of test in percent
+        :return: String with progress bar
         """
         progress = int(percentage / 2)
         return ("\t" + str(router) + ":   Test ID: " + str(tid) + "\t[" +
@@ -88,14 +89,13 @@ class CLIUtil:
     @staticmethod
     def print_list(content, headers, sort: bool, ind_line: bool, in_table_param: str):
         """
-        Prints a simple list(table) sorted by the first row and formatted
+        Prints a simple list(table) sorted by the first row and formatted.
 
-        :param content: list of list (table)
-        :param headers: list of headers for table, leave empty if not wanted
-        :param sort: sort the list by first column, or not
-        :param ind_line: is there content to be inserted as a new line
-        :param in_table_param: which field contains the indent
-        :return:
+        :param content: List of list (table)
+        :param headers: List of headers for table, leave empty if not wanted
+        :param sort: Sort the list by first column, or not
+        :param ind_line: Is there content to be inserted as a new line
+        :param in_table_param: Which field contains the indent
         """
         # generate list of column widths
         width_list = content.copy()
@@ -129,19 +129,18 @@ class CLIUtil:
     def print_router(self, router_list, if_list_headers, if_list, proc_list_headers, proc_list,
                      socket_list_headers, socket_list, mem_list, bat_list_headers, bat_list):
         """
-        Prints a detailed list of info on a router
+        Prints a detailed list of info on a router.
 
-        :param router_list: list of info on router
-        :param if_list_headers: headers for the interfaces
-        :param if_list: list of interfaces
-        :param proc_list_headers: headers for the CPU Process table
-        :param proc_list: list of CPU processes running on router
-        :param socket_list_headers: header for the Socket table
-        :param socket_list: list of the Sockets
-        :param mem_list: list of info on memory
-        :param bat_list_headers: headers for Bat Originators
-        :param bat_list: list of Bat Originators
-        :return:
+        :param router_list: List of info on router
+        :param if_list_headers: Headers for the interfaces
+        :param if_list: List of interfaces
+        :param proc_list_headers: Headers for the CPU Process table
+        :param proc_list: List of CPU processes running on router
+        :param socket_list_headers: Header for the Socket table
+        :param socket_list: List of the Sockets
+        :param mem_list: List of info on memory
+        :param bat_list_headers: Headers for Bat Originators
+        :param bat_list: List of Bat Originators
         """
         print(OutputColors.bold + "------Detailed Router Info------" + OutputColors.clear)
         for elem in router_list:
@@ -166,9 +165,9 @@ class CLIUtil:
     @staticmethod
     def print_test_sets(test_set_dict):
         """
-        Prints a Test_Sets dict
+        Prints a Test_Sets dict.
 
-        :param test_set_dict:
+        :param test_set_dict: Dictionary of all sets and their tests
         """
         max_shown_tests = 4
         headers = ["Set Name", "Test"]
@@ -202,10 +201,9 @@ class CLIUtil:
     @staticmethod
     def print_test_results(result_list: [(int, str, TestResult)]):
         """
-        Prints a TestResult list
+        Prints a list of all test results.
 
-        :param result_list:
-        :return:
+        :param result_list: List containing a router ID, name of the Test and a TestResult-Obj (unittest.TestResult)
         """
         headers = ["Index", "Router ID", "Test", "(S|F|E)"]
         content = []
@@ -244,7 +242,7 @@ class CLIUtil:
     @staticmethod
     def print_result_errors(err: TestResult):
         """
-        Prints the error a Test produced
+        Prints the error a Test produced.
 
         :param err: unittest TestResult
         """
@@ -262,7 +260,7 @@ class CLIUtil:
     @staticmethod
     def print_result_failures(fail: TestResult):
         """
-        Prints the failures a Test produced
+        Prints the failures a Test produced.
 
         :param fail: unittest TestResult
         """
@@ -281,6 +279,10 @@ class CLIUtil:
 
 
 class OutputColors:
+    """
+    This class contains some color definitions
+    (not really used)
+    """""
     green = '\033[92m'
     yellow = '\033[93m'
     red = '\033[91m'
