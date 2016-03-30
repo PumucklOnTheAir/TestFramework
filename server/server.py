@@ -110,6 +110,7 @@ class Server(ServerProxy):
             sys.exit('Script must be run as root')
 
         cls._stopped = Lock()
+        signal.signal(signal.SIGTERM, cls._signal_term_handler)
 
         cls.CONFIG_PATH = config_path
         # set the config_path at the manager
@@ -214,6 +215,10 @@ class Server(ServerProxy):
         cls._server_stop_event.set()
 
     @classmethod
+    def _signal_term_handler(cls, signal, frame):
+        cls.stop()
+
+    @classmethod
     def _close_wait(cls) -> None:
         assert(cls._pid == os.getpid())
 
@@ -260,11 +265,6 @@ class Server(ServerProxy):
         cls._task_pool = Pool(processes=cls._max_subprocesses, maxtasksperchild=1)
 
         logging.info("Stopped all jobs")
-
-    @classmethod
-    def get_test_by_name(cls, test_name: str) -> FirmwareTestClass:
-        # TODO test verwaltung #36
-        raise NotImplementedError
 
     @classmethod
     def get_running_task(cls, remote_system: RemoteSystem) -> Optional[Union[RemoteSystemJob, RemoteSystemJobClass]]:
