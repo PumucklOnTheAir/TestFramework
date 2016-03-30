@@ -132,7 +132,7 @@ class CLITestClass(TestCaseParser):
         self.assertFalse(args.router)
 
         args = self.parser.parse_args(["results", "-d"])
-        self.assertTrue(args.remove)
+        self.assertTrue(args.delete)
         self.assertFalse(args.router)
 
         args = self.parser.parse_args(["results", "-e", "0"])
