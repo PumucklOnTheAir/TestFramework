@@ -18,14 +18,17 @@ class TestAccessibilityWebConfig(FirmwareTest):
             2. The page-source of the wizard-page doesn't contain "Not Found" => wizard-page exist
         """
         logging.debug("%sTest: Accessibility of the WebInterface: Wizard-Page", LoggerSetup.get_log_deep(1))
+        # print("Test: Accessibility of the WebInterface: Wizard-Page")
         assert self.remote_system.mode == Mode.configuration
         logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
+        # print("Correct Mode")
         pre_command = ['ip', 'netns', 'exec', self.remote_system.namespace_name]
         browser = WebdriverPhantomjsExtended(pre_command=pre_command)
         browser.get(self.remote_system.ip)
         browser.get('http://' + self.remote_system.ip)
         self.assertTrue("Not Found" not in browser.page_source, "The Wizard-Page isn't accessible")
         logging.debug("%s[" + u"\u2714" + "] The Wizard-Page is accessible", LoggerSetup.get_log_deep(2))
+        # print("The Wizard-Page is accessible")
         browser.close()
 
     def test_accessibility_of_expert(self):
@@ -35,12 +38,15 @@ class TestAccessibilityWebConfig(FirmwareTest):
             2. The page-source of the expert-page doesn't contain "Not Found" => expert-page exist
         """
         logging.debug("%sTest: Accessibility of the WebInterface: Expert-Page", LoggerSetup.get_log_deep(1))
+        # print("Test: Accessibility of the WebInterface: Expert-Page")
         assert self.remote_system.mode == Mode.configuration
         logging.debug("%s[" + u"\u2714" + "] Correct Mode", LoggerSetup.get_log_deep(2))
+        # print("Correct Mode")
         pre_command = ['ip', 'netns', 'exec', self.remote_system.namespace_name]
         browser = WebdriverPhantomjsExtended(pre_command=pre_command)
         browser.get(self.remote_system.ip)
         browser.get('http://' + self.remote_system.ip + '/cgi-bin/luci/admin/')
         self.assertTrue("Not Found" not in browser.page_source, "The Expert-Page isn't accessible")
         logging.debug("%s[" + u"\u2714" + "] The Expert-Page is accessible", LoggerSetup.get_log_deep(2))
+        # print("The Expert-Page is accessible")
         browser.close()
