@@ -20,6 +20,7 @@ Description=Freifunk Testserver
 After=syslog.target" >> "$file"
 
 echo "[Service]
+KillSignal=SIGINT
 Type=simple
 ExecStart=$DIR/start_server.py" >> "$file"
 
