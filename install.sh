@@ -33,4 +33,3 @@ chmod 755 /bin/fftserver_alive
 
 # activate service
 systemctl enable fftserver
-systemctl restart fftserver
