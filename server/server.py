@@ -219,25 +219,26 @@ class Server(ServerProxy):
 
         cls._server_stop_event.wait()
 
-        try:
-            with shelve.open('test_results', 'c') as db:
-                # Record test values
-                db.clear()
-                for i, t in enumerate(cls._test_results):
-                    dbt = DBTestResult()
-                    dbt.router_id = t[0]
-                    dbt.test_name = t[1]
-                    dbt.failures = t[2].failures
-                    dbt.errors = t[2].errors
-                    dbt.testsRun = t[2].testsRun
-                    db[str(i)] = dbt
-        except Exception as e:
-            logging.error("Error at write test results into DB: {0}".format(e))
-
         if cls._stopped.acquire(blocking=False, timeout=-1):
             print("Shutdown server")
             cls._stopped = True
             cls._task_pool.close()
+
+            try:
+                with shelve.open('test_results', 'c') as db:
+                    # Record test values
+                    db.clear()
+                    for i, t in enumerate(cls._test_results):
+                        dbt = DBTestResult()
+                        dbt.router_id = t[0]
+                        dbt.test_name = t[1]
+                        dbt.failures = t[2].failures
+                        dbt.errors = t[2].errors
+                        dbt.testsRun = t[2].testsRun
+                        db[str(i)] = dbt
+            except Exception as e:
+                logging.error("Error at write test results into DB: {0}".format(e))
+
             cls._task_pool.terminate()
             cls._task_pool.join()
             cls._task_wait_executor.shutdown(wait=False)
