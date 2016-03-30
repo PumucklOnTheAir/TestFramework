@@ -129,18 +129,18 @@ class CLITestClass(TestCaseParser):
     def test_results(self):
         args = self.parser.parse_args(["results"])
         self.assertEquals(args.mode, "results", "Wrong Mode")
-        self.assertFalse(args.routers)
+        self.assertFalse(args.router)
 
         args = self.parser.parse_args(["results", "-rm"])
         self.assertTrue(args.remove)
-        self.assertFalse(args.routers)
+        self.assertFalse(args.router)
 
         args = self.parser.parse_args(["results", "-err", "0"])
-        self.assertFalse(args.routers)
+        self.assertFalse(args.router)
         self.assertEquals(args.errors, [0], "Wrong List Index")
 
         args = self.parser.parse_args(["results", "-fail", "1"])
-        self.assertFalse(args.routers)
+        self.assertFalse(args.router)
         self.assertEquals(args.failures, [1], "Wrong List Index")
 
     def test_register_key(self):
@@ -150,7 +150,7 @@ class CLITestClass(TestCaseParser):
 
         args = self.parser.parse_args(["register_key"])
         self.assertEquals(args.mode, "register_key", "Wrong Mode")
-        self.assertFalse(args.router)
+        self.assertFalse(args.routers)
 
     def test_show_jobs(self):
         args = self.parser.parse_args(["show_jobs", "-r", "0"])
@@ -196,7 +196,7 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert response == 0
 
     def test_test_sets(self):
-        response = os.system(self.path_cli + " test_sets -a")
+        response = os.system(self.path_cli + " test_sets")
         assert response == 0
         response = os.system(self.path_cli + " test_sets -s set_0")
         assert response == 0
@@ -212,7 +212,7 @@ class TestCLItoServerConnection(unittest.TestCase):
         assert len(self.server_proxy.get_test_results())
 
         os.system(self.path_cli + " results -rm")
-        response = os.system(self.path_cli + " start -s set_1")
+        response = os.system(self.path_cli + " start -s set_0")
         assert response == 0
 
         routers = self.server_proxy.get_routers()
@@ -229,7 +229,7 @@ class TestCLItoServerConnection(unittest.TestCase):
 
     def test_cli_test_results(self):
         assert not os.system(self.path_cli + " results -rm")
-        os.system(self.path_cli + " start -s set_1")
+        os.system(self.path_cli + " start -s set_0")
 
         routers = self.server_proxy.get_routers()
         for router in routers:
