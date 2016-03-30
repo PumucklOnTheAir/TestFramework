@@ -3,6 +3,7 @@ from router.router import Router, Mode
 from pyroute2.ipdb import IPDB
 from util.dhclient import Dhclient
 from subprocess import Popen, PIPE
+from time import sleep
 
 
 class TestDhclient(TestCase):
@@ -23,7 +24,8 @@ class TestDhclient(TestCase):
                 print("Update IP with Dhclient ...")
                 Dhclient.update_ip(router.vlan_iface_name)
                 iface.mtu = 1400
-            print("Send Ping ...")
+            # Because the IPDB need some time to update the given IP
+            sleep(10)
             process = Popen(["ping", "-c", "1", "-I", router.vlan_iface_name, router.ip], stdout=PIPE, stderr=PIPE)
             stdout, sterr = process.communicate()
             if not(sterr.decode('utf-8') == "" and "Unreachable" not in stdout.decode('utf-8')):
@@ -68,7 +70,7 @@ class TestDhclient(TestCase):
 
     def _create_router(self):
         # Create router
-        router = Router(0, "vlan21", 21, "10.223.254.254", 16, "192.168.2.13", 24, "bananapi", "bananapi", 1)
+        router = Router(0, "vlan21", 21, "10.223.254.254", 16, "192.168.1.1", 24, "root", "root", 1)
         router.model = "TP-LINK TL-WR841N/ND v9"
         router.mac = "e8:de:27:b7:7c:e2"
         # Has to be matched with the current mode (normal, configuration)
