@@ -10,7 +10,7 @@ import subprocess
 
 def connect_to_server():
     """
-    Initiates connection to the IPC server by creating a client
+    Initiates a connection to the IPC server by creating a client.
     """
 
     global ipc_client
@@ -28,10 +28,9 @@ def connect_to_server():
 
 def print_routers(routers):
     """
-    Collects data for routers and sets headers for a table
+    Collects data for all routers and sets headers for a table.
 
-    :param routers: list of routers
-    :return:
+    :param routers: List of routers
     """
 
     # Headers for table
@@ -52,12 +51,12 @@ def print_routers(routers):
 
 def print_router_info(router_list, rid):
     """
-    Prints information on a single router
+    Prints information on a single router.
 
-    :param router_list: list of all routers
+    :param router_list: List of all routers
     :param rid: ID of router to be printed
-    :return:
     """
+    # Select router by ID
     router = [elem for elem in router_list if str(elem.id) == str(rid)]
 
     if not router:
@@ -80,7 +79,6 @@ def print_router_info(router_list, rid):
                 ["Public Key", router.public_key]]
 
         # Info on Memory
-
         mem_list = [["Used", str(router.ram.used) + "/" + str(router.ram.total)],
                     ["Free", str(router.ram.free) + "/" + str(router.ram.total)],
                     ["Shared", router.ram.shared],
@@ -153,7 +151,7 @@ def print_router_info(router_list, rid):
 
 def create_parsers():
     """
-    Creates parser and subparsers for the command line
+    Creates parser and subparsers for the command line.
 
     :return: parser
     """
@@ -266,7 +264,9 @@ def create_parsers():
 
 def main():
     """
-    Freifunk TestFramework Command Line Interface
+    Freifunk TestFramework Command Line Interface.
+
+    :exception ConnectionError: If connection to server failed
     """
 
     # Parse Arguments
@@ -275,8 +275,6 @@ def main():
 
     global util
     util = CLIUtil()
-    # Isn't necessary
-    # util.print_header()
 
     try:
         server_proxy = connect_to_server()
