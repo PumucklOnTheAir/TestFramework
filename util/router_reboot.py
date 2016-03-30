@@ -32,8 +32,8 @@ class RouterReboot(Thread):
         try:
             network_ctrl.connect_with_remote_system()
         except Exception as e:
-            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             logging.error("%s[-] Couldn't reboot Router(" + str(self.router.id) + ")", LoggerSetup.get_log_deep(2))
+            logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
             network_ctrl.exit()
             return
         # Reboot Router into configuration-mode
@@ -79,7 +79,7 @@ class RouterReboot(Thread):
         Sets the Router in config/normal-mode depending on given mode.
         """
         mode = Mode.configuration if self.configmode else Mode.normal
-        logging.info("%s[+] Router was set into " + str(mode), LoggerSetup.get_log_deep(2))
+        logging.debug("%s[+] Router was set into " + str(mode), LoggerSetup.get_log_deep(2))
         self.router.mode = mode
 
     def _execption_hanling(self):
