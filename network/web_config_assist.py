@@ -1,4 +1,3 @@
-import logging
 from subprocess import Popen
 from selenium.webdriver.support.ui import WebDriverWait
 from log.loggersetup import LoggerSetup
@@ -61,7 +60,7 @@ class WebConfigurationAssist:
 
             Submit:             [button]
         """
-        logging.debug("%sSetup 'wizard' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'wizard' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/gluon-config-mode/')
 
         node_name_field_id = "cbid.wizard.1._hostname"
@@ -138,7 +137,7 @@ class WebConfigurationAssist:
                 ssid key:       [text]
             submit:         [button]
         """
-        logging.debug("%sSetup 'Private WLAN' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'Private WLAN' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/privatewifi/')
 
         private_wlan_field_id = "cbid.wifi.1.enabled"
@@ -178,7 +177,7 @@ class WebConfigurationAssist:
 
             submit:     [button]
         """
-        logging.debug("%sSetup 'Remote Access' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'Remote Access' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/remote/')
 
         ssh_keys_field_id = "cbid.system._keys._data"
@@ -232,7 +231,7 @@ class WebConfigurationAssist:
 
             submit:     [button]
         """
-        logging.debug("%sSetup 'Network' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'Network' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/portconfig/')
 
         ipv4_automatic_field_id = "cbi-portconfig-1-ipv4-dhcp"
@@ -316,7 +315,7 @@ class WebConfigurationAssist:
 
             submit:         [button]
         """
-        logging.debug("%sSetup 'Mesh VPN' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'Mesh VPN' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/mesh_vpn_fastd/')
 
         security_mode_field_id = "cbid.mesh_vpn.1.mode1"
@@ -342,7 +341,7 @@ class WebConfigurationAssist:
 
             submit:         [Submit]
         """
-        logging.debug("%sSetup 'WLAN' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'WLAN' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/wifi-config/')
 
         client_network_field_id = "cbid.wifi.1.radio0_client_enabled"
@@ -390,7 +389,7 @@ class WebConfigurationAssist:
 
             submit:         [button]
         """
-        logging.debug("%sSetup 'AutoUpdate' ...", LoggerSetup.get_log_deep(3))
+        logging.debug("%sSetup 'AutoUpdate' ...", LoggerSetup.get_log_deep(2))
         self.browser.get('http://' + self.router.ip + '/cgi-bin/luci/admin/autoupdater/')
 
         autoupdate_field_id = "cbid.autoupdater.settings.enabled"
@@ -430,7 +429,7 @@ class WebConfigurationAssist:
         Close the browser
         """
         self.browser.close()
-        logging.debug("pkill phantomjs ...")
+        logging.debug("Kill PhantomJS")
         # Otherwise the phantomjs-processes are still open
         Popen(["pkill", "phantomjs"])
         # self.display.stop()

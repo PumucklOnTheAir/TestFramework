@@ -29,7 +29,8 @@ class RouterWebConfiguration(Thread):
         """
         Instantiate a NetworkCtrl and setup the webinterface of the Router.
         """
-        logging.info("Configure the webinterface of the Router(" + str(self.router.id) + ") ...")
+        logging.info("%sConfigure the Web-Interface of the Router(" + str(self.router.id) + ") ...",
+                     LoggerSetup.get_log_deep(1))
         if self.wizard:
             self._wca_setup_wizard(self.webinterface_config)
         else:
