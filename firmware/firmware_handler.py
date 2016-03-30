@@ -64,6 +64,7 @@ class FirmwareHandler:
         parsed_router_model = router_model_name + "-" + router_model_version
         for firmware in self.firmwares:
             if parsed_router_model in firmware.name:
+                logging.info("%s[+] The Firmware is up to date", LoggerSetup.get_log_deep(2))
                 return firmware
         logging.info("%s[-] Couldn't found a matching Firmware to Router(" + router_model + ")",
                      LoggerSetup.get_log_deep(2))

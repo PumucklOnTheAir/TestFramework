@@ -83,7 +83,7 @@ class Sysupgrade(Thread):
         :param debug: If we don't want to realy sysupgrade the firmware
         """
         Thread.__init__(self)
-        logging.info("Sysupgrade of Firmware from Router(" + str(router.id) + ") ...")
+        logging.info("%sSysupgrade of Firmware from Router(" + str(router.id) + ") ...", LoggerSetup.get_log_deep(1))
 
         self.router = router
         self.n = n
@@ -108,7 +108,7 @@ class Sysupgrade(Thread):
         # sysupgrade -n <firmware_name> // -n verwirft die letzte firmware
         arg = '-n' if self.n else ''
         if not self.debug:
-            logging.debug("%sSysupgrade (this will force a TimeoutError)...", LoggerSetup.get_log_deep(1))
+            logging.debug("%sSysupgrade (this will force a TimeoutError)...", LoggerSetup.get_log_deep(2))
             try:
                 network_ctrl.send_command('sysupgrade ' + arg + ' ' + '/tmp/' + self.router.firmware.name)
             except TimeoutError:
