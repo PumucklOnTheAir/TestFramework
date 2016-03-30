@@ -192,7 +192,7 @@ def create_parsers():
                                   help="start in Wizard Mode, if False start in Expert Mode")
 
     # subparser for update_info
-    parser_update_info = subparsers.add_parser("update_info", help="Updates the router info")
+    parser_update_info = subparsers.add_parser("update", help="Updates the router info")
     parser_update_info.add_argument("-r", "--routers", metavar="Router ID", type=int,
                                     default=[], action="store", help="List of routers", nargs="+")
 
@@ -209,9 +209,7 @@ def create_parsers():
     parser_power.add_argument("--off", action="store_true", default=False, help="turn off")
 
     # subparser for test sets
-    parser_status = subparsers.add_parser("test_sets", help="Show test_sets with tests")
-    parser_status.add_argument("-a", "--all", help="Show all test_sets with max. 4 tests",
-                               action="store_true")
+    parser_status = subparsers.add_parser("sets", help="Show test_sets with tests")
     parser_status.add_argument("-s", "--set", metavar="Test set", type=str, default=[], action="store",
                                help="Shows all tests of a/multiple test_set/s")
 
@@ -228,20 +226,20 @@ def create_parsers():
     parser_test_result = subparsers.add_parser("results", help="Manage the test results")
     parser_test_result.add_argument("-r", "--router", metavar="Router ID", type=int, default=[], action="store",
                                     help="Router", nargs=1)
-    parser_test_result.add_argument("-rm", "--remove", action="store_true", default=False,
+    parser_test_result.add_argument("-d", "--delete", action="store_true", default=False,
                                     help="Remove all results. Ignoring parameter -r.")
-    parser_test_result.add_argument("-fail", "--failures", action="store", nargs=1, type=int, metavar="List ID",
+    parser_test_result.add_argument("-f", "--failures", action="store", nargs=1, type=int, metavar="List ID",
                                     help="Show Failures in Test Case")
-    parser_test_result.add_argument("-err", "--errors", action="store", nargs=1, type=int, metavar="List ID",
+    parser_test_result.add_argument("-e", "--errors", action="store", nargs=1, type=int, metavar="List ID",
                                     help="Show Errors in Test Case")
 
     # subparser for register keys
-    parser_reg_key = subparsers.add_parser("register_key", help="Registers the key for the node")
+    parser_reg_key = subparsers.add_parser("register", help="Registers the key for the node")
     parser_reg_key.add_argument("-r", "--routers", metavar="Router ID", type=int,
                                 default=[], action="store", help="List of routers", nargs="+")
 
     # subparser for show jobs
-    parser_jobs = subparsers.add_parser("show_jobs", help="Show all Jobs")
+    parser_jobs = subparsers.add_parser("jobs", help="Show all Jobs")
     parser_jobs.add_argument("-r", "--router", metavar="Router ID", type=int,
                              default=0, action="store", help="Router", nargs=1)
 
@@ -318,7 +316,7 @@ def main():
 
         server_proxy.setup_web_configuration(args.routers, config_all, toggle_wizard)
 
-    elif args.mode == "update_info":
+    elif args.mode == "update":
         """
         subparse: update_info
         """
@@ -345,22 +343,18 @@ def main():
             on_or_off = False
         server_proxy.control_switch(args.routers, switch_all, on_or_off)
 
-    elif args.mode == "test_sets":
+    elif args.mode == "sets":
         """
         subparse: test_sets
         """
-        if args.all:
-            # return status of all routers
+        if args.set:
+            util.print_test_set(server_proxy.get_test_sets(), args.set)
+        else:
             routers = server_proxy.get_routers()
             if not routers:
                 logging.warning("No routers in network")
             else:
                 util.print_test_sets(server_proxy.get_test_sets())
-
-        elif args.set:
-            util.print_test_set(server_proxy.get_test_sets(), args.set)
-        else:
-            parser.print_help()
 
     elif args.mode == "start":
         """
@@ -384,7 +378,7 @@ def main():
         subparse: results
         """
 
-        if args.remove:
+        if args.delete:
             removed = server_proxy.delete_test_results()
             print("Removed all " + str(removed) + " results.")
         elif args.failures:
@@ -406,14 +400,14 @@ def main():
                 router_id = -1
             util.print_test_results(server_proxy.get_test_results(router_id))
 
-    elif args.mode == "register_key":
+    elif args.mode == "register":
         """
         subparse: register key
         """
         register_all = not args.routers
         server_proxy.register_key(args.routers, register_all)
 
-    elif args.mode == "show_jobs":
+    elif args.mode == "jobs":
         """
         subparse: show_jobs
         """
