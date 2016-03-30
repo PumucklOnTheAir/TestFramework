@@ -22,7 +22,7 @@ class NetworkCtrl:
 
     def __init__(self, remote_system: RemoteSystem):
         """
-        :param remote_system: Router-Obj or Powerstrip-Obj with which we want to connect to.
+        :param remote_system: Router-Obj or Powerstrip-Obj with which we want to connect to
         """
         self.remote_system = remote_system
         self.ssh = paramiko.SSHClient()
@@ -30,7 +30,7 @@ class NetworkCtrl:
     def connect_with_remote_system(self):
         """
         Connects to the remote_system via SSH(Paramiko).
-        Ignores a missing signatur.
+        Ignores a missing signature.
 
         :exception Exception: If connecting fails
         """
