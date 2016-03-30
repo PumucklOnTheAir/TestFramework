@@ -70,7 +70,6 @@ class Server(ServerProxy):
     VLAN = True
     BASE_DIR = os.path.dirname(os.path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = os.path.join(BASE_DIR, 'config')  # Join Project Root with config
-    TESTRESULTSPATH = os.path.join(BASE_DIR, 'testresults')  # Join Project Root with testresults
 
     _ipc_server = IPC()
 
