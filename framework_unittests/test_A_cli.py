@@ -5,6 +5,7 @@ from server.server import Server
 from multiprocessing import Process
 from server.ipc import IPC
 import os
+from framework_unittests.test_A_Server_2 import block_until_server_is_online
 
 
 class TestCaseParser(unittest.TestCase):
@@ -171,7 +172,7 @@ class TestCLItoServerConnection(unittest.TestCase):
     def setUpClass(cls):
         #  starts the IPC server in another(!) process
         cls.proc = Process(target=TestCLItoServerConnection.serverStartWithParams, args=()).start()
-        time.sleep(2)
+        block_until_server_is_online()
 
     @classmethod
     def tearDownClass(cls):
