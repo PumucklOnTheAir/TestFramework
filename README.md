@@ -1,24 +1,15 @@
 [![Build Status](https://travis-ci.org/PumucklOnTheAir/TestFramework.svg?branch=master)](https://travis-ci.org/PumucklOnTheAir/TestFramework)[![Documentation Status](https://readthedocs.org/projects/freifunk-testframework/badge/?version=master)](http://freifunk-testframework.readthedocs.org/en/master/?badge=master)[![codecov.io](https://codecov.io/github/PumucklOnTheAir/TestFramework/coverage.svg?branch=master)](https://codecov.io/github/PumucklOnTheAir/TestFramework?branch=master)[![Code Climate](https://codeclimate.com/github/PumucklOnTheAir/TestFramework/badges/gpa.svg)](https://codeclimate.com/github/PumucklOnTheAir/TestFramework)[![Issue Count](https://codeclimate.com/github/PumucklOnTheAir/TestFramework/badges/issue_count.svg)](https://codeclimate.com/github/PumucklOnTheAir/TestFramework)
 
-Issues:
-[![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=ready&title=Ready)](http://waffle.io/PumucklOnTheAir/TestFramework)
-[![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=In%20Progress&title=In%20Progress)](http://waffle.io/PumucklOnTheAir/TestFramework)
-[![Stories in Ready](https://badge.waffle.io/PumucklOnTheAir/TestFramework.svg?label=review&title=Review)](http://waffle.io/PumucklOnTheAir/TestFramework)
 # FreifunkTestFramework
 
 Die Dokumentation befindet sich online auf https://freifunk-testframework.readthedocs.org
-
-Git Cheat Sheet http://www.git-tower.com/blog/git-cheat-sheet/
-
-Tickets und Aufgabenplanung auf
-https://waffle.io/PumucklOnTheAir/TestFramework/
 
 ## Bedienung
 
 ### Starten
 Server manuel starten mit `python3 start_server.py` oder `./start_server.py`
 
-Wen das FreifunkTestFramework schon als Service installiert ist, dann kann man über systemd es starten:
+Wenn das FreifunkTestFramework bereits als Service installiert ist, kann es über systemd gestartet werden:
 `systemctl start fftserver`
 
 
