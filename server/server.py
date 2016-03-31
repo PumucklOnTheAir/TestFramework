@@ -6,7 +6,8 @@ from router.router import Router
 from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
-from multiprocessing import Process, SimpleQueue
+from multiprocessing import SimpleQueue
+import multiprocessing as mp
 from log.loggersetup import LoggerSetup
 import logging
 import threading
@@ -41,6 +42,9 @@ if os.geteuid() == 0 and not os.environ.get('TRAVIS') and platform.system() == "
 # type alias
 FirmwareTestClass = type(FirmwareTest)
 RemoteSystemJobClass = type(RemoteSystemJob)
+
+
+mp.set_start_method('fork')
 
 
 # initialization method for processes of the task pool
@@ -449,7 +453,7 @@ class Server(ServerProxy):
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(2))
 
         result_queue.put(result)
-        return result
+        # return result
 
     @classmethod
     def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router], result_queue: SimpleQueue) -> TestResult:
@@ -468,7 +472,7 @@ class Server(ServerProxy):
 
         result = TestResult()
 
-        cls.__setns(router)
+        # cls.__setns(router)
         try:
 
             result = test_suite.run(result)
@@ -487,7 +491,7 @@ class Server(ServerProxy):
 
             logging.debug("%sResult from test " + str(result), LoggerSetup.get_log_deep(3))
             result_queue.put(result)
-            return result
+            # return result
 
     @classmethod
     def _wait_for_test_done(cls, test: FirmwareTestClass, router: Router, done_event: DoneEvent) -> None:
@@ -502,7 +506,7 @@ class Server(ServerProxy):
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
             result_queue = SimpleQueue()
-            p = Process(target=cls._execute_test, args=(test, router, cls._routers, result_queue))
+            p = mp.Process(target=cls._execute_test, args=(test, router, cls._routers, result_queue))
             p.start()
             p.join(timeout=120)   # wait 2 minutes or raise an TimeoutError
             result = result_queue.get()
@@ -555,7 +559,7 @@ class Server(ServerProxy):
         """
 
         result_queue = SimpleQueue()
-        p = Process(target=cls._execute_job, args=(job, remote_sys, cls._routers, result_queue))
+        p = mp.Process(target=cls._execute_job, args=(job, remote_sys, cls._routers, result_queue))
         try:
             p.start()
             p.join(timeout=120) # wait 2 minutes or raise an TimeoutError
