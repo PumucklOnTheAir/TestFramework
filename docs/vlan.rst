@@ -20,7 +20,13 @@ Class NetworkCtrl
 
 Class Namespace
 ===============
-'.. automodule:: network.namespace
+.. automodule:: network.namespace
   :members:
+
+Class NVAssistent
+=================
+.. automodule:: network.nv_assist
+  :members:
+
 
 
