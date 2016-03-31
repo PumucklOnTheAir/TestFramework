@@ -6,7 +6,7 @@ from router.router import Router
 from power_strip.power_strip import PowerStrip
 from config.configmanager import ConfigManager
 from multiprocessing.pool import Pool
-from multiprocessing import Process, SimpleQueue
+import multiprocessing as mp
 from log.loggersetup import LoggerSetup
 import logging
 import threading
@@ -108,6 +108,8 @@ class Server(ServerProxy):
         # server has to be run with root rights - except on travis CI
         if not os.geteuid() == 0 and not os.environ.get('TRAVIS'):
             sys.exit('Script must be run as root')
+
+        mp.set_start_method('spawn')
 
         cls._stopped = Lock()
         signal.signal(signal.SIGTERM, cls._signal_term_handler)
@@ -434,7 +436,7 @@ class Server(ServerProxy):
 
     @classmethod
     def _execute_job(cls, job: RemoteSystemJob, remote_sys: RemoteSystem, routers: List[Router],
-                     result_queue: SimpleQueue) -> {}:
+                     result_queue: mp.SimpleQueue) -> {}:
         logging.debug("%sExecute job " + str(job) + " on Router(" + str(remote_sys.id) + ")",
                       LoggerSetup.get_log_deep(2))
         setproctitle(str(remote_sys.id) + " - " + str(job))
@@ -452,7 +454,7 @@ class Server(ServerProxy):
         return result
 
     @classmethod
-    def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router], result_queue: SimpleQueue) -> TestResult:
+    def _execute_test(cls, test: FirmwareTestClass, router: Router, routers: List[Router], result_queue: mp.SimpleQueue) -> TestResult:
         if not isinstance(router, Router):
             raise ValueError("Chosen Router is not a real Router...")
         # proofed: this method runs in other process as the server
@@ -501,8 +503,8 @@ class Server(ServerProxy):
         """
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
-            result_queue = SimpleQueue()
-            p = Process(target=cls._execute_test, args=(test, router, cls._routers, result_queue))
+            result_queue = mp.SimpleQueue()
+            p = mp.Process(target=cls._execute_test, args=(test, router, cls._routers, result_queue))
             p.start()
             p.join(timeout=120)   # wait 2 minutes or raise an TimeoutError
             result = result_queue.get()
@@ -554,8 +556,8 @@ class Server(ServerProxy):
         :param remote_sys: the RemoteSystem
         """
 
-        result_queue = SimpleQueue()
-        p = Process(target=cls._execute_job, args=(job, remote_sys, cls._routers, result_queue))
+        result_queue = mp.SimpleQueue()
+        p = mp.Process(target=cls._execute_job, args=(job, remote_sys, cls._routers, result_queue))
         try:
             p.start()
             p.join(timeout=120) # wait 2 minutes or raise an TimeoutError
