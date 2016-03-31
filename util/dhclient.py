@@ -62,7 +62,7 @@ class Dhclient:
         """
         Gets the ip of a specific interface
 
-        :param interface: interface name
+        :param interface: Interface_name
         :return: the ip of an interface without network-mask
         """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
