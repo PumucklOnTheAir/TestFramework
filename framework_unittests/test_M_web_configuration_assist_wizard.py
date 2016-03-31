@@ -20,19 +20,21 @@ class TestWebConfigurationAssistWizard(TestCase):
         nv_assist.create_namespace_vlan(router)
         # Set netns for the current process
         netns.setns(router.namespace_name)
+        try:
+            # Config
+            config = ConfigManager.get_web_interface_list()[router.id]
+            self.assertEqual(len(config), 30, "Wrong size of the Config-Directory")
 
-        # Config
-        config = ConfigManager.get_web_interface_list()[router.id]
-        self.assertEqual(len(config), 30, "Wrong size of the Config-Directory")
+            print("Set the following configuration: \n" + str(config))
 
-        print("Set the following configuration: \n" + str(config))
+            router_web_config = RouterWebConfiguration(router, config, wizard=True)
+            router_web_config.start()
+            router_web_config.join()
+        except Exception as e:
+            nv_assist.close()
+            raise e
 
-        router_web_config = RouterWebConfiguration(router, config, wizard=True)
-        router_web_config.start()
-        router_web_config.join()
-
-        assert router.mode == Mode.configuration
-
+        assert router.mode == Mode.normal
         nv_assist.close()
 
     def _create_router(self):
