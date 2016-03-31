@@ -12,7 +12,9 @@ For a quick start take a look into the *README.md* file in the repository.
    server.rst
    ipc.rst
    vlan.rst
+   power_strip.rst
    log.rst
    models.rst
    config.rst
    doc.rst
+

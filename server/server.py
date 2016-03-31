@@ -908,7 +908,7 @@ class Server(ServerProxy):
     def write_in_db(cls, key: str = "", test: (int, str, TestResult) = None):
         """
         Write new entry in database.
-        
+
         :param key: Database entry key
         :param test: Tuple with router id, test name and test
         """
