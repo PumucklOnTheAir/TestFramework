@@ -553,9 +553,13 @@ class Server(ServerProxy):
         :param job: job to execute
         :param remote_sys: the RemoteSystem
         """
-        async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
+
+        result_queue = SimpleQueue()
+        p = Process(target=cls._execute_job, args=(job, remote_sys, cls._routers, result_queue))
         try:
-            result = async_result.get(120)  # wait 2 minutes or raise an TimeoutError
+            p.start()
+            p.join(timeout=120) # wait 2 minutes or raise an TimeoutError
+            result = result_queue.get()
             logging.debug("%sJob done " + str(job), LoggerSetup.get_log_deep(1))
             logging.debug("%sAt Router(" + str(remote_sys.id) + ")", LoggerSetup.get_log_deep(2))
             job.post_process(result, cls)
