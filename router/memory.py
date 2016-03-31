@@ -18,27 +18,27 @@ class Memory:
     @property
     def total(self) -> int:
         """
-        The total memory size
+        The total memory size.
 
-        :return: int
+        :return: The total memory size as an int
         """
         return self._total
 
     @property
     def used(self) -> int:
         """
-        The size of used memory
+        The size of used memory.
 
-        :return: int
+        :return: The size of used memory as an int
         """
         return self._used
 
     @property
     def free(self) -> int:
         """
-        The size of free memory
+        The size of free memory.
 
-        :return: int
+        :return: The size of free memory as an int
         """
         return self._free
 
@@ -66,18 +66,18 @@ class RAM(Memory):
     @property
     def shared(self) -> int:
         """
-        The size of shared memory
+        The size of shared memory.
 
-        :return: int
+        :return: The size of shared memory as an int
         """
         return self._shared
 
     @property
     def buffers(self) -> int:
         """
-        The size of buffers memory
+        The size of buffers memory.
 
-        :return: int
+        :return: The size of buffers memory as an int
         """
         return self._buffers
 

@@ -1,6 +1,6 @@
-#####################################################
+####################################################
 Welcome to the Freifunk TestFramework documentation!
-#####################################################
+####################################################
 This is the developer documentation of the Freifunk Firmware TestFramework.
 The repository is on https://github.com/PumucklOnTheAir/TestFramework available.
 
@@ -12,7 +12,9 @@ For a quick start take a look into the *README.md* file in the repository.
    server.rst
    ipc.rst
    vlan.rst
+   power_strip.rst
    log.rst
    models.rst
    config.rst
    doc.rst
+

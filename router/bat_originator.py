@@ -8,10 +8,10 @@ class BatOriginator:
 
     def __init__(self, mac: str, last_seen: float, next_hop: str, outgoing_iface: str, potential_next_hops: List):
         """
-        mac: address of the mesh-node
-        last_seen: seconds since the last message-exchange
-        next_hop: the originator is best achieved through the node with this mac-address
-        potential_next_hops: alternative nodes the can be used if "next_hop" fails
+        :param mac: address of the mesh-node
+        :param last_seen: seconds since the last message-exchange
+        :param next_hop: the originator is best achieved through the node with this mac-address
+        :param potential_next_hops: alternative nodes the can be used if "next_hop" fails
         """
         self._mac = mac
         self._last_seen = last_seen
@@ -24,8 +24,7 @@ class BatOriginator:
         """
         The mac-address of the originator.
 
-        :rtype: str
-        :return:
+        :return: BatOriginator_mac
         """
         return self._mac
 
@@ -42,8 +41,7 @@ class BatOriginator:
         """
         Seconds since the last message-exchange.
 
-        :rtype: float
-        :return:
+        :return: BatOriginator_last_seen
         """
         return self._last_seen
 
@@ -60,8 +58,7 @@ class BatOriginator:
         """
         The originator is best achieved through the node with this mac-address.
 
-        :rtype: str
-        :return:
+        :return: BatOriginator_next_hop
         """
         return self._next_hop
 
@@ -78,8 +75,7 @@ class BatOriginator:
         """
         The used network interface.(like: mesh0)
 
-        :rtype: str
-        :return:
+        :return: BatOriginator_outgoing_iface
         """
         return self._outgoing_iface
 

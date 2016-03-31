@@ -7,8 +7,18 @@ import logging
 
 
 class PowerStripControl(Thread):
+    """
+    This class controls the power strip. It can switch the power on a port.
+    It also checks if the power was actually turned on/off.
+    """""
 
     def __init__(self, router: Router, power_strip: Ubnt, on_or_off: bool, port: int):
+        """
+        :param router: Affected Router-Obj
+        :param power_strip: Affected Powerstrip-Obj
+        :param on_or_off: 'True' for on, 'False' for off
+        :param port: ID of the powerstrip pot
+        """
         Thread.__init__(self)
         self.router = router
         self.power_strip = power_strip
@@ -19,7 +29,7 @@ class PowerStripControl(Thread):
 
     def run(self):
         """
-        Runs new thread
+        Sets the power on the port to on/off. Also checks if the power is truly on/off.
         """
         self.network_ctrl.connect_with_remote_system()
         cmd = self.create_command(self.on_or_off, self.port)
@@ -46,6 +56,13 @@ class PowerStripControl(Thread):
         self.network_ctrl.exit()
 
     def create_command(self, on_or_off: bool, port: int):
+        """
+        Creates the command to turn the power on the given port on or off.
+
+        :param on_or_off: 'True' for on, 'False' for off
+        :param port: ID of the port
+        :return: Command as a str to control the power on the port given
+        """
         return self.power_strip.create_command(port, on_or_off)
 
     def _port_status(self, port: int):
@@ -54,7 +71,7 @@ class PowerStripControl(Thread):
 
 class PowerStripControlJob(RemoteSystemJob):
     """
-    Encapsulate  PowerStripControl as a job for the Server
+    Encapsulate  PowerStripControl as a job for the Server.
     """""
     def __init__(self, router: Router, on_or_off: bool, port: int):
         super().__init__()
@@ -63,6 +80,11 @@ class PowerStripControlJob(RemoteSystemJob):
         self.port = port
 
     def run(self):
+        """
+        Starts PowerStripControl in a new thread.
+
+        :return: Powerstrip-Obj and Router-Obj in a dictionary
+        """
         power_strip = self.remote_system
         power_strip_ = PowerStripControl(self.router, power_strip, self.on_or_off, self.port)
         power_strip_.start()
@@ -74,10 +96,10 @@ class PowerStripControlJob(RemoteSystemJob):
 
     def post_process(self, data: {}, server) -> None:
         """
-        Updates the router in the Server with the new information
+        Updates the router in the Server with the new information.
 
-        :param data: result from run()
-        :param server: the Server
+        :param data: Result from run()
+        :param server: The Server
         """
         ref_router = server.get_router_by_id(data['router'].id)
         ref_router.update(data['router'])  # Don't forget to update this method

@@ -17,8 +17,12 @@ class Dhclient:
         """
         Uses 'Popen' to start a dhclient in new process, for a given interface.
 
-        :param interface: interface name
-        :param timeout: time until break
+        :param interface: Network-Interface_name
+        :param timeout: Time until break
+        :exception KeyboardInterrupt: If the dhclient-processs is interrupted by the user.
+        :exception TimeoutError: If the dhclient-process needs more time than given.
+        :exception FileExistsError: If a Dhclient already exists for this Network-Interfaces
+        :exception Exception: If something else go wrong
         """
         try:
             logging.debug("%sUpdate IP via dhclient (Timeout=" + str(timeout) + ") ...", LoggerSetup.get_log_deep(2))
@@ -73,5 +77,8 @@ class Dhclient:
 
     @staticmethod
     def kill():
+        """
+        Starts a new subprocess and kills all dhclients.
+        """
         logging.debug("%sKill dhclients", LoggerSetup.get_log_deep(3))
         Popen(['pkill', 'dhclient'])

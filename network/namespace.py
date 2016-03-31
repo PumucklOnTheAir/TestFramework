@@ -1,30 +1,28 @@
 from pyroute2.netns.nslink import NetNS
 from pyroute2.ipdb import IPDB
+from log.loggersetup import LoggerSetup
+from pyroute2 import netns
 import re
 import sys
 import traceback
-from log.loggersetup import LoggerSetup
 import logging
-from pyroute2 import netns
 
 
 class Namespace:
     """
-    A network namespace is logically another copy of the network stack,
+    A Network-Namespace is logically another copy of the network stack,
     with its own routes, firewall rules, and network devices.
 
-    By default a process inherits its network namespace from its parent.
-    Initially all the processes share the same default network namespace
+    By default a process inherits its Network-Namespace from its parent.
+    Initially all the processes share the same default Network-Namespace
     from the init process.
     """""
 
     def __init__(self, ipdb: IPDB, nsp_name: str):
         """
-        Creats a namespace for a specific vlan_iface
-
-        :param nsp_name:
         :param ipdb: IPDB is a transactional database, containing records, representing network stack objects.
-                    Any change in the database is not reflected immidiately in OS, but waits until commit() is called.
+                     Any change in the database is not reflected immediately in OS, but waits until commit() is called.
+        :param nsp_name: Name of the Namespace
         """
         logging.debug("%sCreate Namespace ...", LoggerSetup.get_log_deep(2))
         self.ipdb = ipdb if ipdb else IPDB()
@@ -36,7 +34,7 @@ class Namespace:
             logging.debug("%s[+] Namespace(" + nsp_name + ") successfully created", LoggerSetup.get_log_deep(3))
             # self.encapsulate_interface()
         except Exception as e:
-            logging.debug("%s[-] Couldn't create Namespace(" + nsp_name + ")", LoggerSetup.get_log_deep(3))
+            logging.error("%s[-] Couldn't create Namespace(" + nsp_name + ")", LoggerSetup.get_log_deep(3))
             for tb in traceback.format_tb(sys.exc_info()[2]):
                 logging.error("%s" + tb, LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
@@ -44,7 +42,7 @@ class Namespace:
 
     def remove(self):
         """
-        Removes the virtual namespace and interface.
+        Removes the Namespace and all included Network-Interfaces.
         """
         logging.debug("%sDelete Namespace ...", LoggerSetup.get_log_deep(2))
         try:
@@ -55,15 +53,15 @@ class Namespace:
             if re.match("\[Errno 2\]*", str(e)):
                 logging.debug("%s[+] Namespace(" + self.nsp_name + ") is already deleted", LoggerSetup.get_log_deep(3))
                 return
-            logging.debug("%s[-] Namespace(" + self.nsp_name +
+            logging.error("%s[-] Namespace(" + self.nsp_name +
                           ") couldn't be deleted. Try 'ip netns delete <namespace_name>'", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def encapsulate_interface(self, iface_name: str):
         """
-        Encapsulate the the given interface inside the Namespace.
+        Encapsulate the the given Network-Interface inside the Namespace.
 
-        :param iface_name:
+        :param iface_name: Name of the selected Network-Interface
         """
         iface_ip = self.ipdb_get_ip(True, iface_name)
         try:
@@ -75,17 +73,17 @@ class Namespace:
                 iface.up()
             logging.debug("%s[+] Encapsulate Interface(" + iface_name + ")", LoggerSetup.get_log_deep(3))
         except Exception as e:
-            logging.debug("%s[-] Couldn't encapsulate the Interface(" + iface_name + ")", LoggerSetup.get_log_deep(3))
+            logging.error("%s[-] Couldn't encapsulate the Interface(" + iface_name + ")", LoggerSetup.get_log_deep(3))
             logging.error("%s" + str(e), LoggerSetup.get_log_deep(3))
 
     def ipdb_get_ip(self, ipdb: bool, iface_name: str, not_this_ip: str = None):
         """
         Reads the 'first' IP from the IPDB or if intended from IPDN_NETNS.
 
-        :param ipdb: If True IPDB is used, else IPDB_NETNS is used
-        :param iface_name:
+        :param ipdb: If 'True' IPDB is used, 'False' IPDB_NETNS is used
+        :param iface_name: Name of the selected Network-Interface
         :param not_this_ip: If we know the first IP and are searching for another
-        :return: the IP with the format ip/mask
+        :return: IP with the format ip/mask
         """
         if ipdb:
             iface = self.ipdb.interfaces[iface_name]

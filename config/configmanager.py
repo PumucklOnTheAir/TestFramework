@@ -1,16 +1,16 @@
-import yaml
-import io
-import logging
 from os import path
 from router.router import Router
 from power_strip.ubnt import Ubnt
 from jsonschema import validate, ValidationError
+import yaml
+import io
+import logging
 
 
 class ConfigManager:
     """
     Manager which handles the config files for the TestServer.
-    """
+    """""
 
     BASE_DIR = path.dirname(path.dirname(__file__))  # This is your Project Root
     CONFIG_PATH = path.join(BASE_DIR, 'config')  # Join Project Root with config
@@ -18,19 +18,18 @@ class ConfigManager:
     FRAMEWORK_SCHEMA_FILE = 'framework_schema.yml'
 
     @classmethod
-    def set_config_path(cls, config_path: str = "") -> None:
+    def set_config_path(cls, config_path: str = ""):
         """
-        Set the path from the files
+        Set the path from the files.
 
-        :param config_path: where the files are
-        :return: None
+        :param config_path: Where the files are
         """
         cls.CONFIG_PATH = config_path
 
     @staticmethod
     def read_file(file_path: str = "") -> []:
         """
-        Read a config file from the path
+        Read a config file from the path.
 
         :param file_path: File path
         :return: Array with the output from the file
@@ -54,7 +53,7 @@ class ConfigManager:
     @staticmethod
     def get_framework_config() -> []:
         """
-        Read the framework config file
+        Read the framework config file.
 
         :return: Dictionary with the output from the file
         """
@@ -65,7 +64,7 @@ class ConfigManager:
     @staticmethod
     def get_framework_schema() -> []:
         """
-        Read the framework schema file
+        Read the framework schema file.
 
         :return: Dictionary with the output from the file
         """
@@ -75,9 +74,10 @@ class ConfigManager:
     @staticmethod
     def check(data: object = None) -> bool:
         """
-        Check the data against the schema
+        Check the data against the schema.
+
         :param data: Data from the yml file
-        :return: True if check is successfully
+        :return: 'True' if check is successfully
         """
         schema = ConfigManager.get_framework_schema()
         try:
@@ -91,9 +91,9 @@ class ConfigManager:
     @staticmethod
     def get_routers_dict() -> (bool, dict):
         """
-        Read the routers from config file
+        Read the routers from config file.
 
-        :return: Tuple with bool and dictionary with all routers
+        :return: 'Tuple' with bool and dictionary with all Routers
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -103,9 +103,9 @@ class ConfigManager:
     @staticmethod
     def get_routers_list() -> []:
         """
-        Read the routers from the config
+        Read the Routers from the config.
 
-        :return: List with any router objects from the file
+        :return: List with any Router-Obj from the file
         """
         output = ConfigManager.get_routers_dict()
 
@@ -147,9 +147,9 @@ class ConfigManager:
     @staticmethod
     def get_server_dict() -> (bool, dict):
         """
-        Read the server config from the file
+        Read the server config from the file.
 
-        :return: Tuple with bool and dictionary with all server properties from the file
+        :return: 'Tuple' with bool and dictionary with all server properties from the file.
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -159,7 +159,7 @@ class ConfigManager:
     @staticmethod
     def get_server_list() -> []:
         """
-        Read the server config from the file
+        Read the server config from the file.
 
         :return: List with all server properties from the file
         """
@@ -178,7 +178,7 @@ class ConfigManager:
     @staticmethod
     def get_server_property(prop: str = "") -> object:
         """
-        Read the server config from the file and give the property back
+        Read the server config from the file and give the property back.
 
         :param prop: Property from server
         :return: Value of the property from server
@@ -198,9 +198,9 @@ class ConfigManager:
     @staticmethod
     def get_firmware_dict() -> (bool, dict):
         """
-        Read the firmware config from the file
+        Read the firmware config from the file.
 
-        :return: Tuple with bool and dictionary with all firmware properties from the file
+        :return: 'Tuple' with bool and dictionary with all firmware properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -210,7 +210,7 @@ class ConfigManager:
     @staticmethod
     def get_firmware_list() -> []:
         """
-        Read the firmware config from the file
+        Read the firmware config from the file.
 
         :return: List with all firmware properties from the file
         """
@@ -229,7 +229,7 @@ class ConfigManager:
     @staticmethod
     def get_firmware_property(prop: str = "") -> object:
         """
-        Read the firmware config from the file and give the property back
+        Read the firmware config from the file and give the property back.
 
         :param prop: Property from firmware
         :return: Value of the property from firmware
@@ -249,8 +249,9 @@ class ConfigManager:
     @staticmethod
     def get_web_interface_dict() -> (bool, dict):
         """
-        Read the web interface config from the file
-        :return: Tuple with bool and dictionary with all web interface properties from the file
+        Read the web interface config from the file.
+
+        :return: 'Tuple' with bool and dictionary with all web interface properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -260,7 +261,8 @@ class ConfigManager:
     @staticmethod
     def get_web_interface_list() -> []:
         """
-        Read the web interface config from the file
+        Read the web interface config from the file.
+
         :return: List with all web interface properties from the file, have intern dictionaries
         """
         interface = ConfigManager.get_web_interface_dict()
@@ -286,7 +288,7 @@ class ConfigManager:
     @staticmethod
     def get_web_interface_property(prop: str = "") -> object:
         """
-        Read the web interface config from the file and give the property back
+        Read the web interface config from the file and give the property back.
 
         :param prop: Property from web interface
         :return: Value of the property from web interface
@@ -306,8 +308,9 @@ class ConfigManager:
     @staticmethod
     def get_power_strip_dict() -> (bool, dict):
         """
-        Read the power strip config from the file
-        :return: Tuple with bool and dictionary with all power strip properties from the file
+        Read the power strip config from the file.
+
+        :return: 'Tuple' with bool and dictionary with all power-strip properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -317,8 +320,9 @@ class ConfigManager:
     @staticmethod
     def get_power_strip_list() -> []:
         """
-        Read the power strip config file
-        :return: List with any power strips objects from the file
+        Read the power-strip config file.
+
+        :return: List with any power-strips objects from the file
         """
         power_strip = ConfigManager.get_power_strip_dict()
 
@@ -356,9 +360,9 @@ class ConfigManager:
     @staticmethod
     def get_test_dict() -> (bool, dict):
         """
-        Read the test config from the file
+        Read the test config from the file.
 
-        :return: Tuple with bool and dictionary with all test properties from the file
+        :return: 'Tuple' with bool and dictionary with all test properties from the file
         """
         config = ConfigManager.get_framework_config()
         if ConfigManager.check(config):
@@ -368,7 +372,7 @@ class ConfigManager:
     @staticmethod
     def get_test_sets() -> []:
         """
-        Read the test config from the file
+        Read the test config from the file.
 
         :return: List with all test properties from the file
         """

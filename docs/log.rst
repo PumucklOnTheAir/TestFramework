@@ -1,8 +1,8 @@
-#####################################
+#######
 Logging
-#####################################
+#######
 
 Class Description
 =================
-.. automodule:: log.logger
+.. automodule:: log.loggersetup
   :members:
