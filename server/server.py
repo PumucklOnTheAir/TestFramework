@@ -301,7 +301,7 @@ class Server(ServerProxy):
 
         :param remote_system: the associated RemoteSystem of the queue
         :param task: task which has to wait
-        :param done_event: done event
+        :param done_event: event which will be triggered when the task is finished
         """
         queue = cls.get_waiting_task_queue(remote_system)
         queue.appendleft((task, done_event))
@@ -388,6 +388,7 @@ class Server(ServerProxy):
 
         :param remote_sys: the RemoteSystem
         :param job: the Job
+        :param done_event: event which will be triggered when the task is finished
         :return: true if job directly started, false if not
         """
         assert(cls._pid == os.getpid())
@@ -494,6 +495,7 @@ class Server(ServerProxy):
 
         :param test: test to execute
         :param router: the Router
+        :param done_event: event which will be triggered when the task is finished
         """
         logging.debug("%sWait for test" + str(test), LoggerSetup.get_log_deep(2))
         try:
@@ -544,6 +546,7 @@ class Server(ServerProxy):
 
         :param job: job to execute
         :param remote_sys: the RemoteSystem
+        :param done_event: event which will be triggered when the task is finished
         """
         async_result = cls._task_pool.apply_async(func=cls._execute_job, args=(job, remote_sys, cls._routers))
         try:
