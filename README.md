@@ -7,23 +7,21 @@ Die Dokumentation befindet sich online auf https://freifunk-testframework.readth
 ## Bedienung
 
 ### Starten
-Server manuel starten mit `python3 start_server.py` oder `./start_server.py`
+Server manuel starten mit `./start_server.py`
 
 Wenn das FreifunkTestFramework bereits als Service installiert ist, kann es über systemd gestartet werden:
 `systemctl start fftserver`
 
 
 ### Installieren
-Die Installation ist ziemlich einfach unter einem Unix-System.
-Ein `./install.sh` bzw. `sh install.sh` unter root reicht aus.
-Es wird systemd und Python 3.4+ vorausgesetzt. Installation wurde lediglich unter Raspbian getestet.
+Auf Unix: `./install.sh` unter root reicht aus.
+Es wird systemd und Python 3.4 vorausgesetzt. Installation wurde lediglich unter Raspbian getestet.
 
-Alternativ wen man den Testserver nur ausführen aber nicht als Service installiert haben möchte, kann man auch nur die Bibliothek installieren: `pip3 install -r requirements.txt`
+Wen man den Testserver nur ausführen aber nicht als Service installiert haben möchte, kann man auch nur die Bibliothek installieren: `pip3 install -r requirements.txt`
 
 ### Testen
 Eine Auswahl an Unittest fürs Framwork wird bei jedem Pull-Request auf Travis CI ausgeführt.
-Eine vollständiges Testens des Frameworks ist auf dem Raspberry Pi möglich mit folgendem Kommando im Repo Ordner:
-python3 -m unittest discover -s framework_unittests
+Eine vollständiges Testens des Frameworks ist nur unter bestimmten umständen möglich. Siehe framework_unittests/README.md.
 
 ### Ausführen
 ```
