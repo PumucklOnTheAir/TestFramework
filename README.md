@@ -16,7 +16,7 @@ Wenn das FreifunkTestFramework bereits als Service installiert ist, kann es übe
 ### Installieren
 Die Installation ist ziemlich einfach unter einem Unix-System.
 Ein `./install.sh` bzw. `sh install.sh` unter root reicht aus.
-Es wird systemd und Python 3.4+ vorausgesetzt. Installation wurde lediglich unter Raspbian getestet.
+Es wird systemd und Python 3.4 vorausgesetzt. Installation wurde lediglich unter Raspbian getestet.
 
 Alternativ wen man den Testserver nur ausführen aber nicht als Service installiert haben möchte, kann man auch nur die Bibliothek installieren: `pip3 install -r requirements.txt`
 
